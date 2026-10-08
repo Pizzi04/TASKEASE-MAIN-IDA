@@ -35,7 +35,7 @@ svg { display: block; }
 
 .wall { display: flex; flex-wrap: wrap; gap: 40px; justify-content: center; padding: 40px 16px 64px; }
 .cap { width: 390px; max-width: 100%; }
-.cap h2 { font-family: var(--mono); font-size: var(--t-xs); letter-spacing: 1.5px; text-transform: uppercase; color: var(--stone); margin-bottom: var(--s3); }
+.cap > h2 { font-family: var(--mono); font-size: var(--t-xs); letter-spacing: 1.5px; text-transform: uppercase; color: var(--stone); margin-bottom: var(--s3); }
 .phone { width: 390px; max-width: 100%; height: 844px; background: var(--paper); border-radius: 28px; overflow: hidden; position: relative; display: flex; flex-direction: column; box-shadow: 0 30px 60px -30px rgba(28,27,24,.35); }
 .scroll { flex: 1; overflow-y: auto; scrollbar-width: none; }
 .scroll::-webkit-scrollbar { width: 0; }
@@ -211,6 +211,286 @@ svg { display: block; }
 .post .acts .n { font-family: var(--mono); font-size: var(--t-xs); color: var(--ink-2); }
 .post .acts .flag { margin-left: auto; min-height: 44px; font-size: var(--t-xs); color: var(--stone); text-decoration: underline; text-underline-offset: 3px; }
 .post.mine { background: linear-gradient(90deg, var(--ochre-soft), transparent 70%); margin: 0 calc(-1 * var(--gut)); padding-left: var(--gut); padding-right: var(--gut); }
+
+/* ---------- intestazioni di gruppo sul muro ---------- */
+.group { flex-basis: 100%; max-width: 1720px; border-top: 1.5px solid var(--ink); padding-top: var(--s4); margin-top: var(--s5); display: flex; gap: var(--s5); align-items: baseline; flex-wrap: wrap; }
+.group h1 { font-family: var(--serif); font-weight: 500; font-size: 32px; letter-spacing: -1px; }
+.group p { font-size: var(--t-sm); color: var(--ink-2); max-width: 70ch; }
+.intro { flex-basis: 100%; max-width: 1720px; }
+.intro h1 { font-family: var(--serif); font-weight: 500; font-size: 48px; letter-spacing: -1.6px; line-height: 1; }
+.intro h1 em { color: var(--ochre-ink); }
+.intro ol { margin-top: var(--s4); padding-left: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--s3) var(--s5); counter-reset: r; }
+.intro li { counter-increment: r; font-size: var(--t-sm); color: var(--ink-2); line-height: 1.5; padding-left: 34px; position: relative; }
+.intro li::before { content: counter(r, decimal-leading-zero); position: absolute; left: 0; top: 1px; font-family: var(--mono); font-size: var(--t-xs); color: var(--ochre-ink); }
+.intro li b { color: var(--ink); }
+
+/* ---------- barra superiore generica ---------- */
+.bar { display: flex; align-items: center; gap: var(--s3); padding: 14px var(--gut); border-bottom: 1px solid var(--rule); }
+.bar h1 { font-family: var(--serif); font-weight: 600; font-size: var(--t-lg); letter-spacing: -.3px; flex: 1; }
+.bar .side { font-size: var(--t-sm); color: var(--stone); }
+.pad { padding: 0 var(--gut); }
+.lead { font-size: var(--t-md); color: var(--ink-2); line-height: 1.5; margin-top: var(--s2); }
+.big-h { font-family: var(--serif); font-weight: 500; font-size: var(--t-xl); letter-spacing: -.8px; line-height: 1.1; }
+.big-h em { color: var(--ochre-ink); }
+
+/* ---------- moduli ---------- */
+.form { display: flex; flex-direction: column; gap: var(--s5); padding: var(--s5) var(--gut) var(--s6); }
+.fld { display: flex; flex-direction: column; gap: 6px; }
+.lab { font-size: var(--t-sm); font-weight: 700; display: flex; justify-content: space-between; align-items: baseline; }
+.lab small { font-weight: 500; color: var(--stone); }
+.lab .ok { color: var(--ok); font-weight: 600; font-size: var(--t-xs); }
+.in { min-height: 52px; display: flex; align-items: center; padding: 0 14px; border: 1.5px solid var(--rule); border-radius: 10px; background: var(--card); font-size: var(--t-md); color: var(--stone); }
+.in.f { color: var(--ink); border-color: var(--ink-2); }
+.in.focus { border-color: var(--pine); box-shadow: 0 0 0 3px rgba(31,78,70,.16); color: var(--ink); }
+.in.ta { min-height: 96px; align-items: flex-start; padding-top: 14px; line-height: 1.45; }
+.help { font-size: var(--t-xs); color: var(--stone); line-height: 1.5; }
+.chips { display: flex; flex-wrap: wrap; gap: var(--s2); }
+.chip { min-height: 44px; padding: 0 14px; border-radius: 8px; border: 1.5px solid var(--rule); background: var(--card); font-size: var(--t-sm); font-weight: 600; color: var(--ink-2); display: inline-flex; align-items: center; gap: 6px; }
+.chip.on { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.chip.off { color: #A39C8F; border-style: dashed; }
+.chip .m { font-family: var(--mono); font-weight: 400; }
+.check { display: flex; gap: var(--s3); align-items: flex-start; font-size: var(--t-sm); line-height: 1.5; color: var(--ink-2); }
+.box { width: 24px; height: 24px; flex-shrink: 0; border: 1.5px solid var(--ink); border-radius: 5px; display: grid; place-items: center; background: var(--card); margin-top: 1px; }
+.box.on { background: var(--ink); color: var(--paper); }
+.check u { color: var(--pine); font-weight: 700; text-underline-offset: 2px; }
+
+/* barra azione in fondo: il pulsante dice cosa manca invece di spegnersi */
+.act { padding: var(--s3) var(--gut) calc(var(--s4) + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--rule); background: var(--paper); }
+.btn { width: 100%; min-height: 52px; border-radius: 10px; background: var(--pine); color: #fff; font-weight: 700; font-size: var(--t-md); display: flex; align-items: center; justify-content: center; gap: var(--s2); }
+.btn small { font-weight: 500; opacity: .8; font-size: var(--t-sm); }
+.btn.ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--ink); }
+.btn.dark { background: var(--ink); }
+.btn.danger { background: var(--ember); }
+.missing { display: flex; align-items: center; gap: var(--s2); font-size: var(--t-sm); color: var(--ink-2); margin-bottom: var(--s3); }
+.missing b { color: var(--ink); }
+.missing i { width: 18px; height: 18px; border-radius: 50%; border: 1.5px dashed var(--ochre); flex-shrink: 0; }
+.btn[aria-disabled=true] { background: var(--paper-2); color: var(--stone); border: 1.5px dashed var(--rule); }
+
+/* passi: segmenti + contatore mono */
+.steps { display: flex; align-items: center; gap: var(--s3); padding: 14px var(--gut) 0; }
+.steps .seg4 { flex: 1; display: grid; grid-template-columns: repeat(var(--n, 4), 1fr); gap: 4px; }
+.steps .seg4 i { height: 3px; background: var(--rule); border-radius: 2px; }
+.steps .seg4 i.on { background: var(--ink); }
+.steps .ct { font-family: var(--mono); font-size: var(--t-xs); color: var(--stone); }
+
+/* ---------- prenotazione ---------- */
+.who-bar { display: flex; align-items: center; gap: var(--s3); padding: var(--s4) var(--gut); border-bottom: 1px solid var(--rule); }
+.who-bar b { font-family: var(--serif); font-weight: 600; font-size: 17px; display: block; }
+.who-bar small { font-family: var(--mono); font-size: var(--t-xs); color: var(--ink-2); }
+.days { display: grid; grid-template-columns: repeat(7, 1fr); border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; background: var(--card); }
+.days button { min-height: 64px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-left: 1px solid var(--rule-soft); }
+.days button:first-child { border-left: 0; }
+.days span { font-family: var(--mono); font-size: 10.5px; letter-spacing: .5px; text-transform: uppercase; color: var(--stone); }
+.days b { font-family: var(--serif); font-size: 20px; font-weight: 600; }
+.days .on { background: var(--ink); }
+.days .on span, .days .on b { color: var(--paper); }
+.times { display: flex; gap: var(--s2); }
+.times .chip { font-family: var(--mono); font-weight: 400; }
+.times .chip.gone { text-decoration: line-through; color: #A39C8F; border-style: dashed; }
+.sum { display: flex; justify-content: space-between; font-size: var(--t-sm); color: var(--ink-2); padding: var(--s3) 0 0; border-top: 1px dashed var(--rule); }
+.sum b { font-family: var(--mono); color: var(--ink); }
+
+/* ---------- conferma: biglietto dell'appuntamento ---------- */
+.done-top { padding: var(--s6) var(--gut) 0; }
+.stamp { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: var(--t-xs); letter-spacing: 1px; text-transform: uppercase; color: var(--ok); border: 1.5px solid var(--ok); border-radius: 4px; padding: 3px 8px; transform: rotate(-2deg); }
+.ticket { margin: var(--s5) var(--gut) 0; background: var(--card); border: 1.5px solid var(--ink); border-radius: 12px; position: relative; }
+.ticket .t-top { padding: var(--s4); display: grid; grid-template-columns: 1fr auto; gap: var(--s1) var(--s4); }
+.ticket .when { font-family: var(--mono); font-size: 26px; font-weight: 700; letter-spacing: -1px; }
+.ticket .t-top small { font-size: var(--t-xs); color: var(--stone); font-family: var(--mono); text-transform: uppercase; letter-spacing: 1px; }
+.ticket .perf { border-top: 1.5px dashed var(--rule); position: relative; }
+.ticket .perf::before, .ticket .perf::after { content: ""; position: absolute; top: -10px; width: 18px; height: 18px; border-radius: 50%; background: var(--paper); border: 1.5px solid var(--ink); }
+.ticket .perf::before { left: -10px; clip-path: inset(0 0 0 50%); }
+.ticket .perf::after { right: -10px; clip-path: inset(0 50% 0 0); }
+.ticket .t-bot { padding: var(--s3) var(--s4); display: flex; justify-content: space-between; font-size: var(--t-sm); }
+.ticket .t-bot q { font-family: var(--serif); font-style: italic; quotes: "«" "»"; }
+.tl { list-style: none; margin: var(--s5) var(--gut) 0; }
+.tl li { display: grid; grid-template-columns: 20px 1fr auto; gap: var(--s3); align-items: center; min-height: 40px; font-size: var(--t-sm); position: relative; }
+.tl li::before { content: ""; width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--rule); background: var(--paper); justify-self: center; }
+.tl li.ok::before { background: var(--ok); border-color: var(--ok); }
+.tl li:not(:last-child)::after { content: ""; position: absolute; left: 9.25px; top: 26px; height: 28px; border-left: 1.5px solid var(--rule); }
+.tl li.ok:not(:last-child)::after { border-color: var(--ok); }
+.tl time { font-family: var(--mono); font-size: var(--t-xs); color: var(--stone); }
+.tl li:not(.ok) span { color: var(--stone); }
+.pay { margin: var(--s5) var(--gut) 0; padding: var(--s1) 0 var(--s1) var(--s4); border-left: 3px solid var(--ochre); font-size: var(--t-sm); line-height: 1.55; color: var(--ink-2); }
+.pay b { color: var(--ink); }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s2); }
+
+/* ---------- giudizio ---------- */
+.q-num { font-family: var(--mono); font-size: var(--t-xs); letter-spacing: 1px; color: var(--ochre-ink); text-transform: uppercase; }
+.q { font-family: var(--serif); font-weight: 500; font-size: 26px; letter-spacing: -.6px; line-height: 1.15; margin-top: var(--s2); }
+.opts { list-style: none; margin-top: var(--s5); border-top: 1px solid var(--rule); }
+.opt2 { display: grid; grid-template-columns: 28px 1fr 32px; gap: var(--s3); align-items: center; width: 100%; min-height: 60px; border-bottom: 1px solid var(--rule); font-size: var(--t-md); }
+.opt2 kbd { font-family: var(--mono); font-size: var(--t-xs); color: var(--stone); width: 24px; height: 24px; border: 1px solid var(--rule); border-radius: 5px; display: grid; place-items: center; }
+.opt2 .pts { font-family: var(--mono); font-size: var(--t-xs); color: var(--stone); text-align: right; }
+.opt2.on { font-weight: 700; }
+.opt2.on kbd { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.aside-link { display: inline-block; margin-top: var(--s4); font-size: var(--t-sm); color: var(--ember); text-decoration: underline; text-underline-offset: 3px; min-height: 44px; }
+.why { margin-top: var(--s5); font-size: var(--t-xs); color: var(--stone); line-height: 1.5; }
+
+/* ---------- chat ---------- */
+.chat-bar { display: flex; align-items: center; gap: var(--s3); padding: 12px var(--gut); border-bottom: 1px solid var(--rule); }
+.chat-bar div { flex: 1; }
+.chat-bar b { font-family: var(--serif); font-weight: 600; font-size: 17px; display: block; }
+.chat-bar small { font-size: var(--t-xs); color: var(--stone); }
+.thread { flex: 1; padding: var(--s4) var(--gut); display: flex; flex-direction: column; gap: var(--s2); overflow-y: auto; }
+.daymark { align-self: center; font-family: var(--mono); font-size: 10.5px; letter-spacing: 1px; color: var(--stone); text-transform: uppercase; margin: var(--s2) 0; }
+.msg { max-width: 78%; padding: 10px 12px; border-radius: 4px 12px 12px 12px; background: var(--card); border: 1px solid var(--rule); font-size: 15px; line-height: 1.4; }
+.msg.me { align-self: flex-end; background: var(--pine); color: #fff; border-color: var(--pine); border-radius: 12px 4px 12px 12px; }
+.msg time { display: block; font-family: var(--mono); font-size: 10px; opacity: .65; margin-top: 4px; text-align: right; }
+.pin { border: 1.5px solid var(--ink); border-radius: 10px; padding: var(--s3); font-size: var(--t-sm); display: flex; gap: var(--s3); align-items: center; background: var(--card); }
+.pin b { font-family: var(--mono); }
+.quick { display: flex; gap: var(--s2); padding: var(--s2) var(--gut); overflow-x: auto; scrollbar-width: none; }
+.quick .chip { flex-shrink: 0; min-height: 36px; }
+.compose { display: flex; gap: var(--s2); padding: var(--s2) var(--gut) calc(var(--s3) + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--rule); }
+.compose .in { flex: 1; min-height: 48px; }
+.send { width: 48px; height: 48px; border-radius: 10px; background: var(--pine); color: #fff; display: grid; place-items: center; }
+
+/* ---------- liste di scelta (segnala) ---------- */
+.ref { margin: var(--s4) var(--gut) 0; border-left: 3px solid var(--rule); padding: var(--s1) 0 var(--s1) var(--s3); }
+.ref small { font-family: var(--mono); font-size: 10.5px; letter-spacing: 1px; text-transform: uppercase; color: var(--stone); }
+.ref p { font-family: var(--serif); font-style: italic; font-size: var(--t-md); margin-top: 2px; }
+.radio-list { list-style: none; border-top: 1px solid var(--rule); }
+.radio-list li { display: flex; align-items: center; gap: var(--s3); min-height: 52px; border-bottom: 1px solid var(--rule); font-size: var(--t-md); }
+.radio-list li i { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--ink-2); flex-shrink: 0; }
+.radio-list li.on i { border: 6px solid var(--ink); }
+.radio-list li.on { font-weight: 700; }
+.sos { display: flex; gap: var(--s3); align-items: center; padding: var(--s3) var(--s4); border: 1.5px solid var(--ember); border-radius: 10px; color: var(--ember); font-size: var(--t-sm); }
+.sos b { font-family: var(--mono); font-size: var(--t-lg); }
+
+/* ---------- testi legali: documento editoriale ---------- */
+.doc { padding: var(--s5) var(--gut) var(--s6); }
+.draft { display: inline-block; font-family: var(--mono); font-size: 10.5px; letter-spacing: 1px; text-transform: uppercase; color: var(--ember); border: 1.5px solid var(--ember); padding: 2px 6px; border-radius: 3px; transform: rotate(-1.5deg); }
+.doc h2 { font-family: var(--serif); font-weight: 500; font-size: var(--t-xl); letter-spacing: -.8px; margin-top: var(--s3); }
+.doc .meta { font-family: var(--mono); font-size: var(--t-xs); color: var(--stone); margin-top: var(--s2); }
+.doc section { display: grid; grid-template-columns: 28px 1fr; gap: var(--s2); padding: var(--s4) 0; border-top: 1px solid var(--rule); }
+.doc section:first-of-type { margin-top: var(--s5); }
+.doc section > span { font-family: var(--mono); font-size: var(--t-xs); color: var(--ochre-ink); padding-top: 3px; }
+.doc h3 { font-family: var(--serif); font-weight: 600; font-size: 17px; }
+.doc p { font-size: var(--t-sm); line-height: 1.6; color: var(--ink-2); margin-top: 4px; }
+.doc p b { color: var(--ink); }
+
+/* ---------- liste impostazioni ---------- */
+.list { list-style: none; border-top: 1px solid var(--rule); margin: 0 var(--gut); }
+.list li { display: flex; align-items: center; gap: var(--s3); min-height: 60px; border-bottom: 1px solid var(--rule); }
+.list li > svg { width: 20px; height: 20px; color: var(--ink-2); flex-shrink: 0; }
+.list li div { flex: 1; display: flex; flex-direction: column; }
+.list li b { font-size: 15px; font-weight: 600; }
+.list li small { font-size: var(--t-xs); color: var(--stone); }
+.list li .soon { font-family: var(--mono); font-size: 10px; letter-spacing: 1px; color: var(--stone); border: 1px dashed var(--rule); padding: 2px 6px; border-radius: 3px; }
+.list li.danger b { color: var(--ember); }
+.sec-t { font-family: var(--mono); font-size: var(--t-xs); letter-spacing: 1.2px; text-transform: uppercase; color: var(--stone); padding: var(--s6) var(--gut) var(--s2); }
+
+/* interruttore ruolo cliente / professionista */
+.role { display: grid; grid-template-columns: 1fr 1fr; margin: var(--s4) var(--gut) 0; border: 1.5px solid var(--ink); border-radius: 10px; overflow: hidden; }
+.role button { min-height: 44px; font-size: var(--t-sm); font-weight: 700; text-align: center; }
+.role .on { background: var(--ink); color: var(--paper); }
+.me-head { display: flex; align-items: center; gap: var(--s4); padding: 22px var(--gut) 0; }
+.me-head b { font-family: var(--serif); font-weight: 500; font-size: var(--t-xl); letter-spacing: -.8px; display: block; line-height: 1.1; }
+.me-head small { font-size: var(--t-sm); color: var(--stone); }
+.mono-tag.lg { width: 56px; height: 56px; font-size: 21px; }
+
+/* ---------- notifiche vuote ---------- */
+.empty { padding: var(--s7) var(--gut); }
+.empty .big-h { font-size: 24px; }
+.empty ul { list-style: none; margin-top: var(--s5); border-top: 1px solid var(--rule); }
+.empty li { display: grid; grid-template-columns: 60px 1fr; gap: var(--s3); padding: var(--s3) 0; border-bottom: 1px solid var(--rule-soft); font-size: var(--t-sm); color: var(--ink-2); opacity: .75; }
+.empty li time { font-family: var(--mono); font-size: var(--t-xs); color: var(--stone); }
+
+/* ---------- passaporto ---------- */
+.stamps { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s3); padding: var(--s4) var(--gut) 0; }
+.stp { aspect-ratio: 1; border: 1.5px dashed var(--rule); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; text-align: center; position: relative; }
+.stp b { font-family: var(--serif); font-size: 15px; font-weight: 600; }
+.stp small { font-family: var(--mono); font-size: 10.5px; color: var(--stone); }
+.stp.has { border: 2px solid var(--pine); color: var(--pine); background: var(--pine-soft); transform: rotate(-2deg); }
+.stp.has:nth-child(even) { transform: rotate(1.5deg); }
+.stp.full { background: var(--pine); color: var(--paper); border-color: var(--pine); }
+.stp.full small { color: rgba(246,242,234,.8); }
+.stp .dots { display: flex; gap: 3px; margin-top: 4px; }
+.stp .dots i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: .25; }
+.stp .dots i.f { opacity: 1; }
+.tally { display: flex; gap: var(--s5); padding: var(--s4) var(--gut) 0; }
+.tally div b { display: block; font-family: var(--mono); font-size: var(--t-xl); letter-spacing: -1px; }
+.tally div small { font-size: var(--t-xs); color: var(--stone); }
+
+/* ---------- vantaggi ---------- */
+.level { padding: var(--s5) var(--gut) 0; }
+.level .big { font-family: var(--serif); font-weight: 500; font-size: 52px; letter-spacing: -2px; line-height: 1; }
+.ruler { margin-top: var(--s4); align-items: end; display: grid; grid-template-columns: repeat(20, 1fr); gap: 3px; }
+.ruler i { height: 18px; background: var(--rule); border-radius: 2px; }
+.ruler i.f { background: var(--ochre); }
+.ruler i:nth-child(5n) { height: 26px; }
+.ruler-lbl { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 10.5px; color: var(--stone); margin-top: 6px; }
+.perks { list-style: none; margin: var(--s5) var(--gut) 0; border-top: 1px solid var(--rule); }
+.perks li { display: grid; grid-template-columns: 24px 1fr auto; gap: var(--s3); padding: var(--s3) 0; border-bottom: 1px solid var(--rule); align-items: start; }
+.perks li svg { width: 20px; height: 20px; color: var(--ok); margin-top: 2px; }
+.perks li b { font-size: 15px; display: block; }
+.perks li small { font-size: var(--t-xs); color: var(--stone); }
+.perks li .m { font-family: var(--mono); font-size: var(--t-xs); color: var(--ink-2); }
+.perks li.lock { opacity: .6; }
+.perks li.lock svg { color: var(--stone); }
+.code { margin: var(--s5) var(--gut) var(--s6); border: 1.5px dashed var(--ink); border-radius: 10px; padding: var(--s4); display: flex; justify-content: space-between; align-items: center; }
+.code b { font-family: var(--mono); font-size: var(--t-lg); letter-spacing: 1px; }
+.code small { display: block; font-size: var(--t-xs); color: var(--stone); margin-top: 2px; }
+
+/* ---------- professionista ---------- */
+.avail { display: flex; align-items: center; gap: var(--s3); margin: var(--s4) var(--gut) 0; padding: var(--s3) var(--s4); border: 1.5px solid var(--ok); border-radius: 10px; }
+.avail div { flex: 1; }
+.avail b { display: block; font-size: 15px; }
+.avail small { font-size: var(--t-xs); color: var(--ink-2); }
+.tog { width: 52px; height: 32px; border-radius: 16px; background: var(--ok); position: relative; flex-shrink: 0; }
+.tog::after { content: ""; position: absolute; right: 3px; top: 3px; width: 26px; height: 26px; border-radius: 50%; background: #fff; }
+.kpis { display: grid; grid-template-columns: repeat(3, 1fr); margin: var(--s4) var(--gut) 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.kpis div { padding: var(--s3) 0; }
+.kpis div + div { border-left: 1px solid var(--rule); padding-left: var(--s3); }
+.kpis b { display: block; font-family: var(--mono); font-size: var(--t-lg); }
+.kpis small { font-size: var(--t-xs); color: var(--stone); }
+.req { padding: var(--s4) 0; border-bottom: 1px solid var(--rule); }
+.req-top { display: grid; grid-template-columns: 1fr auto; gap: 2px var(--s3); }
+.req-top b { font-family: var(--serif); font-weight: 600; font-size: 18px; letter-spacing: -.2px; }
+.req-top .eur { font-family: var(--mono); font-size: var(--t-lg); font-weight: 700; text-align: right; }
+.req-top small { font-size: var(--t-xs); color: var(--ink-2); }
+.req-top .calc { font-family: var(--mono); font-size: 10.5px; color: var(--stone); text-align: right; }
+.req q { display: block; font-family: var(--serif); font-style: italic; font-size: 15px; margin-top: var(--s2); quotes: "«" "»"; }
+.req-acts { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: var(--s2); margin-top: var(--s3); }
+.req-acts button { text-align: center; min-height: 44px; border-radius: 8px; font-size: var(--t-sm); font-weight: 700; border: 1.5px solid var(--ink); }
+.req-acts .yes { background: var(--pine); border-color: var(--pine); color: #fff; }
+.req-acts .no { border-color: var(--rule); color: var(--ink-2); }
+.confirm { margin-top: var(--s3); padding: var(--s3); background: var(--pine-soft); border-radius: 8px; font-size: var(--t-sm); line-height: 1.5; }
+.confirm .row2 { margin-top: var(--s3); }
+.confirm .row2 button { text-align: center; min-height: 44px; border-radius: 8px; font-weight: 700; font-size: var(--t-sm); }
+.confirm .row2 .yes { background: var(--pine); color: #fff; }
+.confirm .row2 .back2 { border: 1.5px solid var(--rule); background: var(--card); }
+.badge-new { display: inline-block; font-family: var(--mono); font-size: 10.5px; letter-spacing: 1px; color: var(--ochre-ink); border: 1.5px solid var(--ochre); border-radius: 4px; padding: 1px 6px; }
+
+/* tariffa: stepper grande + righello di valori */
+.rate { display: flex; align-items: center; justify-content: space-between; padding: var(--s4) 0; border-top: 1.5px solid var(--ink); border-bottom: 1px solid var(--rule); }
+.rate b { font-family: var(--mono); font-size: 48px; letter-spacing: -3px; line-height: 1; }
+.rate b small { font-size: var(--t-md); letter-spacing: 0; color: var(--stone); }
+.rate button { width: 48px; height: 48px; border-radius: 50%; border: 1.5px solid var(--ink); display: grid; place-items: center; font-size: 22px; }
+.scale { display: grid; grid-template-columns: repeat(6, 1fr); margin-top: var(--s2); }
+.scale button { min-height: 44px; font-family: var(--mono); font-size: var(--t-sm); color: var(--stone); border-top: 2px solid var(--rule); }
+.scale button.on { color: var(--ink); font-weight: 700; border-top-color: var(--ink); }
+.seg2 { display: grid; grid-template-columns: 1fr 1fr; border: 1.5px solid var(--ink); border-radius: 10px; overflow: hidden; }
+.seg2 button { min-height: 44px; font-weight: 700; font-size: var(--t-sm); text-align: center; }
+.seg2 .on { background: var(--ink); color: var(--paper); }
+
+/* sigillo */
+.seal { margin: var(--s5) var(--gut) 0; background: var(--pine-deep); color: var(--paper); border-radius: 14px; padding: var(--s5) var(--s4); display: grid; grid-template-columns: 1fr 104px; gap: var(--s4); align-items: center; }
+.seal .kicker { color: #D9AC66; }
+.seal b { font-family: var(--serif); font-weight: 500; font-size: 24px; letter-spacing: -.6px; display: block; margin-top: 4px; }
+.seal p { font-size: var(--t-xs); color: rgba(246,242,234,.8); margin-top: var(--s2); line-height: 1.5; }
+.seal .url { font-family: var(--mono); font-size: 11px; color: #D9AC66; margin-top: var(--s3); word-break: break-all; }
+.qr { background: var(--paper); border-radius: 8px; padding: 6px; }
+.qr svg { width: 92px; height: 92px; }
+
+/* benvenuto pro */
+.welcome { padding: var(--s7) var(--gut) 0; }
+.welcome .big-h { font-size: 40px; letter-spacing: -1.4px; }
+.next { list-style: none; margin: var(--s5) var(--gut) 0; counter-reset: n; border-top: 1px solid var(--rule); }
+.next li { counter-increment: n; display: grid; grid-template-columns: 32px 1fr; gap: var(--s3); padding: var(--s3) 0; border-bottom: 1px solid var(--rule); font-size: var(--t-sm); line-height: 1.5; color: var(--ink-2); }
+.next li::before { content: counter(n, decimal-leading-zero); font-family: var(--mono); font-size: var(--t-xs); color: var(--ochre-ink); padding-top: 2px; }
+.next li b { color: var(--ink); display: block; font-size: 15px; }
+.next li.ok::before { content: "✓"; color: var(--ok); font-weight: 700; }
 </style>
 </head>
 <body>
@@ -231,10 +511,33 @@ svg { display: block; }
     <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
     <symbol id="i-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M7 4v16M3.5 16.5 7 20l3.5-3.5M17 20V4M13.5 7.5 17 4l3.5 3.5"/></symbol>
     <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"><path d="M21 3 3 10.5l7.5 3 3 7.5z"/><path d="m10.5 13.5 4-4"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"><path d="M4 5.5C6.5 4 9.5 4 12 6c2.5-2 5.5-2 8-.5V19c-2.5-1.5-5.5-1.5-8 .5-2.5-2-5.5-2-8-.5z"/><path d="M12 6v13.5"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"><path d="M4 8h3.5L9 5.5h6L16.5 8H20v11H4z"/><circle cx="12" cy="13" r="3.3"/></symbol>
   </defs>
 </svg>
 
 <main class="wall">
+<header class="intro">
+  <p class="kicker">TaskEase · proposta di redesign · ottobre 2026</p>
+  <h1 style="margin-top:12px">Dopo l'ingresso, <em>stessa bottega.</em></h1>
+  <ol>
+    <li><b>Righe, non card.</b> Liste su filetti sottili al posto di riquadri bianchi con ombra uno sopra l'altro.</li>
+    <li><b>I numeri parlano.</b> IDA, prezzi, orari e distanze in Space Mono, allineati come in un registro.</li>
+    <li><b>Niente icone decorative.</b> Via i quadratini pastello: le categorie sono parole, le icone solo dove servono a toccare.</li>
+    <li><b>Prove, non etichette.</b> Una frase vera di un cliente vale più di «Esperto · Privato · 0.8 km».</li>
+    <li><b>Il pulsante dice cosa manca.</b> Al posto del bottone grigio spento, la riga «Manca solo la tua zona».</li>
+    <li><b>Oggetti del quartiere.</b> Biglietto dell'appuntamento, timbri del passaporto, mappa della zona, documento con il timbro «bozza».</li>
+  </ol>
+</header>
+<div class="group"><h1>Trovare qualcuno</h1><p>Le quattro schermate che si vedono subito dopo l'ingresso.</p></div>
+
 
 <!-- ================= HOME ================= -->
 <section class="cap" aria-label="Home">
@@ -483,6 +786,498 @@ svg { display: block; }
   </div>
 </section>
 
+
+<!-- =================================================================== -->
+<div class="group"><h1>Prenotare e giudicare</h1><p>Il percorso che conta: dal profilo alla prenotazione, al giorno del lavoro, al giudizio che costruisce l'IDA.</p></div>
+
+<!-- ================= PRENOTA ================= -->
+<section class="cap" aria-label="Prenota">
+  <h2>05 · Prenota</h2>
+  <div class="phone" id="prenota">
+    <div class="bar"><button class="back" aria-label="Indietro"><svg width="20" height="20"><use href="#i-back"/></svg></button><h1>Prenota</h1></div>
+    <div class="who-bar"><span class="mono-tag on">MR</span><div><b>Marco Rosetti</b><small>18 €/h · IDA 96 · 1,2 km</small></div></div>
+    <div class="scroll">
+      <div class="form">
+        <div class="fld"><span class="lab">Che giorno?</span>
+          <div class="days">
+            <button class="on"><span>Gio</span><b>8</b></button><button><span>Ven</span><b>9</b></button><button><span>Sab</span><b>10</b></button><button><span>Dom</span><b>11</b></button><button><span>Lun</span><b>12</b></button><button><span>Mar</span><b>13</b></button><button><span>Mer</span><b>14</b></button>
+          </div></div>
+        <div class="fld"><span class="lab">A che ora? <small>proposta, Marco conferma</small></span>
+          <div class="times"><span class="chip gone">15:00</span><span class="chip on">16:00</span><span class="chip">17:00</span></div></div>
+        <div class="fld"><span class="lab">Cosa c'è da fare? <span class="ok">✓</span></span>
+          <div class="in ta f">Perde il sifone sotto il lavandino del bagno, da ieri.</div>
+          <span class="help">Marco lo legge prima di accettare. Due righe bastano.</span></div>
+        <div class="fld"><span class="lab">Dove?</span>
+          <div class="in focus">Via Roma 10|</div>
+          <span class="help">Lo vede solo Marco, e solo dopo che ha accettato.</span></div>
+        <div class="fld"><span class="lab">Quanto dura, più o meno?</span>
+          <div class="chips"><span class="chip on">Lo stima Marco</span><span class="chip">~1 h</span><span class="chip">~2 h</span><span class="chip">Mezza giornata</span></div></div>
+      </div>
+    </div>
+    <div class="act">
+      <p class="sum" style="border:0;padding:0 0 12px"><span>Gio 8 ott · <b>16:00</b></span><span>paghi a fine lavoro · <b>18 €/h</b></span></p>
+      <button class="btn">Invia richiesta a Marco</button>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CONFERMA ================= -->
+<section class="cap" aria-label="Prenotazione confermata">
+  <h2>06 · Prenotazione confermata</h2>
+  <div class="phone" id="conferma">
+    <div class="scroll">
+      <div class="done-top">
+        <span class="stamp"><svg width="14" height="14"><use href="#i-check"/></svg>Confermato</span>
+        <h1 class="big-h" style="margin-top:16px;font-size:36px">Marco ci sarà.</h1>
+      </div>
+      <div class="ticket">
+        <div class="t-top">
+          <div><small>Giovedì 8 ottobre</small><div class="when">16:00</div></div>
+          <span class="mono-tag on" style="align-self:center">MR</span>
+          <span style="font-size:14px;color:var(--ink-2)">Via Roma 10 · Centro</span>
+        </div>
+        <div class="perf"></div>
+        <div class="t-bot"><q>Perde il sifone sotto il lavandino</q><span class="mono">18 €/h</span></div>
+      </div>
+      <ol class="tl">
+        <li class="ok"><span>Richiesta inviata</span><time>14:21</time></li>
+        <li class="ok"><span>Marco ha confermato</span><time>14:24</time></li>
+        <li><span>Arriva e fa il lavoro</span><time>16:00</time></li>
+        <li><span>Paghi e lasci il giudizio</span><time>—</time></li>
+      </ol>
+      <p class="pay"><b>Paghi Marco direttamente</b>, in contanti o come vi accordate: ore lavorate più eventuali materiali. TaskEase non tocca i soldi.</p>
+      <div class="row2" style="margin:24px 20px 0"><button class="btn ghost">Scrivi</button><button class="btn ghost">Chiama</button></div>
+      <div style="margin:8px 20px 32px"><button class="btn ghost" style="border-color:var(--rule)"><svg width="18" height="18"><use href="#i-cal"/></svg>Aggiungi al calendario</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= GIUDIZIO: DOMANDA ================= -->
+<section class="cap" aria-label="Giudizio, domanda">
+  <h2>07 · Giudizio · domanda</h2>
+  <div class="phone" id="giudizio">
+    <div class="steps" style="--n:5"><button class="back" aria-label="Chiudi"><svg width="20" height="20"><use href="#i-x"/></svg></button><div class="seg4"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div><span class="ct">2/5</span></div>
+    <div class="scroll pad" style="padding-top:32px">
+      <p class="q-num">Qualità del lavoro · pesa 30%</p>
+      <h1 class="q">Il lavoro di Marco è fatto come volevi?</h1>
+      <ul class="opts">
+        <li><button class="opt2 on"><kbd>1</kbd><span>Esattamente come volevo</span><span class="pts">5</span></button></li>
+        <li><button class="opt2"><kbd>2</kbd><span>Bene, con qualche dettaglio</span><span class="pts">4</span></button></li>
+        <li><button class="opt2"><kbd>3</kbd><span>Andava rifatto in parte</span><span class="pts">2</span></button></li>
+        <li><button class="opt2"><kbd>4</kbd><span>Non risolto</span><span class="pts">1</span></button></li>
+      </ul>
+      <p class="why">Il giudizio è anonimo per gli altri clienti, non per Marco. Conta per l'IDA solo perché hai prenotato tramite TaskEase.</p>
+    </div>
+    <div class="act"><button class="btn">Avanti</button></div>
+  </div>
+</section>
+
+<!-- ================= GIUDIZIO: RIEPILOGO ================= -->
+<section class="cap" aria-label="Giudizio, controlla e invia">
+  <h2>08 · Giudizio · controlla e invia</h2>
+  <div class="phone" id="giudizio2">
+    <div class="steps" style="--n:5"><button class="back" aria-label="Indietro"><svg width="20" height="20"><use href="#i-back"/></svg></button><div class="seg4"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div><span class="ct">5/5</span></div>
+    <div class="scroll">
+      <section class="ida-block" style="margin-top:24px">
+        <div class="ida-hero"><b>100</b><div><strong>Il tuo giudizio</strong><small>calcolato con le regole pubbliche dell'IDA</small></div></div>
+        <ul class="bars">
+          <li><span>Qualità del lavoro<em>30%</em></span><b>5</b><span class="track"><i style="width:100%"></i></span></li>
+          <li><span>Puntualità<em>20%</em></span><b>5</b><span class="track"><i style="width:100%"></i></span></li>
+          <li><span>Parola mantenuta<em>20%</em></span><b>5</b><span class="track"><i style="width:100%"></i></span></li>
+          <li><span>Pulizia<em>15%</em></span><b>5</b><span class="track"><i style="width:100%"></i></span></li>
+          <li><span>Comunicazione<em>15%</em></span><b>5</b><span class="track"><i style="width:100%"></i></span></li>
+        </ul>
+      </section>
+      <div class="form" style="padding-top:32px">
+        <div class="fld"><span class="lab">Due righe per chi verrà dopo <small>facoltativo</small></span>
+          <div class="in ta">Cosa è andato bene, cosa no. Niente nomi di altri, niente insulti.</div>
+          <span class="help">Pubblico e non modificabile. Marco potrà rispondere una volta.</span></div>
+      </div>
+    </div>
+    <div class="act"><button class="btn">Pubblica il giudizio</button></div>
+  </div>
+</section>
+
+<!-- ================= CHAT ================= -->
+<section class="cap" aria-label="Chat">
+  <h2>09 · Chat</h2>
+  <div class="phone" id="chat">
+    <div class="chat-bar">
+      <button class="back" aria-label="Indietro"><svg width="20" height="20"><use href="#i-back"/></svg></button>
+      <span class="mono-tag on">SL</span>
+      <div><b>Sofia Leoni</b><small>Privato · risponde in ~30 min</small></div>
+      <button class="back" aria-label="Altre azioni"><svg width="20" height="20"><use href="#i-more"/></svg></button>
+    </div>
+    <div class="thread">
+      <div class="pin"><svg width="20" height="20"><use href="#i-cal"/></svg><span style="flex:1">Pulizia profonda · <b>sab 10, 9:00</b></span><span class="mono" style="font-size:12px;color:var(--ok)">CONFERMATA</span></div>
+      <span class="daymark">Oggi</span>
+      <div class="msg">Ciao! Sono Sofia. Dimmi pure cosa ti serve.<time>14:02</time></div>
+      <div class="msg me">Bilocale, 55 mq. Soprattutto cucina e vetri.<time>14:05</time></div>
+      <div class="msg">Perfetto, porto io i prodotti. Calcola circa 3 ore.<time>14:09</time></div>
+      <div class="msg me">Confermo, a sabato.<time>14:10</time></div>
+    </div>
+    <div class="quick"><span class="chip">Ti mando una foto</span><span class="chip">Posso spostare l'orario?</span><span class="chip">A che ora arrivi?</span></div>
+    <div class="compose"><div class="in">Scrivi un messaggio…</div><button class="send" aria-label="Invia"><svg width="20" height="20"><use href="#i-send"/></svg></button></div>
+  </div>
+</section>
+
+<!-- =================================================================== -->
+<div class="group"><h1>Il tuo spazio</h1><p>Profilo cliente, notifiche, richieste in bacheca e i due giochi di quartiere (Passaporto e Vantaggi), resi più sobri: numeri e timbri al posto di riquadri e icone decorative.</p></div>
+
+<!-- ================= PROFILO CLIENTE ================= -->
+<section class="cap" aria-label="Profilo cliente">
+  <h2>10 · Profilo cliente</h2>
+  <div class="phone" id="me">
+    <div class="scroll">
+      <div class="me-head"><span class="mono-tag lg">G</span><div><b>Giulia</b><small>Centro · da oggi su TaskEase</small></div></div>
+      <div class="role"><button class="on">Cerco aiuto</button><button>Lavoro</button></div>
+      <p class="sec-t">In arrivo</p>
+      <div class="ticket" style="margin-top:0">
+        <div class="t-top">
+          <div><small>Oggi · Giovedì 8</small><div class="when">16:00</div></div>
+          <span class="mono-tag on" style="align-self:center">MR</span>
+          <span style="font-size:14px;color:var(--ink-2)">Marco Rosetti · idraulico</span>
+        </div>
+        <div class="perf"></div>
+        <div class="t-bot" style="gap:8px"><button class="chip" style="flex:1;justify-content:center">Scrivi</button><button class="chip" style="flex:1;justify-content:center">Disdici</button><button class="chip on" style="flex:1.6;justify-content:center;white-space:nowrap">Lavoro finito?</button></div>
+      </div>
+      <p class="sec-t">Preferiti</p>
+      <p class="pad" style="font-size:14px;color:var(--ink-2)">Nessuno ancora. Tocca <svg width="16" height="16" style="display:inline;vertical-align:-3px"><use href="#i-heart"/></svg> su un profilo per ritrovarlo qui.</p>
+      <p class="sec-t">Account</p>
+      <ul class="list">
+        <li><svg><use href="#i-pin"/></svg><div><b>La tua zona</b><small>Centro · l'indirizzo lo dai quando prenoti</small></div><svg width="18" height="18"><use href="#i-arrow"/></svg></li>
+        <li><svg><use href="#i-user"/></svg><div><b>I tuoi dati</b><small>Giulia · 333 123 4567</small></div><svg width="18" height="18"><use href="#i-arrow"/></svg></li>
+        <li><svg><use href="#i-download"/></svg><div><b>Scarica i miei dati</b><small>Tutto quello che sappiamo di te</small></div><svg width="18" height="18"><use href="#i-arrow"/></svg></li>
+        <li><svg><use href="#i-book"/></svg><div><b>Informazioni legali e privacy</b></div><svg width="18" height="18"><use href="#i-arrow"/></svg></li>
+        <li class="danger"><svg><use href="#i-trash"/></svg><div><b>Elimina il profilo</b></div></li>
+      </ul>
+      <div style="height:32px"></div>
+    </div>
+    <nav class="tabs" aria-label="Navigazione">
+      <button class="tab"><svg><use href="#i-home"/></svg>Home</button>
+      <button class="tab"><svg><use href="#i-search"/></svg>Cerca</button>
+      <button class="tab ask"><span class="plus"><svg><use href="#i-plus"/></svg></span>Chiedi</button>
+      <button class="tab"><svg><use href="#i-board"/></svg>Bacheca</button>
+      <button class="tab on" aria-current="page"><svg><use href="#i-user"/></svg>Profilo</button>
+    </nav>
+  </div>
+</section>
+
+<!-- ================= PUBBLICA ================= -->
+<section class="cap" aria-label="Pubblica una richiesta">
+  <h2>11 · Chiedi alla zona</h2>
+  <div class="phone" id="pubblica">
+    <div class="scroll">
+      <div class="b-head">
+        <p class="kicker">Va in bacheca · Centro</p>
+        <h1 style="margin-top:8px">Chiedi alla zona</h1>
+        <p>Rispondono le persone che lavorano vicino a te. Nessuno vede il tuo numero.</p>
+      </div>
+      <div class="form">
+        <div class="fld"><span class="lab">Cosa ti serve?</span>
+          <div class="in focus" style="font-family:var(--serif);font-size:19px">Montare un armadio a tre ante|</div></div>
+        <div class="fld"><span class="lab">Qualche dettaglio <small>facoltativo</small></span>
+          <div class="in ta">Misure, piano, materiali, quando ti farebbe comodo…</div>
+          <span class="help">Non scrivere qui indirizzo o telefono: li dai in chat a chi scegli.</span></div>
+        <div class="fld"><span class="lab">Una foto aiuta</span>
+          <button class="in" style="justify-content:center;gap:8px;border-style:dashed;color:var(--ink-2);font-weight:600;font-size:14px"><svg width="18" height="18"><use href="#i-camera"/></svg>Aggiungi una foto</button></div>
+      </div>
+    </div>
+    <div class="act"><button class="btn">Pubblica in bacheca</button></div>
+  </div>
+</section>
+
+<!-- ================= NOTIFICHE ================= -->
+<section class="cap" aria-label="Notifiche">
+  <h2>12 · Notifiche (vuote)</h2>
+  <div class="phone" id="notifiche">
+    <div class="bar"><button class="back" aria-label="Indietro"><svg width="20" height="20"><use href="#i-back"/></svg></button><h1>Notifiche</h1></div>
+    <div class="scroll">
+      <div class="empty">
+        <p class="kicker">Niente di nuovo</p>
+        <h2 class="big-h" style="margin-top:8px">Qui arriva solo quello che ti riguarda.</h2>
+        <p class="lead" style="font-size:14px">Nessuna pubblicità, nessun «ti potrebbe interessare». Per esempio:</p>
+        <ul>
+          <li><time>14:24</time><span>Marco ha confermato: oggi alle 16:00.</span></li>
+          <li><time>ieri</time><span>3 risposte alla tua richiesta in bacheca.</span></li>
+          <li><time>lun</time><span>Lavoro finito? Lascia il giudizio a Sofia.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PASSAPORTO ================= -->
+<section class="cap" aria-label="Passaporto">
+  <h2>13 · Passaporto</h2>
+  <div class="phone" id="passaporto">
+    <div class="bar"><button class="back" aria-label="Indietro"><svg width="20" height="20"><use href="#i-back"/></svg></button><h1>Passaporto</h1><span class="ex">ESEMPIO</span></div>
+    <div class="scroll">
+      <p class="pad lead" style="font-size:14px;margin-top:16px">Ogni lavoro finito timbra un quartiere. Cinque timbri e lì sei «di casa».</p>
+      <div class="tally"><div><b>7</b><small>timbri</small></div><div><b>3<span style="color:var(--stone)">/7</span></b><small>quartieri</small></div><div><b>3</b><small>premi</small></div></div>
+      <div class="stamps">
+        <div class="stp has full"><b>Centro</b><small>di casa</small><span class="dots"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i></span></div>
+        <div class="stp has"><b>Saffi</b><small>1 timbro</small><span class="dots"><i class="f"></i><i></i><i></i><i></i><i></i></span></div>
+        <div class="stp has"><b>Ronco</b><small>1 timbro</small><span class="dots"><i class="f"></i><i></i><i></i><i></i><i></i></span></div>
+        <div class="stp"><b>Cava</b><small>—</small></div>
+        <div class="stp"><b>Villafranca</b><small>—</small></div>
+        <div class="stp"><b>Bussecchio</b><small>—</small></div>
+      </div>
+      <p class="sec-t">Premi</p>
+      <ul class="perks" style="margin-top:0">
+        <li><svg><use href="#i-check"/></svg><div><b>Prima volta</b><small>il primo lavoro finito</small></div></li>
+        <li><svg><use href="#i-check"/></svg><div><b>Di casa in Centro</b><small>5 timbri nello stesso quartiere</small></div></li>
+        <li class="lock"><svg><use href="#i-lock"/></svg><div><b>Forlivese DOC</b><small>timbri in tutti i quartieri</small></div><span class="m">3/7</span></li>
+      </ul>
+      <div style="height:32px"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= VANTAGGI ================= -->
+<section class="cap" aria-label="Vantaggi">
+  <h2>14 · Vantaggi</h2>
+  <div class="phone" id="vantaggi">
+    <div class="bar"><button class="back" aria-label="Indietro"><svg width="20" height="20"><use href="#i-back"/></svg></button><h1>Il tuo livello</h1><span class="ex">ESEMPIO</span></div>
+    <div class="scroll">
+      <div class="level">
+        <p class="kicker">7 lavori richiesti a Forlì</p>
+        <div class="big" style="margin-top:8px">Di casa</div>
+        <div class="ruler" aria-label="7 lavori su 20"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="ruler-lbl"><span>0</span><span>7 · ancora 13 per «Di lunga data»</span><span>20</span></div>
+      </div>
+      <p class="sec-t">Cosa ti dà</p>
+      <ul class="perks" style="margin-top:0">
+        <li><svg><use href="#i-check"/></svg><div><b>Riprenoti in un tocco</b><small>chi ti è piaciuto resta tra i preferiti</small></div></li>
+        <li><svg><use href="#i-check"/></svg><div><b>Lo storico dei lavori</b><small>chi è venuto, quando e per cosa</small></div></li>
+        <li class="lock"><svg><use href="#i-lock"/></svg><div><b>Badge «Di lunga data»</b><small>solo un riconoscimento, nessuna corsia preferenziale</small></div><span class="m">7/20</span></li>
+      </ul>
+      <p class="pad why">Nessun vantaggio cambia l'ordine dei risultati o l'IDA di qualcuno.</p>
+      <div class="code"><div><b>AMICO-FORLI</b><small>Porta un vicino: più zona attiva, più gente fidata.</small></div><span class="badge-new">PRESTO</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- =================================================================== -->
+<div class="group"><h1>Chi lavora</h1><p>Iscrizione da professionista, pannello di lavoro e sigillo. Le richieste diventano righe con il prezzo stimato ben visibile; le conferme restano dentro la riga.</p></div>
+
+<!-- ================= PRO: COMPETENZE ================= -->
+<section class="cap" aria-label="Iscrizione, competenze">
+  <h2>15 · Iscrizione · competenze</h2>
+  <div class="phone" id="pro2">
+    <div class="steps"><button class="back" aria-label="Indietro"><svg width="20" height="20"><use href="#i-back"/></svg></button><div class="seg4"><i class="on"></i><i class="on"></i><i></i><i></i></div><span class="ct">2/4</span></div>
+    <div class="scroll">
+      <div class="pad" style="padding-top:24px"><h1 class="big-h">Cosa sai fare?</h1><p class="lead" style="font-size:14px">Una o più. Le cambi quando vuoi.</p></div>
+      <div class="form" style="padding-top:20px">
+        <div class="fld"><span class="lab">Casa</span><div class="chips"><span class="chip on">Pulizie</span><span class="chip">Stiratura</span><span class="chip">Traslochi</span><span class="chip">Consegne</span></div></div>
+        <div class="fld"><span class="lab">Riparazioni e montaggi</span><div class="chips"><span class="chip">Piccoli lavori</span><span class="chip on">Montaggio mobili</span><span class="chip">Tuttofare</span><span class="chip">Imbiancatura</span><span class="chip">Piastrelle</span><span class="chip">Cartongesso</span></div></div>
+        <div class="fld"><span class="lab">Altro</span><div class="chips"><span class="chip">Giardino</span><span class="chip">Tecnologia / PC</span><span class="chip">Ripetizioni</span></div></div>
+        <div class="fld"><span class="lab">Impianti <small>solo con Partita IVA</small></span><div class="chips"><span class="chip off"><svg width="14" height="14"><use href="#i-lock"/></svg>Idraulica</span><span class="chip off"><svg width="14" height="14"><use href="#i-lock"/></svg>Elettricità</span></div>
+          <span class="help">Per legge (DM 37/2008) gli impianti li fanno solo imprese abilitate. Da privato puoi scegliere «Piccoli lavori».</span></div>
+      </div>
+    </div>
+    <div class="act"><button class="btn">Continua <small>· 2 scelte</small></button></div>
+  </div>
+</section>
+
+<!-- ================= PRO: TARIFFA ================= -->
+<section class="cap" aria-label="Iscrizione, tariffa e zone">
+  <h2>16 · Iscrizione · tariffa e zone</h2>
+  <div class="phone" id="pro3">
+    <div class="steps"><button class="back" aria-label="Indietro"><svg width="20" height="20"><use href="#i-back"/></svg></button><div class="seg4"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div><span class="ct">3/4</span></div>
+    <div class="scroll">
+      <div class="pad" style="padding-top:24px"><h1 class="big-h">Tariffa e zone</h1><p class="lead" style="font-size:14px">Decidi tu quanto chiedere e dove lavorare.</p></div>
+      <div class="form" style="padding-top:20px">
+        <div class="seg2"><button class="on">A ore</button><button>A preventivo</button></div>
+        <div class="fld">
+          <div class="rate"><button aria-label="Meno">−</button><b>20<small> €/h</small></b><button aria-label="Più">+</button></div>
+          <div class="scale"><button>15</button><button class="on">20</button><button>25</button><button>30</button><button>40</button><button>50</button></div>
+          <span class="help">A Forlì, per le pulizie, si va di solito da 12 a 18 €/h. <span class="ex">ESEMPIO</span></span>
+        </div>
+        <div class="fld"><span class="lab">Dove lavori</span><div class="chips"><span class="chip on">Centro</span><span class="chip on">Saffi</span><span class="chip">Cava</span><span class="chip">Ronco</span><span class="chip">Villafranca</span><span class="chip">Bussecchio</span><span class="chip">Vecchiazzano</span><span class="chip">Cesena</span></div></div>
+        <label class="check"><span class="box"></span><span>Ho un'assicurazione di responsabilità civile <small style="color:var(--stone)">(facoltativo, sul profilo comparirà)</small></span></label>
+      </div>
+    </div>
+    <div class="act"><button class="btn">Continua</button></div>
+  </div>
+</section>
+
+<!-- ================= PRO: BENVENUTO ================= -->
+<section class="cap" aria-label="Iscrizione completata">
+  <h2>17 · Iscrizione completata</h2>
+  <div class="phone" id="prowelcome">
+    <div class="scroll">
+      <div class="welcome">
+        <span class="badge-new">IDA · NUOVO</span>
+        <h1 class="big-h" style="margin-top:16px">Ci siamo,<br><em>Giulia.</em></h1>
+        <p class="lead">Parti da «Profilo nuovo»: il numero compare dopo 3 lavori giudicati.</p>
+      </div>
+      <ol class="next">
+        <li><span><b>Verifica dell'identità</b>Di persona o in videochiamata, guardando il documento. Non ne teniamo copie.</span></li>
+        <li><span><b>Un prezzo onesto</b>Convince più di mille parole.</span></li>
+        <li><span><b>Il primo lavoro fatto bene</b>Lancia il tuo IDA.</span></li>
+      </ol>
+    </div>
+    <div class="act"><button class="btn">Vai al tuo pannello</button></div>
+  </div>
+</section>
+
+<!-- ================= PRO: PANNELLO ================= -->
+<section class="cap" aria-label="Pannello professionista">
+  <h2>18 · Pannello di lavoro</h2>
+  <div class="phone" id="prohome">
+    <div class="scroll">
+      <div class="me-head"><span class="mono-tag lg">GB</span><div><b>Giulia Bertozzi</b><small>Pulizie · Centro, Saffi · 20 €/h</small></div></div>
+      <div class="role"><button>Cerco aiuto</button><button class="on">Lavoro</button></div>
+      <div class="avail"><div><b>Disponibile ora</b><small>Ti arrivano le richieste della tua zona.</small></div><span class="tog" role="switch" aria-checked="true" aria-label="Disponibile"></span></div>
+      <div class="kpis"><div><b>0</b><small>lavori fatti</small></div><div><b class="badge-new" style="font-size:12px">NUOVO</b><small>IDA dopo 3 lavori</small></div><div><b>3</b><small>richieste</small></div></div>
+      <div class="h-sec" style="margin-top:28px"><h3>Richieste in arrivo</h3><span class="ex">ESEMPI</span></div>
+      <div class="pad">
+        <article class="req" style="border-top:1px solid var(--rule)">
+          <div class="req-top"><b>Montare una libreria</b><span class="eur">~40 €</span><small>Laura B. · Saffi · oggi 16:00</small><span class="calc">2 h × 20 €</span></div>
+          <q>Billy IKEA, 2 colonne. Ho già gli attrezzi.</q>
+          <div class="req-acts"><button class="yes">Accetta</button><button>Chiedi</button><button class="no">Rifiuta</button></div>
+          <div class="confirm">Accetti? Laura riceve il tuo numero e tu vedi il suo indirizzo, qui in agenda.
+            <div class="row2"><button class="yes">Sì, accetto</button><button class="back2">Annulla</button></div></div>
+        </article>
+        <article class="req">
+          <div class="req-top"><b>Piccolo trasloco</b><span class="eur">~60 €</span><small>Marco V. · Centro · domani 9:30</small><span class="calc">3 h × 20 €</span></div>
+          <q>Qualche scatolone e un divano, secondo piano senza ascensore.</q>
+          <div class="req-acts"><button class="yes">Accetta</button><button>Chiedi</button><button class="no">Rifiuta</button></div>
+        </article>
+      </div>
+      <p class="pad why" style="margin-bottom:32px">Rifiutare non abbassa il tuo IDA e non ti fa sparire dalle ricerche.</p>
+    </div>
+    <nav class="tabs" aria-label="Navigazione" style="grid-template-columns:repeat(4,1fr)">
+      <button class="tab"><svg><use href="#i-home"/></svg>Home</button>
+      <button class="tab"><svg><use href="#i-search"/></svg>Cerca</button>
+      <button class="tab"><svg><use href="#i-board"/></svg>Bacheca</button>
+      <button class="tab on" aria-current="page"><svg><use href="#i-user"/></svg>Lavoro</button>
+    </nav>
+  </div>
+</section>
+
+<!-- ================= PRO: SIGILLO ================= -->
+<section class="cap" aria-label="Il tuo sigillo">
+  <h2>19 · Il tuo sigillo</h2>
+  <div class="phone" id="sigillo">
+    <div class="bar"><button class="back" aria-label="Indietro"><svg width="20" height="20"><use href="#i-back"/></svg></button><h1>Il tuo sigillo</h1></div>
+    <div class="scroll">
+      <p class="pad lead" style="font-size:14px;margin-top:16px">La tua reputazione da mostrare ovunque: biglietto da visita, furgone, WhatsApp. Chi inquadra il codice vede il tuo profilo vero.</p>
+      <div class="seal">
+        <div><p class="kicker" style="color:#D9AC66">Sigillo TaskEase</p><b>Giulia Bertozzi</b><p>Pulizie · Forlì<br>IDA: nuovo, compare dopo 3 lavori</p><p class="url">taskease.it/forli/giulia-bertozzi</p></div>
+        <div class="qr"><svg id="qr" viewBox="0 0 25 25" shape-rendering="crispEdges" aria-label="Codice QR di prova"></svg></div>
+      </div>
+      <div class="form">
+        <div class="fld"><span class="lab">Il tuo link</span><div class="in f" style="font-family:var(--mono);font-size:13px;justify-content:space-between">taskease.it/forli/giulia-bertozzi<b style="font-family:var(--sans);color:var(--pine);font-size:14px">Copia</b></div></div>
+        <div class="row2"><button class="btn ghost">Scarica PNG</button><button class="btn ghost">WhatsApp <span class="badge-new" style="font-size:9px">AL LANCIO</span></button></div>
+        <p class="why" style="margin-top:0">In anteprima il QR è illustrativo: il profilo pubblico non esiste ancora.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =================================================================== -->
+<div class="group"><h1>Moduli, segnalazioni, regole</h1><p>Le schermate di servizio sono quelle che più «sanno di generato». Qui diventano documenti: numerazione, filetti, un timbro «bozza» al posto dei badge grigi, e il pulsante che dice cosa manca invece di spegnersi.</p></div>
+
+<!-- ================= CREA PROFILO ================= -->
+<section class="cap" aria-label="Crea il profilo">
+  <h2>20 · Crea il profilo (cliente)</h2>
+  <div class="phone" id="crea">
+    <div class="steps" style="--n:1"><button class="back" aria-label="Indietro"><svg width="20" height="20"><use href="#i-back"/></svg></button><div class="seg4"><i class="on"></i></div><span class="ct">30 secondi</span></div>
+    <div class="scroll">
+      <div class="pad" style="padding-top:24px"><h1 class="big-h">Tre cose e <em>ci sei.</em></h1><p class="lead" style="font-size:14px">Servono per prenotare. Niente password, niente documenti.</p></div>
+      <div class="form">
+        <div class="fld"><span class="lab">Come ti chiami? <span class="ok">✓</span></span><div class="in f">Giulia</div><span class="help">Basta il nome. Lo vede chi riceve la tua richiesta.</span></div>
+        <div class="fld"><span class="lab">Il tuo cellulare <span class="ok">✓</span></span><div class="in f"><span class="mono" style="color:var(--stone);margin-right:8px">+39</span>333 123 4567</div><span class="help">Lo diamo solo a chi accetta il tuo lavoro.</span></div>
+        <div class="fld"><span class="lab">Dove abiti, più o meno?</span><div class="chips"><span class="chip">Centro</span><span class="chip">Saffi</span><span class="chip">Cava</span><span class="chip">Ronco</span><span class="chip">Villafranca</span><span class="chip">Bussecchio</span><span class="chip">Vecchiazzano</span><span class="chip">Cesena</span></div></div>
+        <label class="check"><span class="box on"><svg width="16" height="16"><use href="#i-check"/></svg></span><span>Ho almeno 18 anni, accetto i <u>Termini d'uso</u> e ho letto l'<u>informativa privacy</u>.</span></label>
+      </div>
+    </div>
+    <div class="act">
+      <p class="missing"><i></i><span>Manca solo <b>la tua zona</b>.</span></p>
+      <button class="btn" aria-disabled="true">Crea il profilo</button>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SEGNALA ================= -->
+<section class="cap" aria-label="Segnala un contenuto">
+  <h2>21 · Segnala un contenuto</h2>
+  <div class="phone" id="segnala">
+    <div class="bar"><button class="back" aria-label="Indietro"><svg width="20" height="20"><use href="#i-back"/></svg></button><h1>Segnala</h1></div>
+    <div class="scroll">
+      <div class="ref"><small>Giudizio di Giorgia P. su Sofia Leoni</small><p>«Casa lasciata splendente, profumava di pulito. Tornerà fissa.»</p></div>
+      <div class="form">
+        <div class="fld"><span class="lab">Perché lo segnali?</span>
+          <ul class="radio-list">
+            <li><i></i>Offensivo o diffamatorio</li>
+            <li class="on"><i></i>Falso o ingannevole</li>
+            <li><i></i>Contiene dati personali</li>
+            <li><i></i>Possibile truffa</li>
+            <li><i></i>Altro contenuto illegale</li>
+          </ul></div>
+        <div class="fld"><span class="lab">Spiega cosa non va</span><div class="in ta">Cosa c'è di scorretto, e perché.</div></div>
+        <div class="sos"><b>112</b><span>In caso di pericolo immediato chiama il 112. TaskEase non sostituisce le autorità.</span></div>
+      </div>
+    </div>
+    <div class="act"><button class="btn dark">Invia la segnalazione</button></div>
+  </div>
+</section>
+
+<!-- ================= DOCUMENTO ================= -->
+<section class="cap" aria-label="Come verifichiamo i giudizi">
+  <h2>22 · Regole (documento)</h2>
+  <div class="phone" id="regole">
+    <div class="bar"><button class="back" aria-label="Indietro"><svg width="20" height="20"><use href="#i-back"/></svg></button><h1 style="font-size:17px">Regole</h1><span class="side">1 di 5</span></div>
+    <div class="scroll">
+      <article class="doc">
+        <span class="draft">Bozza 0.1</span>
+        <h2>Come verifichiamo i giudizi</h2>
+        <p class="meta">Ottobre 2026 · da far rivedere a un legale prima del lancio</p>
+        <section><span>01</span><div><h3>Chi può giudicare</h3><p>Solo chi ha prenotato quel lavoro tramite TaskEase: <b>un giudizio per prenotazione</b>.</p></div></section>
+        <section><span>02</span><div><h3>Come si calcola</h3><p>Cinque domande da 1 a 5: puntualità 20%, qualità 30%, parola mantenuta 20%, pulizia 15%, comunicazione 15%. L'IDA compare dopo <b>3 lavori</b>; gli ultimi 12 mesi contano per intero.</p></div></section>
+        <section><span>03</span><div><h3>Cosa non facciamo</h3><p>Non paghiamo giudizi, non li scriviamo noi e <b>non togliamo quelli negativi</b>. Rimuoviamo solo testi illegali, offensivi o con dati personali, spiegando il motivo.</p></div></section>
+        <section><span>04</span><div><h3>Diritto di replica</h3><p>Chi riceve un giudizio potrà rispondere una volta, sotto al giudizio.</p></div></section>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ELIMINA ================= -->
+<section class="cap" aria-label="Elimina il profilo">
+  <h2>23 · Elimina il profilo</h2>
+  <div class="phone" id="elimina">
+    <div class="bar"><button class="back" aria-label="Indietro"><svg width="20" height="20"><use href="#i-back"/></svg></button><h1>Elimina il profilo</h1></div>
+    <div class="scroll">
+      <div class="form">
+        <div class="seg2"><button>Tutto</button><button class="on">Solo «Lavoro»</button></div>
+        <div class="pay" style="margin:0;border-color:var(--pine)"><b>Vuoi solo fermarti?</b> Con la pausa sparisci dalle ricerche ma tieni l'IDA. <u style="color:var(--pine);font-weight:700">Metti in pausa</u></div>
+        <div class="fld"><span class="lab">Cancelliamo</span>
+          <ul class="radio-list" style="font-size:14px">
+            <li style="font-size:14px;min-height:44px">— Profilo pubblico, foto e descrizione</li>
+            <li style="font-size:14px;min-height:44px">— IDA e giudizi ricevuti</li>
+            <li style="font-size:14px;min-height:44px">— Sigillo e link condivisi</li>
+          </ul></div>
+        <div class="fld"><span class="lab">Resta</span>
+          <ul class="radio-list">
+            <li style="font-size:14px;min-height:44px">+ Il profilo per cercare aiuto</li>
+            <li style="font-size:14px;min-height:44px">+ I dati fiscali già comunicati, per il tempo di legge</li>
+          </ul></div>
+        <label class="check"><span class="box"></span><span>Ho capito che <b style="color:var(--ink)">non si può annullare</b>.</span></label>
+      </div>
+    </div>
+    <div class="act"><p class="missing"><i></i><span>Spunta la conferma per continuare.</span></p><button class="btn danger" aria-disabled="true">Elimina il profilo da professionista</button></div>
+  </div>
+</section>
+
 </main>
+<script>
+// QR illustrativo: motivo deterministico con i tre riquadri di posizione.
+(function(){var s=document.getElementById("qr");if(!s)return;var n=25,h="",seed=7;function r(){seed=(seed*9301+49297)%233280;return seed/233280;}
+function finder(x,y){h+='<rect x="'+x+'" y="'+y+'" width="7" height="7" fill="#1C1B18"/><rect x="'+(x+1)+'" y="'+(y+1)+'" width="5" height="5" fill="#F6F2EA"/><rect x="'+(x+2)+'" y="'+(y+2)+'" width="3" height="3" fill="#1C1B18"/>';}
+for(var y=0;y<n;y++)for(var x=0;x<n;x++){var f=(x<8&&y<8)||(x>16&&y<8)||(x<8&&y>16);if(!f&&r()>.52)h+='<rect x="'+x+'" y="'+y+'" width="1" height="1" fill="#1C1B18"/>';}
+finder(0,0);finder(18,0);finder(0,18);s.innerHTML=h;})();
+</script>
 </body>
 </html>
