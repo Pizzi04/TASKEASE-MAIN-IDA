@@ -1240,7 +1240,27 @@ function Chat({ w, nav, from }) {
 }
 
 /* ============================== PROFILO (hub con ruolo) ============================== */
-function Account({ nav, vai, role, setRole, saved, paused, setPaused, onEsci, blocked = [], profilo, prenotazioni, setPrenotazioni, reqs, esempiTutti, setReqs, agenda, setAgenda, availOn, setAvail, verified, setVerified }) {
+/* Riporta l'anteprima allo stato iniziale (cancella anche il salvataggio nel browser) */
+function Ricomincia({ onConferma }) {
+  const [chiedi, setChiedi] = useState(false);
+  if (!chiedi) return (
+    <button type="button" className="acc-row" onClick={() => setChiedi(true)}>
+      <Icon name="arrowL" size={19} color={T.ink2} />
+      <span className="acc-t">Ricomincia l'anteprima<small>Cancella quello che hai provato e riparti da zero</small></span>
+    </button>
+  );
+  return (
+    <div className="acc-row" role="group" aria-label="Conferma: ricomincia l'anteprima" style={{ flexDirection: "column", alignItems: "stretch", cursor: "default" }}>
+      <span style={{ fontSize: 14, color: T.ink, lineHeight: 1.5 }}>Cancellare profilo, prenotazioni e giudizi provati finora? Si riparte dall'ingresso.</span>
+      <span style={{ display: "flex", gap: 8, marginTop: 10 }}>
+        <button type="button" className="bt tap" onClick={onConferma} style={{ flex: 1, minHeight: 44, borderRadius: 12, background: T.emberBtn, color: "#fff", fontWeight: 700, fontSize: 14, textAlign: "center" }}>Sì, ricomincia</button>
+        <button type="button" className="bt tap" onClick={() => setChiedi(false)} style={{ flex: 1, minHeight: 44, borderRadius: 12, border: `1px solid ${T.line}`, color: T.ink, fontWeight: 600, fontSize: 14, textAlign: "center" }}>Annulla</button>
+      </span>
+    </div>
+  );
+}
+
+function Account({ nav, vai, role, setRole, saved, paused, setPaused, onEsci, onRicomincia, blocked = [], profilo, prenotazioni, setPrenotazioni, reqs, esempiTutti, setReqs, agenda, setAgenda, availOn, setAvail, verified, setVerified }) {
   const ospite = role === "client" && !profilo;
   const nome = role === "worker" ? ME.n : (profilo?.nome || ME.n);
   return (
@@ -1282,6 +1302,7 @@ function Account({ nav, vai, role, setRole, saved, paused, setPaused, onEsci, bl
               <MenuRow ic="shield" l="Assistenza e contatti" onClick={() => nav("assistenza")} />
               <MenuRow ic="book" l="Informazioni legali e privacy" onClick={() => nav("legal", { doc: "info" })} />
             </div>
+            <div className="acc-list" style={{ marginTop: 16 }}><Ricomincia onConferma={onRicomincia} /></div>
           </>
         ) : role === "client"
           ? <ClientView nav={nav} saved={saved} profilo={profilo} prenotazioni={prenotazioni} setPrenotazioni={setPrenotazioni} blocked={blocked} />
@@ -1321,6 +1342,7 @@ function Account({ nav, vai, role, setRole, saved, paused, setPaused, onEsci, bl
             <Icon name="trash" size={19} color={T.ember} />
             <span className="acc-t">Elimina il profilo<small>Cancella i tuoi dati da TaskEase</small></span>
           </button>
+          <Ricomincia onConferma={onRicomincia} />
         </div>
         </>}
       </div>
@@ -3596,30 +3618,47 @@ button:focus-visible { outline: 2.5px solid ${T.accent}; outline-offset: 2px; }
 `;
 
 const TAB_SC = ["home", "search", "post", "neighborhood", "account", "entrata"];
+/* ---- Salvataggio nel browser: ricaricando la pagina si riprende da dove si era rimasti ---- */
+const CHIAVE_SALVATAGGIO = "taskease-anteprima-v1";
+const leggiSalvato = () => {
+  try { const x = JSON.parse(localStorage.getItem(CHIAVE_SALVATAGGIO)); return x && x.v === 1 ? x : null; } catch (e) { return null; }
+};
+const scriviSalvato = (x) => { try { localStorage.setItem(CHIAVE_SALVATAGGIO, JSON.stringify({ v: 1, ...x })); } catch (e) {} };
+const cancellaSalvato = () => { try { localStorage.removeItem(CHIAVE_SALVATAGGIO); } catch (e) {} };
+const SALVATO = typeof window !== "undefined" ? leggiSalvato() : null;
+if (SALVATO?.me) Object.assign(ME, SALVATO.me);
+if (SALVATO?.bozzaProfilo) Object.assign(BOZZA_PROFILO, SALVATO.bozzaProfilo);
+const schermataIniziale = () => {
+  if (typeof location !== "undefined" && location.hash === "#qr") return "intro-worker";
+  if (SALVATO && !SALVATO.uscito && (SALVATO.profilo || SALVATO.setupDone)) return SALVATO.role === "worker" && SALVATO.setupDone ? "account" : "home";
+  return "entrata";
+};
+const da = (k, base) => () => (SALVATO && SALVATO[k] !== undefined ? SALVATO[k] : (typeof base === "function" ? base() : base));
+
 export default function App() {
-  const [sc, setSc] = useState(() => (typeof location !== "undefined" && location.hash === "#qr") ? "intro-worker" : "entrata");
+  const [sc, setSc] = useState(schermataIniziale);
   const [dt, setDt] = useState(null);
   const [pv, setPv] = useState("home");
   const [k, setK] = useState(0);
-  const [role, setRole] = useState("client");
-  const [saved, setSaved] = useState([]);
-  const [prenotazioni, setPrenotazioni] = useState([]);           // quelle fatte davvero in questa sessione
-  const [posts, setPosts] = useState(() => POSTS.map((p, i) => ({ ...p, id: "demo" + i, demo: true })));
-  const [reqs, setReqs] = useState(makeRequests);                   // richieste in arrivo al professionista
-  const [avail, setAvail] = useState(true);                         // disponibilità: resta com'era anche cambiando schermata
-  const [agenda, setAgenda] = useState(AGENDA);
-  const [notifViste, setNotifViste] = useState([]);                // id delle notifiche già viste
-  const [setupDone, setSetupDone] = useState(false);
-  const [verified, setVerified] = useState(false);
-  const [paused, setPaused] = useState(false);
-  const [profilo, setProfilo] = useState(null);
-  const [blocked, setBlocked] = useState([]);       // persone bloccate
-  const [uscito, setUscito] = useState(false);      // dopo "Esci" si rientra con Accedi + codice
+  const [role, setRole] = useState(da("role", "client"));
+  const [saved, setSaved] = useState(da("saved", []));
+  const [prenotazioni, setPrenotazioni] = useState(da("prenotazioni", []));   // quelle fatte davvero (restano dopo un ricaricamento)
+  const [posts, setPosts] = useState(da("posts", () => POSTS.map((p, i) => ({ ...p, id: "demo" + i, demo: true }))));
+  const [reqs, setReqs] = useState(da("reqs", makeRequests));                   // richieste in arrivo al professionista
+  const [avail, setAvail] = useState(da("avail", true));                         // disponibilità: resta com'era anche cambiando schermata
+  const [agenda, setAgenda] = useState(da("agenda", AGENDA));
+  const [notifViste, setNotifViste] = useState(da("notifViste", []));                // id delle notifiche già viste
+  const [setupDone, setSetupDone] = useState(da("setupDone", false));
+  const [verified, setVerified] = useState(da("verified", false));
+  const [paused, setPaused] = useState(da("paused", false));
+  const [profilo, setProfilo] = useState(da("profilo", null));
+  const [blocked, setBlocked] = useState(da("blocked", []));       // persone bloccate
+  const [uscito, setUscito] = useState(da("uscito", false));      // dopo "Esci" si rientra con Accedi + codice
   const [foglio, setFoglio] = useState(null);       // documento legale aperto sopra la schermata
-  const [giudizi, setGiudizi] = useState([]);
-  const [bozze, setBozze] = useState({});            // prenotazioni iniziate e non inviate, per persona       // giudizi lasciati (per "Scarica i miei dati")
-  const [segnalazioni, setSegnalazioni] = useState([]);
-  const [consensi, setConsensi] = useState([]);     // quando ha accettato Termini e privacy, e quale versione
+  const [giudizi, setGiudizi] = useState(da("giudizi", []));
+  const [bozze, setBozze] = useState(da("bozze", {}));            // prenotazioni iniziate e non inviate, per persona       // giudizi lasciati (per "Scarica i miei dati")
+  const [segnalazioni, setSegnalazioni] = useState(da("segnalazioni", []));
+  const [consensi, setConsensi] = useState(da("consensi", []));     // quando ha accettato Termini e privacy, e quale versione
   const segnaConsenso = () => setConsensi(c => c.some(x => x.versione === LEGALE_VERS && x.data === dataLocale()) ? c : [...c, { documento: "Termini d'uso e informativa privacy", versione: LEGALE_VERS, data: dataLocale() }]);
   legale.apri = setFoglio;
   const [toast, setToast] = useState(null);
@@ -3630,6 +3669,7 @@ export default function App() {
   useEffect(() => { setToast(t => t && Date.now() - t.id > 900 ? null : t); }, [k]);
   const setProfiloIn = (p) => { if (!profilo) segnaConsenso(); setProfilo({ ...p, daCliente: true }); setUscito(false); };
   const resetAll = useCallback((dopo) => {
+    cancellaSalvato();
     Object.keys(BOZZA_PROFILO).forEach(x => delete BOZZA_PROFILO[x]);
     Object.assign(ME, ME_BASE, { sk: [...ME_BASE.sk] }); delete ME.zone; delete ME.nascita; delete ME.residenza; delete ME.cf; delete ME.preventivo; delete ME.bio;
     setBlocked([]); setUscito(false); setFoglio(null); setGiudizi([]); setSegnalazioni([]); setConsensi([]); setBozze({});
@@ -3682,13 +3722,11 @@ export default function App() {
   }, []);
   // dopo essere tornati in home con "indietro", la protezione si riarma alla prima schermata nuova
   useEffect(() => { if (typeof window !== "undefined" && window.history?.pushState && sc !== "home" && sc !== "entrata") arma(); }, [k]);
-  // Ricaricare la pagina cancella tutto (è un'anteprima senza salvataggio): lo chiediamo prima
+  // Salva a ogni cambiamento (e a ogni cambio schermata, perché ME cambia senza passare dallo stato)
   useEffect(() => {
-    if (typeof window === "undefined" || !(profilo || prenotazioni.length)) return;
-    const f = (e) => { e.preventDefault(); e.returnValue = ""; };
-    window.addEventListener("beforeunload", f);
-    return () => window.removeEventListener("beforeunload", f);
-  }, [!!profilo, prenotazioni.length > 0]);
+    scriviSalvato({ role, saved, prenotazioni, posts, reqs, avail, agenda, notifViste, setupDone, verified, paused, profilo, blocked, uscito, giudizi, bozze, segnalazioni, consensi, me: { ...ME }, bozzaProfilo: { ...BOZZA_PROFILO } });
+  }, [k, role, saved, prenotazioni, posts, reqs, avail, agenda, notifViste, setupDone, verified, paused, profilo, blocked, uscito, giudizi, bozze, segnalazioni, consensi]);
+  useEffect(() => { if (SALVATO && (SALVATO.profilo || SALVATO.setupDone)) avviso.mostra("Ripreso da dove eri rimasto. Per ripartire da zero: Profilo → Ricomincia l'anteprima."); }, []);
   const choose = useCallback((r) => {
     setRole(r);
     // Chi rientra dopo "Esci" con un profilo già fatto non rivede la presentazione
@@ -3782,7 +3820,7 @@ export default function App() {
             {sc === "review" && dt && <Review w={dt} nav={nav} onReviewed={(id, g) => { if (id) setPrenotazioni(ps => ps.map(p => p.id === id ? { ...p, stato: "giudicata" } : p)); if (g && !dt.esempio) setGiudizi(v => [...v, g]); }} />}
             {sc === "chat" && <Chat w={dt} nav={nav} from={pv} />}
             {sc === "dashboard" && <Dashboard nav={nav} />}
-            {sc === "account" && <Account nav={nav} vai={dt?.vai} role={role} setRole={switchRole} blocked={blocked} onEsci={() => { setUscito(true); nav(typeof location !== "undefined" && location.hash === "#qr" ? "intro-worker" : "entrata"); }} saved={saved} paused={paused} setPaused={setPaused} profilo={profilo} prenotazioni={prenotazioni} setPrenotazioni={setPrenotazioni} reqs={reqsVis} esempiTutti={modoEsempi} setReqs={setReqs} agenda={agenda} setAgenda={setAgenda} availOn={avail} setAvail={setAvail} verified={verified} setVerified={setVerified} />}
+            {sc === "account" && <Account nav={nav} onRicomincia={() => resetAll()} vai={dt?.vai} role={role} setRole={switchRole} blocked={blocked} onEsci={() => { setUscito(true); nav(typeof location !== "undefined" && location.hash === "#qr" ? "intro-worker" : "entrata"); }} saved={saved} paused={paused} setPaused={setPaused} profilo={profilo} prenotazioni={prenotazioni} setPrenotazioni={setPrenotazioni} reqs={reqsVis} esempiTutti={modoEsempi} setReqs={setReqs} agenda={agenda} setAgenda={setAgenda} availOn={avail} setAvail={setAvail} verified={verified} setVerified={setVerified} />}
             {sc === "legal" && <Legal nav={nav} doc={dt?.doc} />}
             {sc === "segnala" && <SegnalaContenuto nav={nav} cosa={dt} profilo={profilo} onInviata={x => setSegnalazioni(v => [...v, x])} />}
             {sc === "assistenza" && <Assistenza nav={nav} />}
