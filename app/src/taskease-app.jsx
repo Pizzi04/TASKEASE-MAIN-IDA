@@ -5,39 +5,43 @@ import { useState, useEffect, useCallback, useRef, Fragment } from "react";
    Artigianato romagnolo reso digitale.
    Palette: carta + inchiostro caldi · verde petrolio (brand)
             ocra (sigillo IDA · status) · terra di Siena (salvati e segnalazioni)
-   Type: Fraunces (display) · Hanken Grotesk (body) · Space Mono (dati)
+   Type: Hanken Grotesk (titoli e testo) · Space Mono (numeri) · Fraunces solo nel marchio
    Firma: l'IDA come sigillo di ceralacca.
    ============================================================ */
 
 const T = {
-  paper: "#F6F2EA",
-  card: "#FEFCF8",
-  ink: "#1C1B18",
-  ink2: "#56524A",
-  stone: "#67615A",
-  faint: "#C9C2B4",
-  line: "#E7E1D6",
-  pine: "#1F4E46",
-  pineSoft: "#E7EEEB",
-  pineDeep: "#16332E",
-  ochre: "#A9762B",       // solo per corsivi grandi e sigillo
-  ochreInk: "#8A5F1F",    // testo ocra piccolo su chiaro (5:1)
+  /* Tema "notte e ocra": tutta l'app sul verde scuro dell'ingresso */
+  paper: "#0E1C19",       // fondo delle schermate
+  card: "#182B27",        // riquadri
+  ink: "#F3EFE6",         // testo principale
+  ink2: "#C4CEC9",        // testo secondario
+  stone: "#9DB0A9",       // note e didascalie (6:1 sul fondo)
+  faint: "#3E5A53",
+  line: "#24403A",
+  pine: "#245E53",        // sfondo dei pulsanti verdi con testo bianco
+  pineSoft: "#1B3A34",
+  pineDeep: "#0A1613",
+  ochre: "#E6BE80",
+  ochreInk: "#E2B672",    // testo ocra sul fondo scuro
   ochreBtn: "#8F6320",    // sfondo dei pulsanti ocra con testo bianco (5.3:1)
-  ochreLight: "#D9AC66",  // testo ocra su verde scuro (6.5:1)
-  ochreSoft: "#F1E7D2",
-  ember: "#B04A26",
-  emberSoft: "#F7E6DD",
-  rule: "#DCD4C5",        // filetti tra le righe
-  ok: "#2E7D5B",          // disponibile, confermato
+  ochreLight: "#E0B676",
+  ochreSoft: "#3A2E1A",
+  ember: "#E8896A",       // testo di avviso sul fondo scuro
+  emberBtn: "#B04A26",    // sfondo dei pulsanti rossi con testo bianco
+  emberSoft: "#3B2018",
+  rule: "#2A4842",
+  ok: "#4FD1A0",          // disponibile, confermato
+  cream: "#F6F2EA",       // testo chiaro fisso sopra i riquadri verdi
+  accent: "#7FD1BC",      // il verde del marchio usato come testo o icona
 };
 
 const LV = {
-  diamante: { l: "Maestro", c: "#1F4E46" },
-  oro: { l: "Esperto", c: "#8A5F1F" },
-  argento: { l: "Affidabile", c: "#56524A" },
-  crescita: { l: "In crescita", c: "#7A7468" },
-  ferro: { l: "Base", c: "#7A7468" },
-  bronzo: { l: "Nuovo", c: "#7A7468" },
+  diamante: { l: "Maestro", c: "#7FD1BC" },
+  oro: { l: "Esperto", c: "#E2B672" },
+  argento: { l: "Affidabile", c: "#C4CEC9" },
+  crescita: { l: "In crescita", c: "#93A69F" },
+  ferro: { l: "Base", c: "#93A69F" },
+  bronzo: { l: "Nuovo", c: "#93A69F" },
 };
 
 /* ---- Regole IDA v1.0 — identiche al documento pubblico e al calcolo lato server ---- */
@@ -73,12 +77,12 @@ const WORKERS_RAW = [
 const WORKERS = WORKERS_RAW.map(w => ({ ...w, lv: lvKeyOf(w.ida, w.rv), demo: true }));
 
 const CATS = [
-  { ic: "drop", n: "Idraulica", c: "#3E6B8A", bg: "#E2EAF1" },
-  { ic: "wrench", n: "Riparazioni", c: "#A9762B", bg: "#F1E7D2" },
-  { ic: "broom", n: "Pulizie", c: "#2E6E6A", bg: "#DBEAE7" },
-  { ic: "chair", n: "Montaggio", c: "#B5612F", bg: "#F3E3D9" },
-  { ic: "chip", n: "Tecnologia", c: "#5B4B8A", bg: "#E8E4F1" },
-  { ic: "leaf", n: "Giardino", c: "#4E7A3A", bg: "#E6EEDC" },
+  { ic: "drop", n: "Idraulica", c: "#7FB0D6", bg: "#1C2B38" },
+  { ic: "wrench", n: "Riparazioni", c: "#E2B672", bg: "#3A2E1A" },
+  { ic: "broom", n: "Pulizie", c: "#6FC7BC", bg: "#173430" },
+  { ic: "chair", n: "Montaggio", c: "#E39A6E", bg: "#3A2419" },
+  { ic: "chip", n: "Tecnologia", c: "#AFA0E0", bg: "#29243A" },
+  { ic: "leaf", n: "Giardino", c: "#9CCB80", bg: "#22331C" },
 ];
 
 /* Esempi di come apparirà l'attività in zona — etichettati come tali in home */
@@ -209,12 +213,12 @@ const wById = (id) => WORKERS.find(w => w.id === id);
 const catColorOf = (w) => {
   if (!w) return null;
   const hay = ((w.sk || []).join(" ") + " " + (w.bio || "")).toLowerCase();
-  if (/idraul|scarico|caldaie|tubo/.test(hay)) return "#3E6B8A";
-  if (/elettric|riparazion|tuttofare/.test(hay)) return "#A9762B";
-  if (/puliz|stiratura/.test(hay)) return "#2E6E6A";
-  if (/montagg|mobili|cucine|mensole|conseg/.test(hay)) return "#B5612F";
-  if (/pc|wifi|stampant|rete|tecnico/.test(hay)) return "#5B4B8A";
-  if (/giardin|potatura|siepi|prato/.test(hay)) return "#4E7A3A";
+  if (/idraul|scarico|caldaie|tubo/.test(hay)) return "#7FB0D6";
+  if (/elettric|riparazion|tuttofare/.test(hay)) return "#E2B672";
+  if (/puliz|stiratura/.test(hay)) return "#6FC7BC";
+  if (/montagg|mobili|cucine|mensole|conseg/.test(hay)) return "#E39A6E";
+  if (/pc|wifi|stampant|rete|tecnico/.test(hay)) return "#AFA0E0";
+  if (/giardin|potatura|siepi|prato/.test(hay)) return "#9CCB80";
   return null;
 };
 
@@ -346,18 +350,18 @@ function Btn({ children, onClick, kind = "primary", full, style, ariaLabel }) {
   const base = { borderRadius: 13, padding: "15px 22px", fontSize: 15, fontWeight: 600, cursor: "pointer", transition: "all .18s", border: "none", textAlign: "center", fontFamily: "'Hanken Grotesk',sans-serif", width: full ? "100%" : "auto" };
   const kinds = {
     primary: { background: T.pine, color: "#fff" },
-    ember: { background: T.ember, color: "#fff" },
+    ember: { background: T.emberBtn, color: "#fff" },
     ghost: { background: "transparent", color: T.ink, border: `1.5px solid ${T.line}` },
     dark: { background: T.ink, color: T.paper },
   };
   return <button type="button" className="btn" aria-label={ariaLabel} aria-disabled={style && style.opacity < 1 ? true : undefined} onClick={onClick} style={{ ...base, ...kinds[kind], ...style }}>{children}</button>;
 }
 
-/* Monogramma come un timbro quadrato: inchiostro sulla carta, niente cerchio colorato */
-function Avatar({ ini, sz = 46, lv, onDark }) {
+/* Iniziali in un riquadro col colore del mestiere */
+function Avatar({ ini, sz = 46, lv, onDark, tint }) {
   return (
-    <span aria-hidden="true" style={{ width: sz, height: sz, borderRadius: Math.round(sz * .14), background: onDark ? T.paper : T.card, border: `1.5px solid ${T.ink}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-      <span style={{ fontFamily: "'Fraunces',serif", fontSize: sz * .36, fontWeight: 600, color: T.ink, letterSpacing: -.3 }}>{ini}</span>
+    <span aria-hidden="true" style={{ width: sz, height: sz, borderRadius: Math.round(sz * .3), background: tint || "#9CC3B8", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <span style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: sz * .36, fontWeight: 800, color: "#0E1C19" }}>{ini}</span>
     </span>
   );
 }
@@ -374,7 +378,7 @@ function WRow({ w, onClick, i = 0 }) {
   const voce = (REVIEWS_BY[w.id] || [])[0];
   return (
     <button type="button" className="wcard" onClick={onClick} style={{ animationDelay: `${i * .05}s` }}>
-      <Avatar ini={w.ini} lv={w.lv} sz={44} />
+      <Avatar ini={w.ini} lv={w.lv} sz={48} tint={catColorOf(w) || undefined} />
       <span className="wcard-b">
         <span className="wcard-n">{w.n}{w.av && <><span className="wcard-av" aria-hidden="true" /><span className="sr">, disponibile</span></>}</span>
         <span className="wcard-bio">{w.bio}</span>
@@ -393,7 +397,7 @@ function WRow({ w, onClick, i = 0 }) {
 }
 
 /* ============================== HOME — fascia scura che continua l'ingresso, poi carta ============================== */
-function Home({ nav, fermo, role, profilo, nuove, richieste = 0, blocked = [], prossima, reqsHome = [] }) {
+function Home({ nav, fermo, role, profilo, nuove, richieste = 0, blocked = [], prossima, reqsHome = [], bacheca = 0 }) {
   const isW = role === "worker";
   const [li, setLi] = useState(0);
   const [fade, setFade] = useState(false);
@@ -406,9 +410,8 @@ function Home({ nav, fermo, role, profilo, nuove, richieste = 0, blocked = [], p
   const nomiBloccati = blocked.map(id => wById(id)?.n.split(" ")[0]).filter(Boolean);
   const live = LIVE.filter(t => !nomiBloccati.some(n => t.startsWith(n + " ")));
   const tiles = isW
-    ? [{ l: "Profilo", s: "agenda e richieste", to: "account" }, { l: "Bacheca", s: "chi cerca in zona", to: "neighborhood" }, { l: "Sigillo", s: "da condividere", to: "share" }]
-    : [{ l: "Il tuo livello", s: "vantaggi", to: "rewards" }, { l: "Bacheca", s: "chiedi alla zona", to: "neighborhood" }, { l: "Passaporto", s: "i tuoi timbri", to: "passport" }];
-  const oggi = new Date().toLocaleDateString("it-IT", { weekday: "short", day: "numeric", month: "short" });
+    ? [{ ic: "user", l: "Profilo", s: "agenda e richieste", to: "account" }, { ic: "grid", l: "Bacheca", s: "chi cerca in zona", to: "neighborhood" }, { ic: "seal", l: "Sigillo", s: "da condividere", to: "share" }]
+    : [{ ic: "star", l: "Il tuo livello", s: "vantaggi", to: "rewards" }, { ic: "pin", l: "Passaporto", s: "i tuoi timbri", to: "passport" }, { ic: "book", l: "Come funziona", s: "regole e IDA", to: "help" }];
   const zonaMia = isW ? ME.zona : profilo?.zona;
   return (
     <div className="home">
@@ -422,8 +425,7 @@ function Home({ nav, fermo, role, profilo, nuove, richieste = 0, blocked = [], p
             <Icon name="bell" size={20} />{nuove && <span className="glass-dot" />}
           </button>
         </div>
-        <p className="kicker">{oggi}{zonaMia ? ` · ${zonaMia}, Forlì` : " · Forlì"}</p>
-        <h1 className="home-h a-capo">{isW ? <>{greet().slice(0, -1)}, {ME.n.split(" ")[0]}.<br /><em>Chi aiutiamo oggi?</em></> : <>{profilo ? `${greet().slice(0, -1)}, ${profilo.nome.split(" ")[0]}.` : greet()}<br />Cosa c'è da <em>sistemare</em>?</>}</h1>
+        <h1 className="home-h a-capo">{isW ? <>{greet().slice(0, -1)}, {ME.n.split(" ")[0]}.<br /><em>Chi aiutiamo oggi?</em></> : <>{profilo ? `${greet().slice(0, -1)}, ${profilo.nome.split(" ")[0]}.` : greet()}<br /><em>Chi ti serve oggi?</em></>}</h1>
         {isW ? (
           <button type="button" className="home-cta" onClick={() => nav("account")}>
             <Icon name="bolt" size={20} color="#fff" />
@@ -431,29 +433,39 @@ function Home({ nav, fermo, role, profilo, nuove, richieste = 0, blocked = [], p
             <Icon name="arrowR" size={18} color="#fff" />
           </button>
         ) : (
-          <button type="button" className="home-search" onClick={() => nav("search")} aria-label="Cerca: cosa ti serve? Anche solo una mano">
-            <Icon name="search" size={20} color={T.ink} />
-            <span>«perde il lavandino»…</span>
+          <button type="button" className="home-search" onClick={() => nav("search")}>
+            <Icon name="search" size={20} color={T.stone} />
+            <span>Cosa ti serve? Anche solo una mano</span>
           </button>
         )}
       </header>
 
       <div className="home-body">
-        {!isW && <nav className="cats" aria-label="Mestieri">
-          {CATS.map(c => {
-            return <button type="button" key={c.n} className="cat2" onClick={() => nav("search", { cat: c.n })}>{c.n}</button>;
-          })}
+        {!isW && <nav className="cats scorri" aria-label="Mestieri">
+          {CATS.map(c => <button type="button" key={c.n} className="cat2" onClick={() => nav("search", { cat: c.n })}>{c.n}</button>)}
         </nav>}
 
-        {!isW && <MappaZona nav={nav} blocked={blocked} mia={zonaMia} />}
-
-        {!isW && prossima && (
-          <button type="button" className="next-card" onClick={() => nav("account")}>
-            <Icon name="cal" size={20} color={T.ink} />
-            <span style={{ flex: 1 }}><span className="next-t">Il tuo prossimo appuntamento</span><span className="next-s">{wById(prossima.wid)?.n} · {giornoDi(prossima)} alle {prossima.time}{prossima.stato === "in attesa" ? " · in attesa di conferma" : ""}</span></span>
-            <Icon name="arrowR" size={18} color={T.stone} />
+        {!isW && <div className="bento">
+          {prossima && (
+            <button type="button" className="tl next" onClick={() => nav("account")}>
+              <span className="tm">{prossima.time}</span>
+              <div>{wById(prossima.wid)?.n}<small>{giornoDi(prossima)} · {prossima.stato === "in attesa" ? "in attesa di conferma" : "confermato"}</small></div>
+              <Icon name="arrowR" size={18} color="#1C1408" />
+            </button>
+          )}
+          <MappaZona nav={nav} blocked={blocked} mia={zonaMia} />
+          <button type="button" className="tl ida" onClick={() => nav("help")}>
+            <small>Cos'è l'IDA <span className="ticker-tag" style={{ color: "rgba(246,242,234,.75)", borderColor: "rgba(246,242,234,.3)", marginLeft: 4 }}>ESEMPIO</span></small>
+            <span className="big">94</span>
+            <span className="sub">voto su 100, solo lavori veri</span>
           </button>
-        )}
+          <button type="button" className="tl" onClick={() => nav("neighborhood")}>
+            <small>Bacheca</small>
+            <span className="big" style={{ fontSize: 30 }}>{bacheca}</span>
+            <span className="sub">{bacheca === 1 ? "richiesta in zona" : "richieste in zona"}</span>
+          </button>
+        </div>}
+
         {live.length > 0 && <div className="ticker">
           <span className="ticker-tag">ESEMPIO</span>
           <span style={{ transition: "opacity .3s", opacity: fade ? 0 : 1 }}>{live[li % live.length]}</span>
@@ -466,15 +478,15 @@ function Home({ nav, fermo, role, profilo, nuove, richieste = 0, blocked = [], p
               <button type="button" className="link" onClick={() => nav("account", { vai: "richieste" })}>Vedi tutte</button>
             </div>
             <div className="wlist">
-              {reqsHome.length === 0 && <div style={{ padding: "16px 0", fontSize: 14, color: T.stone, borderBottom: `1px solid ${T.rule}` }}>{fermo === "pausa" ? "Profilo in pausa: non ti arrivano richieste. Lo riattivi da Profilo." : fermo === "off" ? "Non sei disponibile: non ti arrivano richieste. Accendi «Disponibile» in Profilo." : "Nessuna richiesta per ora. Ti avvisiamo quando ne arriva una."}</div>}
+              {reqsHome.length === 0 && <div style={{ background: T.card, borderRadius: 20, padding: 18, fontSize: 14, color: T.stone, textAlign: "center" }}>{fermo === "pausa" ? "Profilo in pausa: non ti arrivano richieste. Lo riattivi da Profilo." : fermo === "off" ? "Non sei disponibile: non ti arrivano richieste. Accendi «Disponibile» in Profilo." : "Nessuna richiesta per ora. Ti avvisiamo quando ne arriva una."}</div>}
               {reqsHome.slice(0, 2).map(r => (
                 <button type="button" key={r.id} className="wcard solo" onClick={() => nav("account", { vai: "richiesta-" + r.id })}>
                   <span className="wcard-b">
                     <span className="wcard-n">{r.task}</span>
                     <span className="wcard-bio">{r.c} · {r.zona} · {r.when}, {r.time}</span>
                   </span>
-                  <span className="wcard-r"><span className="ida-n" style={{ fontSize: 20 }}>~{ME.pr * r.ore} €</span><span className="ida-lab" style={{ letterSpacing: .3 }}>{r.ore} h × {ME.pr} €</span></span>
-                  <span className="wcard-tags"><span className="ticker-tag">ESEMPIO</span><span style={{ color: T.pine, fontFamily: "'Hanken Grotesk',sans-serif", fontWeight: 700, fontSize: 14 }}>Vedi la richiesta</span></span>
+                  <span className="wcard-r"><span className="ida-n" style={{ fontSize: 20 }}>~{ME.pr * r.ore}€</span><span className="ida-lab">{r.ore} h × {ME.pr} €</span></span>
+                  <span className="wcard-tags"><span>ESEMPIO</span><span style={{ color: T.ochreLight }}>Vedi la richiesta</span></span>
                 </button>
               ))}
             </div>
@@ -489,18 +501,18 @@ function Home({ nav, fermo, role, profilo, nuove, richieste = 0, blocked = [], p
           </>
         )}
 
-        <button type="button" className="ida-card" onClick={() => nav("help")}>
-          <span className="ida-t">{isW ? "Il tuo IDA" : "Cos'è quel numero?"}</span>{" "}
-          {isW ? `Ancora nuovo: compare dopo ${IDA_MIN_LAVORI} lavori giudicati.` : "È l'IDA: un voto su 100 fatto solo di lavori veri, 5 domande dopo ogni lavoro, regole pubbliche."}
-          <br /><span className="ida-l">Come si calcola</span>
-        </button>
+        {isW && <button type="button" className="ida-card" onClick={() => nav("help")}>
+          <span className="ida-t">Il tuo IDA</span><br />
+          Ancora nuovo: compare dopo {IDA_MIN_LAVORI} lavori giudicati. Un voto su 100 fatto solo di lavori veri.
+          <br /><span className="ida-l">Come si calcola →</span>
+        </button>}
 
-        <ul className="tiles">
+        <ul className="tiles" style={{ marginTop: isW ? 10 : 22 }}>
           {tiles.map(x => (
-            <li key={x.l}><button type="button" className="tile" onClick={() => nav(x.to)}>
+            <li key={x.l} style={{ display: "flex" }}><button type="button" className="tile" onClick={() => nav(x.to)}>
+              <Icon name={x.ic} size={20} />
               <span className="tile-l">{x.l}</span>
-              <span className="tile-s">· {x.s}</span>
-              <Icon name="arrowR" size={18} color={T.ink2} />
+              <span className="tile-s">{x.s}</span>
             </button></li>
           ))}
         </ul>
@@ -511,29 +523,28 @@ function Home({ nav, fermo, role, profilo, nuove, richieste = 0, blocked = [], p
 
 /* Mappa schematica dei quartieri: un punto per chi è disponibile, il tuo quartiere cerchiato */
 function MappaZona({ nav, blocked = [], mia }) {
-  const W_ = 350, H_ = 128;
+  const W_ = 160, H_ = 234;
   const pos = (q) => [q.x / 100 * W_, q.y / 100 * H_];
   const disp = WORKERS.filter(w => w.av && !blocked.includes(w.id));
   const tutti = WORKERS.filter(w => !blocked.includes(w.id));
   const qMia = QUARTIERI.find(q => q.n === mia) || QUARTIERI[0];
   return (
-    <button type="button" className="zona" onClick={() => nav("search")} aria-label={`Mappa della zona: ${disp.length} persone disponibili. Apri la ricerca`}>
+    <button type="button" className="tl map" onClick={() => nav("search")} aria-label={`Mappa della zona: ${disp.length} persone disponibili. Apri la ricerca`}>
       <svg viewBox={`0 0 ${W_} ${H_}`} preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-        <g fill="none" stroke="#D3CABA" strokeWidth="9" strokeLinecap="round">
-          <path d="M-10 84 C 70 74, 130 90, 190 66 S 300 38, 370 48" />
-          <path d="M150 -10 L 175 140" />
+        <g fill="none" stroke="#24403A" strokeWidth="7" strokeLinecap="round">
+          <path d="M-10 150 C 40 130, 90 160, 170 110" /><path d="M70 -10 L 90 250" />
         </g>
-        <g fill="none" stroke="#E2DACB" strokeWidth="4" strokeLinecap="round">
-          <path d="M-10 26 L 370 18" /><path d="M60 -10 L 80 140" /><path d="M-10 118 L 370 124" /><path d="M290 -10 L 305 140" />
+        <g fill="none" stroke="#1D3631" strokeWidth="3" strokeLinecap="round">
+          <path d="M-10 40 L 170 30" /><path d="M20 -10 L 35 250" /><path d="M130 -10 L 140 250" /><path d="M-10 210 L 170 220" />
         </g>
-        {(() => { const [x, y] = pos(qMia); return <><circle cx={x} cy={y} r="30" fill="none" stroke={T.pine} strokeDasharray="3 4" /><circle cx={x} cy={y} r="5" fill={T.pine} /></>; })()}
+        {(() => { const [x, y] = pos(qMia); return <><circle cx={x} cy={y} r="30" fill="none" stroke={T.ok} strokeDasharray="3 4" /><circle cx={x} cy={y} r="4.5" fill={T.ok} /></>; })()}
         {tutti.map((w, i) => {
           const q = QUARTIERI.find(z => z.n === w.zona); if (!q) return null;
-          const [x, y] = pos(q); const dx = (i % 3 - 1) * 12, dy = (i % 2 ? 9 : -9);
-          return <circle key={w.id} cx={x + dx} cy={y + dy} r="5.5" fill={w.av ? T.ochre : "#B9B1A3"} stroke={T.paper} strokeWidth="2" />;
+          const [x, y] = pos(q); const dx = (i % 3 - 1) * 11, dy = (i % 2 ? 9 : -9);
+          return <circle key={w.id} cx={x + dx} cy={y + dy} r="5" fill={w.av ? T.ochreLight : "#4A615B"} stroke={T.card} strokeWidth="2" />;
         })}
       </svg>
-      <span className="zona-l"><b>{disp.length}</b> disponibili · <b>{new Set(disp.map(w => w.zona)).size}</b> quartieri</span>
+      <span className="lbl"><small>In zona ora</small><b>{disp.length} {disp.length === 1 ? "libera" : "libere"}</b></span>
     </button>
   );
 }
@@ -612,7 +623,7 @@ function Search({ nav, init, role, blocked = [] }) {
               <span className="lrow-n">{w.n}{w.av ? <><span className="wcard-av" aria-hidden="true" /><span className="sr">, disponibile</span></> : <span className="sr">, non disponibile</span>}</span>
               <span className="lrow-s">{!w.av && <span style={{ color: T.ember }}>non disponibile · </span>}{w.bio}</span>
             </span>
-            <span className="lrow-ida" style={{ color: w.ida != null && w.ida >= 95 ? T.pine : T.ink }}>{w.ida ?? "—"}</span>
+            <span className="lrow-ida" style={{ color: w.ida != null && w.ida >= 95 ? T.accent : T.ink }}>{w.ida ?? "—"}</span>
             <span>{w.pr}</span>
             <span>{String(w.d).replace(".", ",")}</span>
           </button>
@@ -627,7 +638,7 @@ function Search({ nav, init, role, blocked = [] }) {
           </div>
         )}
         {f.length === 0 && <div style={{ padding: "20px 0", color: T.ink2, fontSize: 14, lineHeight: 1.6 }}>
-          <div style={{ fontFamily: "'Fraunces',serif", fontSize: 20, fontWeight: 500, color: T.ink, letterSpacing: -.3 }}>Nessuno {cat ? `per ${cat}` : q ? `per “${q}”` : "qui"} al momento.</div>
+          <div style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 20, fontWeight: 700, color: T.ink, letterSpacing: -.3 }}>Nessuno {cat ? `per ${cat}` : q ? `per “${q}”` : "qui"} al momento.</div>
           {forse.length > 0 && <span style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", margin: "12px 0" }}>Forse cercavi: {forse.map(c => <Chip key={c} onClick={() => { setCat(c); setQ(""); }}>{c}</Chip>)}</span>}
           <div>Prova un'altra parola o categoria.</div>
           {role !== "worker" && <div style={{ borderLeft: `3px solid ${T.ochre}`, padding: "4px 0 4px 16px", margin: "20px 0" }}>
@@ -669,15 +680,15 @@ function Worker({ w, nav, from, saved, onSave, onBlock, bloccato, onUnblock, gia
         {w.self && <div className="esempio-top" style={{ background: T.pineSoft, borderRadius: 12, padding: "10px 12px", marginBottom: 14 }}><span className="ticker-tag">ANTEPRIMA</span><span>Così vedono il tuo profilo i clienti. Per cambiarlo: Profilo → Competenze, tariffa e zone.</span></div>}
         {giaPrenotata && (
           <button type="button" className="next-card" style={{ width: "100%", margin: "0 0 14px" }} onClick={() => nav("account", { ruolo: "client" })}>
-            <Icon name="cal" size={20} color={T.pine} />
+            <Icon name="cal" size={20} color={T.accent} />
             <span style={{ flex: 1 }}><span className="next-t">Hai già prenotato {w.n.split(" ")[0]}</span><span className="next-s">{giornoDi(giaPrenotata)} alle {giaPrenotata.time} · {giaPrenotata.stato === "in attesa" ? "in attesa di conferma" : "confermata"}</span></span>
             <Icon name="arrowR" size={18} color={T.stone} />
           </button>
         )}
         {bloccato && (
-          <div style={{ display: "flex", alignItems: "center", gap: 10, background: T.emberSoft, borderRadius: 12, padding: "12px 14px", marginBottom: 14, fontSize: 13, color: "#8a3a1f" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, background: T.emberSoft, borderRadius: 12, padding: "12px 14px", marginBottom: 14, fontSize: 13, color: T.ember }}>
             <span style={{ flex: 1 }}>Hai bloccato questa persona.</span>
-            <button type="button" className="bt tap" onClick={() => onUnblock?.(w.id)} style={{ fontWeight: 700, color: "#8a3a1f" }}>Sblocca</button>
+            <button type="button" className="bt tap" onClick={() => onUnblock?.(w.id)} style={{ fontWeight: 700, color: T.ember }}>Sblocca</button>
           </div>
         )}
         <header>
@@ -686,9 +697,9 @@ function Worker({ w, nav, from, saved, onSave, onBlock, bloccato, onUnblock, gia
           <div style={{ fontSize: 16, color: T.ink2, marginTop: 6, lineHeight: 1.45 }}>{w.bio}</div>
           {w.self && <div style={{ fontSize: 14, color: T.ink2, marginTop: 4 }}>Lavora in: {(ME.zone || [ME.zona]).join(", ")}</div>}
           <div className="facts">
-            {w.ver && <span><Icon name="shield" size={16} color={T.pine} />Identità verificata</span>}
-            {!w.self && <span><Icon name="message" size={16} color={T.pine} />Risponde in ~{w.rsp}</span>}
-            {!w.self && <span><Icon name="pin" size={16} color={T.pine} /><Mono size={13} w={400}>{String(w.d).replace(".", ",")} km</Mono> · {w.zona}</span>}
+            {w.ver && <span><Icon name="shield" size={16} color={T.accent} />Identità verificata</span>}
+            {!w.self && <span><Icon name="message" size={16} color={T.accent} />Risponde in ~{w.rsp}</span>}
+            {!w.self && <span><Icon name="pin" size={16} color={T.accent} /><Mono size={13} w={400}>{String(w.d).replace(".", ",")} km</Mono> · {w.zona}</span>}
           </div>
           <div style={{ fontSize: 13, color: T.stone, marginTop: 8, lineHeight: 1.5 }}>
             {[w.tipo === "piva" ? "Professionista con P.IVA" : "Privato · prestazione occasionale", w.abil && "Impresa abilitata per impianti (dichiarato)", w.rc && "Assicurazione RC (dichiarata)", w.preventivo && "Lavora a preventivo"].filter(Boolean).join(" · ")}
@@ -729,7 +740,7 @@ function Worker({ w, nav, from, saved, onSave, onBlock, bloccato, onUnblock, gia
           return (
             <>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", margin: "26px 0 4px" }}>
-                <h2 style={{ fontFamily: "'Fraunces',serif", fontSize: 20, fontWeight: 600, color: T.ink, letterSpacing: -.3, margin: 0 }}>Cosa dicono</h2>
+                <h2 style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 20, fontWeight: 700, color: T.ink, letterSpacing: -.3, margin: 0 }}>Cosa dicono</h2>
                 <span className="kicker">{w.rv} giudizi</span>
               </div>
               <div style={{ fontSize: 13, color: T.stone, marginBottom: 6 }}>Solo giudizi di lavori conclusi su TaskEase. Nessuna recensione a pagamento.</div>
@@ -760,7 +771,7 @@ function Worker({ w, nav, from, saved, onSave, onBlock, bloccato, onUnblock, gia
           <div ref={bloccaRef} style={{ background: T.card, border: `1px solid ${T.line}`, borderRadius: 14, padding: 14, marginTop: 12, marginBottom: 90 }}>
             <div style={{ fontSize: 13, color: T.ink, lineHeight: 1.5, marginBottom: 10 }}>Bloccare {w.n.split(" ")[0]}? Non comparirà più nelle ricerche, nei preferiti e in bacheca.{giaPrenotata ? (giaPrenotata.stato === "in attesa" ? <> <strong>La tua richiesta in attesa viene ritirata.</strong> Non riceve nessun avviso del blocco.</> : <> <strong>L'appuntamento di {giornoDi(giaPrenotata).toLowerCase()} alle {giaPrenotata.time} viene disdetto</strong> e {w.n.split(" ")[0]} riceve solo l'avviso della disdetta.</>) : " Non riceve nessun avviso."}</div>
             <div style={{ display: "flex", gap: 10 }}>
-              <button type="button" className="bt tap" onClick={() => { onBlock?.(w.id); nav.back("home"); }} style={{ flex: 1, padding: "10px 0", borderRadius: 10, background: T.ember, color: "#fff", fontSize: 13, fontWeight: 700, textAlign: "center" }}>Sì, blocca</button>
+              <button type="button" className="bt tap" onClick={() => { onBlock?.(w.id); nav.back("home"); }} style={{ flex: 1, padding: "10px 0", borderRadius: 10, background: T.emberBtn, color: "#fff", fontSize: 13, fontWeight: 700, textAlign: "center" }}>Sì, blocca</button>
               <button type="button" className="bt tap" onClick={() => setBlocca(false)} style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: `1px solid ${T.line}`, color: T.ink, fontSize: 13, fontWeight: 600, textAlign: "center" }}>Annulla</button>
             </div>
           </div>
@@ -860,7 +871,7 @@ function Booking({ w, nav, profilo, setProfilo, onBooked, bozza, onBozza, occupa
           {[0, 1].map(i => <div key={i} style={{ position: "absolute", width: 70, height: 70, borderRadius: 40, border: `1.5px solid ${T.pine}`, animation: `rg 2s ease-out infinite ${i * .6}s` }} />)}
           <Avatar ini={w.ini} lv={w.lv} sz={64} />
         </div>
-        <h1 style={{ fontFamily: "'Fraunces',serif", fontSize: 23, fontWeight: 600, color: T.ink, letterSpacing: -.3 }}>Richiesta inviata</h1>
+        <h1 style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 23, fontWeight: 800, color: T.ink, letterSpacing: -.3 }}>Richiesta inviata</h1>
         <p style={{ fontSize: 14, color: T.ink2, textAlign: "center", lineHeight: 1.6, marginTop: 8 }}>
           Aspettiamo che <strong style={{ color: T.ink }}>{fn}</strong> confermi.<br />{w.av ? `Di solito risponde in ${w.rsp}. In anteprima conferma da solo tra un attimo.` : "Ora non è disponibile: ti avvisiamo quando risponde. In questa anteprima la risposta non arriva."}
         </p>
@@ -902,16 +913,16 @@ function Booking({ w, nav, profilo, setProfilo, onBooked, bozza, onBozza, occupa
     return (
       <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
         <div style={{ padding: "28px 24px 0", textAlign: "center" }}>
-          <div style={{ width: 64, height: 64, borderRadius: "50%", background: T.pineSoft, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto", animation: "stamp .5s ease both" }}><Icon name="check" size={32} color={T.pine} w={2} /></div>
-          <h1 style={{ fontFamily: "'Fraunces',serif", fontSize: 26, fontWeight: 600, color: T.ink, marginTop: 18, letterSpacing: -.3 }}>{fn} ci sarà.</h1>
+          <div style={{ width: 64, height: 64, borderRadius: "50%", background: T.pineSoft, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto", animation: "stamp .5s ease both" }}><Icon name="check" size={32} color={T.accent} w={2} /></div>
+          <h1 style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 26, fontWeight: 800, color: T.ink, marginTop: 18, letterSpacing: -.3 }}>{fn} ci sarà.</h1>
           <p className="a-capo" style={{ fontSize: 14, color: T.ink2, marginTop: 6 }}>{DAYS[day].l} alle {time} · {indirizzo.trim()}</p>
           <p className={"a-capo" + (tuttaDesc ? "" : " tre-righe")} style={{ fontSize: 13.5, color: T.ink2, marginTop: 6, fontStyle: "italic" }}>«{desc.trim()}»</p>
-          {desc.trim().length > 140 && <button type="button" className="bt tap" onClick={() => setTuttaDesc(!tuttaDesc)} style={{ fontSize: 13, fontWeight: 700, color: T.pine }}>{tuttaDesc ? "Mostra meno" : "Mostra tutto"}</button>}
+          {desc.trim().length > 140 && <button type="button" className="bt tap" onClick={() => setTuttaDesc(!tuttaDesc)} style={{ fontSize: 13, fontWeight: 700, color: T.accent }}>{tuttaDesc ? "Mostra meno" : "Mostra tutto"}</button>}
           <p style={{ fontSize: 13, color: T.ink2, marginTop: 12, lineHeight: 1.5, background: T.card, border: `1px solid ${T.line}`, borderRadius: 12, padding: "10px 12px" }}>Nell'app vera ti arriva un SMS con la conferma e un promemoria il giorno prima. In anteprima non parte nessun SMS.</p>
         </div>
         <div style={{ padding: "24px 24px 28px" }}>
           {/* Cosa succede adesso */}
-          <div style={{ fontFamily: "'Fraunces',serif", fontSize: 16, fontWeight: 600, color: T.ink, marginBottom: 14 }}>Cosa succede adesso</div>
+          <div style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 16, fontWeight: 700, color: T.ink, marginBottom: 14 }}>Cosa succede adesso</div>
           <div style={{ marginBottom: 22 }}>
             {steps.map(([l, done], i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: i < steps.length - 1 ? 4 : 0 }}>
@@ -929,21 +940,21 @@ function Booking({ w, nav, profilo, setProfilo, onBooked, bozza, onBozza, occupa
           <div style={{ background: T.ochreSoft, borderRadius: 16, padding: 18, marginBottom: 16 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
               <Icon name="shield" size={20} color={T.ochre} />
-              <span style={{ fontFamily: "'Fraunces',serif", fontSize: 15, fontWeight: 600, color: "#7a5418" }}>Come si paga</span>
+              <span style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 15, fontWeight: 700, color: T.ochreInk }}>Come si paga</span>
             </div>
-            <p style={{ fontSize: 13, color: "#7a5418", lineHeight: 1.6, margin: 0 }}>
+            <p style={{ fontSize: 13, color: T.ochreInk, lineHeight: 1.6, margin: 0 }}>
               Paghi <strong>{fn} direttamente</strong>, in contanti o come concordate tra voi, a fine lavoro: le ore lavorate più eventuale uscita e materiali, come vi siete accordati. TaskEase non tocca i soldi.
             </p>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <Btn full kind="ghost" onClick={aggiungiCal} style={{ borderWidth: 1.5, borderColor: T.pine, color: T.pine }}>Aggiungi al calendario</Btn>
+            <Btn full kind="ghost" onClick={aggiungiCal} style={{ borderWidth: 1.5, borderColor: T.pine, color: T.accent }}>Aggiungi al calendario</Btn>
             <div style={{ display: "flex", gap: 10 }}>
               <Btn full onClick={() => nav.replace("chat", { ...w, tema: desc.trim(), quando: `${DAYS[day].l.toLowerCase()} alle ${time}` })} style={{ flex: "1 1 0", minWidth: 0 }}>Scrivi {aD(fn)} {fn}</Btn>
               <Btn kind="ghost" onClick={() => setChiama(true)} style={{ flex: "1 1 0", minWidth: 0 }}>Chiama {fn}</Btn>
             </div>
             {chiama && <div style={{ fontSize: 13, color: T.ink2, background: T.card, border: `1px solid ${T.line}`, borderRadius: 12, padding: "10px 12px", lineHeight: 1.5 }}>Nell'app vera qui trovi il numero di {fn}, che hai ricevuto con la conferma. In anteprima i numeri non ci sono.</div>}
             <Btn full kind="ghost" onClick={() => nav("home")} style={{ borderWidth: 1.5, borderColor: T.ink2 }}>Torna alla home</Btn>
-            <button type="button" className="bt tap" onClick={() => legale.apri("sicurezza")} style={{ fontSize: 13, color: T.pine, fontWeight: 600, textAlign: "center", marginTop: 4 }}>Consigli di sicurezza prima del lavoro</button>
+            <button type="button" className="bt tap" onClick={() => legale.apri("sicurezza")} style={{ fontSize: 13, color: T.accent, fontWeight: 600, textAlign: "center", marginTop: 4 }}>Consigli di sicurezza prima del lavoro</button>
           </div>
         </div>
       </div>
@@ -957,12 +968,12 @@ function Booking({ w, nav, profilo, setProfilo, onBooked, bozza, onBozza, occupa
       <div style={{ padding: "4px 22px 22px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 22 }}>
           <Avatar ini={w.ini} lv={w.lv} sz={46} />
-          <div><div style={{ fontFamily: "'Fraunces',serif", fontSize: 17, fontWeight: 600, color: T.ink }}>{w.n}</div><div style={{ fontSize: 13, color: T.ink2 }}><Mono size={12}>{w.pr}€</Mono>/h · IDA {w.ida ?? "nuovo"}</div></div>
+          <div><div style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 17, fontWeight: 700, color: T.ink }}>{w.n}</div><div style={{ fontSize: 13, color: T.ink2 }}><Mono size={12}>{w.pr}€</Mono>/h · IDA {w.ida ?? "nuovo"}</div></div>
         </div>
         {!w.av && (
           <div style={{ display: "flex", gap: 10, background: T.ochreSoft, borderRadius: 12, padding: "12px 14px", marginBottom: 18 }}>
             <Icon name="bell" size={17} color={T.ochre} />
-            <span style={{ fontSize: 13, color: "#7a5418", lineHeight: 1.5 }}>{fn} ora non è disponibile. Puoi comunque inviare la richiesta: ti risponde appena può.</span>
+            <span style={{ fontSize: 13, color: T.ochreInk, lineHeight: 1.5 }}>{fn} ora non è disponibile. Puoi comunque inviare la richiesta: ti risponde appena può.</span>
           </div>
         )}
         <div ref={oraRef} />
@@ -1002,8 +1013,8 @@ function Booking({ w, nav, profilo, setProfilo, onBooked, bozza, onBozza, occupa
           <Sum k="Durata" v={nonSo ? `la stima ${fn}` : `${hours} ${hours === 1 ? "ora" : "ore"}`} />
           <div style={{ height: 1, background: T.line, margin: "12px 0" }} />
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-            <span style={{ fontFamily: "'Fraunces',serif", fontSize: 16, fontWeight: 600, color: T.ink }}>{nonSo ? "Tariffa" : "Stima manodopera"}</span>
-            <Mono size={20} color={T.pine}>{nonSo ? `${w.pr}€/h` : `${tot}€`}</Mono>
+            <span style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 16, fontWeight: 700, color: T.ink }}>{nonSo ? "Tariffa" : "Stima manodopera"}</span>
+            <Mono size={20} color={T.accent}>{nonSo ? `${w.pr}€/h` : `${tot}€`}</Mono>
           </div>
           <div style={{ fontSize: 13, color: T.stone, marginTop: 8, lineHeight: 1.5 }}>{nonSo ? "" : `${w.pr}€/h × ${hours} ${hours === 1 ? "ora" : "ore"}. `}Solo manodopera{w.tipo === "piva" ? ", IVA inclusa se dovuta" : ""}: uscita e materiali li concordate in chat prima di iniziare. Paghi le ore reali.</div>
         </div>
@@ -1011,13 +1022,13 @@ function Booking({ w, nav, profilo, setProfilo, onBooked, bozza, onBozza, occupa
         {w.tipo !== "piva" && (
           <div style={{ display: "flex", gap: 11, background: T.ochreSoft, borderRadius: 14, padding: "13px 15px", marginBottom: 12 }}>
             <Icon name="bell" size={18} color={T.ochre} />
-            <div style={{ fontSize: 13, color: "#7a5418", lineHeight: 1.5 }}><strong>{fn} è un privato</strong> (prestazione occasionale): a questo accordo non si applicano i diritti dei consumatori previsti dal diritto UE. Mettetevi d'accordo per iscritto in chat su lavoro e prezzo.</div>
+            <div style={{ fontSize: 13, color: T.ochreInk, lineHeight: 1.5 }}><strong>{fn} è un privato</strong> (prestazione occasionale): a questo accordo non si applicano i diritti dei consumatori previsti dal diritto UE. Mettetevi d'accordo per iscritto in chat su lavoro e prezzo.</div>
           </div>
         )}
         {/* Come si paga — chiaro PRIMA di confermare */}
         <div style={{ display: "flex", gap: 11, background: T.pineSoft, borderRadius: 14, padding: "13px 15px" }}>
-          <Icon name="shield" size={18} color={T.pine} />
-          <div style={{ fontSize: 13, color: T.pine, lineHeight: 1.5 }}>
+          <Icon name="shield" size={18} color={T.accent} />
+          <div style={{ fontSize: 13, color: T.accent, lineHeight: 1.5 }}>
             Paghi <strong>{fn} direttamente</strong> a fine lavoro — contanti o come concordate. Niente carte, niente soldi nell'app.
           </div>
         </div>
@@ -1027,7 +1038,7 @@ function Booking({ w, nav, profilo, setProfilo, onBooked, bozza, onBozza, occupa
         <div role="status" aria-live="polite" style={{ fontSize: 13, color: mancaP ? T.ink2 : T.stone, textAlign: "center", marginBottom: 8, fontWeight: mancaP ? 600 : 400 }}>
           {mancaP || `${fn} deve confermare. Se cambi idea, disdici dall'app appena puoi.`}
         </div>
-        <Btn full onClick={() => !canSend ? vaiAlMancante() : !slotOk(time) ? (setTime(null), vaiAlMancante()) : (profiloOk ? setStatus("pending") : setChiedi(true))} style={canSend ? {} : { background: T.ink2 }}>{canSend ? `Invia richiesta ${aD(fn)} ${fn} · ${DAYS[day].l.toLowerCase()} ${time}` : `Invia richiesta ${aD(fn)} ${fn}`}</Btn>
+        <Btn full onClick={() => !canSend ? vaiAlMancante() : !slotOk(time) ? (setTime(null), vaiAlMancante()) : (profiloOk ? setStatus("pending") : setChiedi(true))} style={canSend ? {} : { background: T.faint }}>{canSend ? `Invia richiesta ${aD(fn)} ${fn} · ${DAYS[day].l.toLowerCase()} ${time}` : `Invia richiesta ${aD(fn)} ${fn}`}</Btn>
       </div>
       {chiedi && <ProfileSheet initial={profilo} motivo={`Per mandare la richiesta ${aD(fn)} ${fn} ci serve sapere come contattarti. Quello che hai scritto resta.`} onClose={() => setChiedi(false)} onDone={p => { setProfilo(p); setChiedi(false); setStatus("pending"); }} />}
     </div>
@@ -1066,7 +1077,7 @@ function Review({ w, nav, onReviewed }) {
       <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
         <div style={{ minHeight: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, animation: "rise .4s ease" }}>
           <Seal score={sc} lv={lvKeyOf(sc)} size={92} stamp />
-          <h1 style={{ fontFamily: "'Fraunces',serif", fontSize: 24, fontWeight: 600, color: T.ink, marginTop: 20 }}>Grazie.</h1>
+          <h1 style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 24, fontWeight: 800, color: T.ink, marginTop: 20 }}>Grazie.</h1>
           <p style={{ fontSize: 13, color: T.ink2, textAlign: "center", marginTop: 6, lineHeight: 1.6 }}>Questo giudizio vale <strong style={{ color: T.ink }}>{sc}/100</strong>{w.esempio ? <>. È un esempio: non entra in nessun IDA.</> : <> ed entra nella media dell'IDA di {fn}.<br />Da solo non lo stravolge: conta insieme agli altri.{w.demo && <><br /><span style={{ color: T.stone, fontSize: 13 }}>In questa anteprima {fn} è un profilo di esempio: il suo IDA non cambia davvero.</span></>}</>}</p>
           <div style={{ marginTop: 28, width: "100%", pointerEvents: prontoFatto ? "auto" : "none" }}><Btn full kind="dark" onClick={() => nav("home")}>Fatto</Btn></div>
         </div>
@@ -1116,7 +1127,7 @@ function Review({ w, nav, onReviewed }) {
           {w.esempio && <div className="esempio-top" style={{ justifyContent: "center", marginBottom: 14 }}><span className="ticker-tag">ESEMPIO</span><span>Lavoro di esempio: il giudizio non viene pubblicato.</span></div>}
           <div style={{ textAlign: "center", marginBottom: 22, display: "flex", justifyContent: "center" }}><Avatar ini={w.ini} lv={w.lv} sz={52} /></div>
           <div style={{ textAlign: "center", fontSize: 12.5, fontWeight: 700, color: T.stone, letterSpacing: .6, textTransform: "uppercase", marginBottom: 8 }}>{IDA_VOCI.find(v => v.k === cur.k).l} · {st + 1} di {qs.length}</div>
-          <h1 style={{ fontFamily: "'Fraunces',serif", fontSize: 23, fontWeight: 600, color: T.ink, textAlign: "center", lineHeight: 1.2, letterSpacing: -.3, marginBottom: 26 }}>{cur.q}</h1>
+          <h1 style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 23, fontWeight: 800, color: T.ink, textAlign: "center", lineHeight: 1.2, letterSpacing: -.3, marginBottom: 26 }}>{cur.q}</h1>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {cur.os.map(([l, v]) => (
               <button type="button" key={l} className="bt opt" onClick={() => pick(cur.k, v)} style={{ background: T.card, borderRadius: 14, padding: "15px 18px", border: `1.5px solid ${T.line}`, fontSize: 15, fontWeight: 500, color: T.ink, transition: "all .16s", textAlign: "center" }}>{l}</button>
@@ -1182,12 +1193,12 @@ function Chat({ w, nav, from }) {
       <div style={{ padding: "14px 18px", background: T.card, borderBottom: `1px solid ${T.line}`, display: "flex", alignItems: "center", gap: 12 }}>
         <button type="button" className="head-back" aria-label="Indietro" onClick={() => nav.back("home")}><Icon name="arrowL" size={20} /></button>
         {w && <Avatar ini={w.ini} lv={w.lv} sz={38} />}
-        <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontFamily: "'Fraunces',serif", fontSize: 15, fontWeight: 600, color: T.ink }}>{w?.n}</div>{w?.id ? <div style={{ fontSize: 12.5, color: T.stone }}>{w.tipo === "piva" ? "Professionista con P.IVA" : "Privato · prestazione occasionale"}</div> : <div style={{ fontSize: 12.5, color: T.stone }}>Cerca aiuto in zona</div>}</div>
+        <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 15, fontWeight: 700, color: T.ink }}>{w?.n}</div>{w?.id ? <div style={{ fontSize: 12.5, color: T.stone }}>{w.tipo === "piva" ? "Professionista con P.IVA" : "Privato · prestazione occasionale"}</div> : <div style={{ fontSize: 12.5, color: T.stone }}>Cerca aiuto in zona</div>}</div>
         <button type="button" className="bt tap" onClick={() => nav("segnala", { tipo: `Conversazione con ${w?.n}`, testo: "Messaggi in questa chat", rif: `chat/${w?.id || "bacheca"}` })} style={{ fontSize: 13, color: T.stone }}>Segnala</button>
       </div>
       {w?.id && w?.quando && (
-        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 18px", background: T.pineSoft, fontSize: 13, color: T.pine }}>
-          <Icon name="cal" size={16} color={T.pine} />
+        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 18px", background: T.pineSoft, fontSize: 13, color: T.accent }}>
+          <Icon name="cal" size={16} color={T.accent} />
           <span style={{ flex: 1, fontWeight: 600 }}>Prenotato: {w.quando}</span>
           <span className="badge ok">Confermata</span>
         </div>
@@ -1225,7 +1236,7 @@ function Account({ nav, vai, role, setRole, saved, paused, setPaused, onEsci, bl
         <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 18 }}>
           <Avatar ini={ospite ? "?" : iniOf(nome)} lv={role === "worker" ? ME.lv : null} sz={56} />
           <div style={{ flex: 1 }}>
-            <h1 style={{ fontFamily: "'Fraunces',serif", fontSize: 22, fontWeight: 600, color: T.ink, letterSpacing: -.4, margin: 0 }}>{ospite ? "Ospite" : nome}</h1>
+            <h1 style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 22, fontWeight: 800, color: T.ink, letterSpacing: -.4, margin: 0 }}>{ospite ? "Ospite" : nome}</h1>
             <div style={{ fontSize: 13, color: T.ink2, marginTop: 2 }}>{ospite ? "Stai guardando senza profilo" : role === "worker" ? `${(ME.zone || [ME.zona]).join(", ")} · ${ME.preventivo ? "a preventivo" : `${ME.pr}€/h`}` : `${profilo.zona} · profilo creato oggi`}</div>
           </div>
         </div>
@@ -1250,7 +1261,7 @@ function Account({ nav, vai, role, setRole, saved, paused, setPaused, onEsci, bl
             <div className="cp-guest">
               <div className="cp-guest-t">Non hai ancora un profilo</div>
               <div className="cp-guest-s">Puoi guardare chi lavora in zona anche così. Il profilo serve quando prenoti o pubblichi una richiesta: nome, cellulare e zona, nient'altro.</div>
-              <button type="button" className="cp-guest-b" onClick={() => nav("csetup", { back: "account" })}>Crea il profilo <Icon name="arrowR" size={18} color={T.pine} w={2} /></button>
+              <button type="button" className="cp-guest-b" onClick={() => nav("csetup", { back: "account" })}>Crea il profilo <Icon name="arrowR" size={18} color={T.accent} w={2} /></button>
             </div>
             <div style={{ marginTop: 8 }}>
               <MenuRow ic="compass" l="Come funziona TaskEase" onClick={() => nav("help")} />
@@ -1315,14 +1326,14 @@ function ClientView({ nav, saved, profilo, prenotazioni = [], setPrenotazioni, b
     setPrenotazioni(ps => ps.map(p => p.id === id ? { ...p, stato: "disdetta" } : p)); avviso.mostra("Prenotazione disdetta: avvisiamo chi doveva venire.");
   };
   const ETI = { confermata: "Confermata", "in attesa": "In attesa", disdetta: "Disdetta", giudicata: "Giudicata", segnalata: "Segnalata", annullata: "Ritirata" };
-  const h2 = { fontFamily: "'Fraunces',serif", fontSize: 17, fontWeight: 600, color: T.ink };
+  const h2 = { fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 17, fontWeight: 800, color: T.ink };
   return (
     <>
       {/* In arrivo — solo le prenotazioni fatte davvero */}
       <div style={{ ...h2, marginBottom: 10 }}>In arrivo</div>
       {attive.length === 0 ? (
         <div style={{ background: T.card, border: `1px dashed ${T.line}`, borderRadius: 18, padding: 18, marginBottom: 20, fontSize: 13, color: T.stone, lineHeight: 1.6 }}>
-          Nessuna prenotazione. Quando prenoti qualcuno, la trovi qui. <button type="button" className="bt tap" onClick={() => nav("search")} style={{ color: T.pine, fontWeight: 700 }}>Cerca</button>
+          Nessuna prenotazione. Quando prenoti qualcuno, la trovi qui. <button type="button" className="bt tap" onClick={() => nav("search")} style={{ color: T.accent, fontWeight: 700 }}>Cerca</button>
         </div>
       ) : null}
       {lista.map((b, i) => { const w = wById(b.wid); const spenta = !ATTIVA(b); const fatta = passata(b); const gD = giornoDi(b); return (
@@ -1332,30 +1343,30 @@ function ClientView({ nav, saved, profilo, prenotazioni = [], setPrenotazioni, b
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <Avatar ini={w.ini} sz={44} onDark={!spenta} />
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontFamily: "'Fraunces',serif", fontSize: 16, fontWeight: 600, color: spenta ? T.ink : T.paper }}>{w.n}</div>
-              <div style={{ fontSize: 13, color: spenta ? T.stone : "rgba(246,242,234,.7)", marginTop: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{b.task}</div>
+              <div style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 16, fontWeight: 700, color: spenta ? T.ink : T.cream }}>{w.n}</div>
+              <div style={{ fontSize: 13, color: spenta ? T.stone : "rgba(246,242,234,.82)", marginTop: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{b.task}</div>
             </div>
-            <span style={{ fontSize: 12, fontWeight: 700, color: spenta ? T.stone : T.pine, background: spenta ? T.line : T.paper, padding: "4px 10px", borderRadius: 8 }}>{ETI[b.stato] || b.stato}</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: spenta ? T.stone : T.accent, background: spenta ? T.line : T.paper, padding: "4px 10px", borderRadius: 8 }}>{ETI[b.stato] || b.stato}</span>
           </div>
-          {b.stato === "in attesa" && <div style={{ fontSize: 13, color: "rgba(246,242,234,.7)", marginTop: 10, lineHeight: 1.5 }}>Aspetti la risposta di {w.n.split(" ")[0]}. In questa anteprima non arriva.</div>}
+          {b.stato === "in attesa" && <div style={{ fontSize: 13, color: "rgba(246,242,234,.82)", marginTop: 10, lineHeight: 1.5 }}>Aspetti la risposta di {w.n.split(" ")[0]}. In questa anteprima non arriva.</div>}
           {!spenta && (chiediDisdetta === b.id ? (
             <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(246,242,234,.12)" }}>
-              <div style={{ fontSize: 13, color: T.paper, lineHeight: 1.5, marginBottom: 10 }}>Disdire? Avvisiamo {w.n.split(" ")[0]}. {gD === "Oggi" ? "È per oggi: scusati anche tu con un messaggio." : ""}</div>
+              <div style={{ fontSize: 13, color: T.cream, lineHeight: 1.5, marginBottom: 10 }}>Disdire? Avvisiamo {w.n.split(" ")[0]}. {gD === "Oggi" ? "È per oggi: scusati anche tu con un messaggio." : ""}</div>
               <div style={{ display: "flex", gap: 10 }}>
-                <button type="button" className="bt tap" onClick={() => disdici(b.id)} style={{ flex: 1, padding: "10px 0", borderRadius: 10, background: T.ember, color: "#fff", fontSize: 13, fontWeight: 700, textAlign: "center" }}>Sì, disdici</button>
-                <button type="button" className="bt tap" onClick={() => setChiediDisdetta(null)} style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: "1px solid rgba(246,242,234,.3)", color: T.paper, fontSize: 13, fontWeight: 600, textAlign: "center" }}>No, tienila</button>
+                <button type="button" className="bt tap" onClick={() => disdici(b.id)} style={{ flex: 1, padding: "10px 0", borderRadius: 10, background: T.emberBtn, color: "#fff", fontSize: 13, fontWeight: 700, textAlign: "center" }}>Sì, disdici</button>
+                <button type="button" className="bt tap" onClick={() => setChiediDisdetta(null)} style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: "1px solid rgba(246,242,234,.3)", color: T.cream, fontSize: 13, fontWeight: 600, textAlign: "center" }}>No, tienila</button>
               </div>
             </div>
           ) : (
             <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(246,242,234,.12)", flexWrap: "wrap" }}>
-              <Icon name="cal" size={16} color="rgba(246,242,234,.7)" />
-              <span style={{ fontSize: 13, color: T.paper, fontWeight: 600 }}>{gD} · {b.time}</span>
+              <Icon name="cal" size={16} color="rgba(246,242,234,.82)" />
+              <span style={{ fontSize: 13, color: T.cream, fontWeight: 600 }}>{gD} · {b.time}</span>
               <span style={{ flex: 1 }} />
               <span style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
-              <button type="button" className="bt tap" onClick={() => nav("chat", b.stato === "confermata" ? { ...w, tema: b.task, quando: `${gD.toLowerCase()} alle ${b.time}` } : w)} style={{ minHeight: 44, padding: "0 14px", borderRadius: 999, border: "1.5px solid rgba(246,242,234,.5)", fontSize: 13.5, fontWeight: 700, color: T.paper }}>Messaggio</button>
-              {!fatta && <button type="button" className="bt tap" onClick={() => setChiediDisdetta(b.id)} style={{ minHeight: 44, padding: "0 14px", borderRadius: 999, border: "1.5px solid rgba(246,242,234,.5)", fontSize: 13.5, fontWeight: 700, color: T.paper }}>Disdici</button>}
+              <button type="button" className="bt tap" onClick={() => nav("chat", b.stato === "confermata" ? { ...w, tema: b.task, quando: `${gD.toLowerCase()} alle ${b.time}` } : w)} style={{ minHeight: 44, padding: "0 14px", borderRadius: 999, border: "1.5px solid rgba(246,242,234,.5)", fontSize: 13.5, fontWeight: 700, color: T.cream }}>Messaggio</button>
+              {!fatta && <button type="button" className="bt tap" onClick={() => setChiediDisdetta(b.id)} style={{ minHeight: 44, padding: "0 14px", borderRadius: 999, border: "1.5px solid rgba(246,242,234,.5)", fontSize: 13.5, fontWeight: 700, color: T.cream }}>Disdici</button>}
               </span>
-              {b.stato === "confermata" && <button type="button" className="bt tap" onClick={() => nav("review", { ...w, bookingId: b.id })} style={{ width: "100%", marginTop: 4, padding: "10px 0", borderRadius: 10, background: fatta ? T.paper : "transparent", border: fatta ? "none" : "1px dashed rgba(246,242,234,.4)", color: fatta ? T.pine : T.paper, fontSize: 13, fontWeight: fatta ? 700 : 600, textAlign: "center" }}>Lavoro finito? Lascia il giudizio</button>}
+              {b.stato === "confermata" && <button type="button" className="bt tap" onClick={() => nav("review", { ...w, bookingId: b.id })} style={{ width: "100%", marginTop: 4, padding: "10px 0", borderRadius: 10, background: fatta ? T.paper : "transparent", border: fatta ? "none" : "1px dashed rgba(246,242,234,.4)", color: fatta ? T.accent : T.paper, fontSize: 13, fontWeight: fatta ? 700 : 600, textAlign: "center" }}>Lavoro finito? Lascia il giudizio</button>}
               {b.stato === "confermata" && <div style={{ width: "100%", fontSize: 12.5, color: "rgba(246,242,234,.8)", textAlign: "center", marginTop: -6 }}>Anteprima: puoi provarlo subito. Nell'app vera compare dopo la data del lavoro.</div>}
             </div>
           ))}
@@ -1366,7 +1377,7 @@ function ClientView({ nav, saved, profilo, prenotazioni = [], setPrenotazioni, b
       {/* Preferiti — si riempie col cuore sui profili */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", margin: "8px 0 12px" }}>
         <span style={h2}>I miei preferiti</span>
-        <button type="button" className="bt" onClick={() => nav("search")} style={{ fontSize: 13, color: T.pine, fontWeight: 600 }}>Cerca</button>
+        <button type="button" className="bt" onClick={() => nav("search")} style={{ fontSize: 13, color: T.accent, fontWeight: 600 }}>Cerca</button>
       </div>
       {favs.length === 0 ? (
         <div style={{ background: T.card, border: `1px dashed ${T.line}`, borderRadius: 14, padding: 18, marginBottom: 22, fontSize: 13, color: T.stone, lineHeight: 1.6 }}>
@@ -1388,7 +1399,7 @@ function ClientView({ nav, saved, profilo, prenotazioni = [], setPrenotazioni, b
       <div style={{ display: "flex", alignItems: "center", gap: 12, background: T.card, border: `1px solid ${T.line}`, borderRadius: 14, padding: "12px 14px", marginBottom: 22 }}>
         <Icon name="pin" size={18} color={T.ink2} />
         <div style={{ flex: 1 }}><div style={{ fontSize: 13.5, fontWeight: 600, color: T.ink }}>{profilo?.zona}</div><div style={{ fontSize: 13, color: T.stone }}>L'indirizzo preciso lo scrivi quando prenoti.</div></div>
-        <button type="button" className="bt tap" onClick={() => nav("csetup", { back: "account", edit: true })} style={{ fontSize: 13, fontWeight: 700, color: T.pine }}>Cambia</button>
+        <button type="button" className="bt tap" onClick={() => nav("csetup", { back: "account", edit: true })} style={{ fontSize: 13, fontWeight: 700, color: T.accent }}>Cambia</button>
       </div>
 
       {/* Esempio dichiarato: come diventa il profilo dopo qualche lavoro */}
@@ -1396,15 +1407,15 @@ function ClientView({ nav, saved, profilo, prenotazioni = [], setPrenotazioni, b
         <summary className="esempio-top" style={{ cursor: "pointer", marginBottom: 0 }}><span className="ticker-tag">ESEMPIO</span><span>Vedi come diventa il profilo dopo qualche lavoro (dati finti)</span></summary>
         <div style={{ height: 14 }} />
         <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
-          <button type="button" onClick={() => nav("rewards")} className="bt tap" style={{ flex: 1, background: "#F1E7D2", borderRadius: 16, padding: 16, textAlign: "left" }}>
+          <button type="button" onClick={() => nav("rewards")} className="bt tap" style={{ flex: 1, background: "#3A2E1A", borderRadius: 16, padding: 16, textAlign: "left" }}>
             <Icon name="star" size={20} color={T.ochre} />
-            <div style={{ marginTop: 10, fontFamily: "'Fraunces',serif", fontSize: 16, fontWeight: 600, color: T.ink }}>Di casa</div>
+            <div style={{ marginTop: 10, fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 16, fontWeight: 700, color: T.ink }}>Di casa</div>
             <div style={{ fontSize: 12.5, color: T.ochreInk, marginTop: 2 }}>Il livello</div>
           </button>
-          <button type="button" onClick={() => nav("passport")} className="bt tap" style={{ flex: 1, background: "#F3E3D9", borderRadius: 16, padding: 16, textAlign: "left" }}>
-            <Icon name="pin" size={20} color="#B5612F" />
+          <button type="button" onClick={() => nav("passport")} className="bt tap" style={{ flex: 1, background: "#3A2419", borderRadius: 16, padding: 16, textAlign: "left" }}>
+            <Icon name="pin" size={20} color="#E39A6E" />
             <div style={{ marginTop: 10 }}><Mono size={18} color={T.ink}>{STAMPS}</Mono></div>
-            <div style={{ fontSize: 12.5, color: "#8E4F2E", marginTop: 2 }}>Timbri</div>
+            <div style={{ fontSize: 12.5, color: "#E39A6E", marginTop: 2 }}>Timbri</div>
           </button>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
@@ -1419,7 +1430,7 @@ function ClientView({ nav, saved, profilo, prenotazioni = [], setPrenotazioni, b
               <div style={{ fontSize: 12.5, color: T.stone }}>{w.n} · {b.date}</div>
             </div>
             {b.reviewed
-              ? blocked.includes(w.id) ? <span style={{ fontSize: 13, color: T.stone }}>Bloccato</span> : <button type="button" onClick={() => nav("booking", w)} className="bt tap" style={{ fontSize: 13, fontWeight: 600, color: T.pine }}>Riprenota</button>
+              ? blocked.includes(w.id) ? <span style={{ fontSize: 13, color: T.stone }}>Bloccato</span> : <button type="button" onClick={() => nav("booking", w)} className="bt tap" style={{ fontSize: 13, fontWeight: 600, color: T.accent }}>Riprenota</button>
               : <button type="button" onClick={() => nav("review", { ...w, esempio: true })} className="bt tap" style={{ fontSize: 13, fontWeight: 700, color: T.ochreInk }}>Prova a giudicare</button>}
           </div>
         ); })}
@@ -1456,7 +1467,7 @@ function WorkerView({ nav, vai, paused, reqs, esempiTutti, setReqs, agenda, setA
     <>
       {mie.length > 0 && (
         <button type="button" className="next-card" style={{ width: "100%", margin: "0 0 16px" }} onClick={onVediMie}>
-          <Icon name="cal" size={20} color={T.pine} />
+          <Icon name="cal" size={20} color={T.accent} />
           <span style={{ flex: 1 }}><span className="next-t">Hai prenotato</span><span className="next-s">{wById(mie[0].wid)?.n} · {giornoDi(mie[0])} alle {mie[0].time}</span></span>
           <Icon name="arrowR" size={18} color={T.stone} />
         </button>
@@ -1464,7 +1475,7 @@ function WorkerView({ nav, vai, paused, reqs, esempiTutti, setReqs, agenda, setA
       {/* Availability */}
       <div style={{ background: avail ? T.pineSoft : T.card, borderRadius: 16, padding: 18, border: `1px solid ${avail ? "transparent" : T.line}`, marginBottom: 20, display: "flex", alignItems: "center", gap: 14 }}>
         <div style={{ flex: 1 }}>
-          <div style={{ fontFamily: "'Fraunces',serif", fontSize: 16, fontWeight: 600, color: avail ? T.pine : T.ink2 }}>{paused ? "Profilo in pausa" : avail ? "Disponibile ora" : "Non disponibile"}</div>
+          <div style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 16, fontWeight: 700, color: avail ? T.accent : T.ink2 }}>{paused ? "Profilo in pausa" : avail ? "Disponibile ora" : "Non disponibile"}</div>
           <div style={{ fontSize: 13, color: T.ink2, marginTop: 2 }}>{paused ? "Riattiva il profilo per ricevere richieste." : avail ? "Ti arrivano le richieste della zona." : "Accendi per ricevere lavori."}</div>
         </div>
         <button type="button" role="switch" aria-checked={avail} aria-label="Disponibile" disabled={paused} onClick={() => setAvail(!availOn)} className="bt" style={{ width: 50, height: 30, borderRadius: 16, background: avail ? T.pine : T.faint, position: "relative", transition: "all .2s", flexShrink: 0, opacity: paused ? .5 : 1, cursor: paused ? "not-allowed" : "pointer" }}>
@@ -1477,36 +1488,36 @@ function WorkerView({ nav, vai, paused, reqs, esempiTutti, setReqs, agenda, setA
         <Seal score={w.ida} lv={w.lv} size={64} />
         <div style={{ flex: 1 }}>
           {w.ida == null
-            ? <><div style={{ fontFamily: "'Fraunces',serif", fontSize: 16, fontWeight: 600, color: T.ink }}>Profilo nuovo</div><div style={{ fontSize: 13, color: T.ink2, marginTop: 2 }}>Il tuo IDA compare dopo {IDA_MIN_LAVORI} lavori giudicati</div></>
-            : <><div style={{ fontFamily: "'Fraunces',serif", fontSize: 16, fontWeight: 600, color: T.ink }}>{lv.l}</div><div style={{ fontSize: 13, color: T.ink2, marginTop: 2 }}>{w.rv} giudizi reali · vedi come ti valutano</div></>}
+            ? <><div style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 16, fontWeight: 700, color: T.ink }}>Profilo nuovo</div><div style={{ fontSize: 13, color: T.ink2, marginTop: 2 }}>Il tuo IDA compare dopo {IDA_MIN_LAVORI} lavori giudicati</div></>
+            : <><div style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 16, fontWeight: 700, color: T.ink }}>{lv.l}</div><div style={{ fontSize: 13, color: T.ink2, marginTop: 2 }}>{w.rv} giudizi reali · vedi come ti valutano</div></>}
         </div>
         <Icon name="arrowR" size={20} color={T.stone} />
       </button>
 
-      <button type="button" className="bt tap" onClick={() => nav("worker", { id: "me", self: true, n: ME.n, ini: ME.ini, bio: ME.bio || ME.sk.slice(0, 3).join(" · "), ida: null, lv: "bronzo", pr: ME.pr, d: 0, av: avail, j: 0, rv: 0, ver: verified, sk: ME.sk, rsp: "—", tipo: ME.tipo, abil: ME.abil, rc: ME.rc, preventivo: ME.preventivo })} style={{ width: "100%", textAlign: "center", padding: 12, borderRadius: 12, border: `1.5px solid ${T.pine}`, color: T.pine, fontWeight: 700, fontSize: 14, marginBottom: 16 }}>Vedi come ti vedono i clienti</button>
+      <button type="button" className="bt tap" onClick={() => nav("worker", { id: "me", self: true, n: ME.n, ini: ME.ini, bio: ME.bio || ME.sk.slice(0, 3).join(" · "), ida: null, lv: "bronzo", pr: ME.pr, d: 0, av: avail, j: 0, rv: 0, ver: verified, sk: ME.sk, rsp: "—", tipo: ME.tipo, abil: ME.abil, rc: ME.rc, preventivo: ME.preventivo })} style={{ width: "100%", textAlign: "center", padding: 12, borderRadius: 12, border: `1.5px solid ${T.pine}`, color: T.accent, fontWeight: 700, fontSize: 14, marginBottom: 16 }}>Vedi come ti vedono i clienti</button>
       {/* Sigillo condivisibile — la reputazione spendibile ovunque */}
       <button type="button" onClick={() => nav("share")} className="bt tap" style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: 12, background: T.pine, borderRadius: 14, padding: "14px 16px", marginBottom: 16, cursor: "pointer" }}>
         <Icon name="seal" size={20} color={T.ochre} />
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 13.5, fontWeight: 700, color: T.paper }}>Mostra il tuo sigillo</div>
+          <div style={{ fontSize: 13.5, fontWeight: 700, color: T.cream }}>Mostra il tuo sigillo</div>
           <div style={{ fontSize: 12.5, color: "rgba(246,242,234,.8)", marginTop: 1 }}>Badge, QR e link da mettere ovunque</div>
         </div>
-        <Icon name="arrowR" size={18} color="rgba(246,242,234,.7)" />
+        <Icon name="arrowR" size={18} color="rgba(246,242,234,.82)" />
       </button>
       {w.ida == null && (
         <div style={{ background: T.ochreSoft, borderRadius: 16, padding: 18, marginBottom: 20 }}>
-          <div style={{ fontFamily: "'Fraunces',serif", fontSize: 14, fontWeight: 600, color: "#7a5418", marginBottom: 10 }}>Come prendere il primo lavoro</div>
+          <div style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 14, fontWeight: 700, color: T.ochreInk, marginBottom: 10 }}>Come prendere il primo lavoro</div>
           {["Profilo verificato: i clienti si fidano di più", "Un prezzo onesto convince più di mille parole", "Un primo lavoro fatto bene lancia il tuo IDA"].map((t, i) => (
             <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: i < 2 ? 8 : 0 }}>
-              <span aria-hidden="true" style={{ flexShrink: 0, width: 20, height: 20, borderRadius: 10, border: `1.5px solid ${T.ochre}`, color: "#7a5418", fontSize: 12.5, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{i + 1}</span>
-              <span style={{ fontSize: 13, color: "#7a5418", lineHeight: 1.5 }}>{t}</span>
+              <span aria-hidden="true" style={{ flexShrink: 0, width: 20, height: 20, borderRadius: 10, border: `1.5px solid ${T.ochre}`, color: T.ochreInk, fontSize: 12.5, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{i + 1}</span>
+              <span style={{ fontSize: 13, color: T.ochreInk, lineHeight: 1.5 }}>{t}</span>
             </div>
           ))}
         </div>
       )}
 
       {/* Agenda — si riempie davvero con ciò che accetti */}
-      <div id="agenda" style={{ fontFamily: "'Fraunces',serif", fontSize: 17, fontWeight: 600, color: T.ink, marginBottom: 12, scrollMarginTop: 12 }}>In agenda</div>
+      <div id="agenda" style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 17, fontWeight: 700, color: T.ink, marginBottom: 12, scrollMarginTop: 12 }}>In agenda</div>
       {agenda.length === 0 ? (
         <div style={{ textAlign: "center", padding: "22px 16px", color: T.stone, fontSize: 13, lineHeight: 1.6, background: T.card, borderRadius: 14, border: `1px dashed ${T.line}`, marginBottom: 4 }}>
           Nessun lavoro in agenda. Le richieste che accetti compaiono qui.
@@ -1516,7 +1527,7 @@ function WorkerView({ nav, vai, paused, reqs, esempiTutti, setReqs, agenda, setA
           <button type="button" className="bt" aria-expanded={aperto === (a.id || i)} onClick={() => setAperto(aperto === (a.id || i) ? null : (a.id || i))} style={{ width: "100%", textAlign: "left", padding: 14, display: "flex", alignItems: "center", gap: 12 }}>
             <span style={{ textAlign: "center", minWidth: 50 }}>
               <Mono size={14} color={T.ink}>{a.time}</Mono>
-              <span style={{ display: "block", fontSize: 12, fontWeight: 700, color: T.pine, marginTop: 2, textTransform: "uppercase" }}>{a.data ? giornoDi(a) : a.when.split(" ")[0]}</span>
+              <span style={{ display: "block", fontSize: 12, fontWeight: 700, color: T.accent, marginTop: 2, textTransform: "uppercase" }}>{a.data ? giornoDi(a) : a.when.split(" ")[0]}</span>
             </span>
             <span style={{ width: 1, height: 32, background: T.line }} />
             <span style={{ flex: 1 }}>
@@ -1538,12 +1549,12 @@ function WorkerView({ nav, vai, paused, reqs, esempiTutti, setReqs, agenda, setA
                 ? <div style={{ marginTop: 10, background: T.paper, borderRadius: 12, padding: 12, border: `1px solid ${T.line}` }}>
                     <div style={{ fontSize: 13, color: T.ink, marginBottom: 8 }}>Non puoi più andare? Avvisiamo {a.c.split(" ")[0]}. Disdire all'ultimo pesa sulla puntualità del tuo IDA.</div>
                     <div style={{ display: "flex", gap: 8 }}>
-                      <button type="button" className="bt tap" onClick={() => { setAgenda(ag => ag.filter(x => x.id !== a.id)); setDisdiciA(null); setAperto(null); avviso.mostra(`Disdetto: ${a.c.split(" ")[0]} riceve un avviso.`); }} style={{ flex: 1, padding: "10px 0", borderRadius: 10, background: T.ember, color: "#fff", fontWeight: 700, textAlign: "center" }}>Sì, disdici</button>
+                      <button type="button" className="bt tap" onClick={() => { setAgenda(ag => ag.filter(x => x.id !== a.id)); setDisdiciA(null); setAperto(null); avviso.mostra(`Disdetto: ${a.c.split(" ")[0]} riceve un avviso.`); }} style={{ flex: 1, padding: "10px 0", borderRadius: 10, background: T.emberBtn, color: "#fff", fontWeight: 700, textAlign: "center" }}>Sì, disdici</button>
                       <button type="button" className="bt tap" onClick={() => setDisdiciA(null)} style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: `1px solid ${T.line}`, color: T.ink, fontWeight: 600, textAlign: "center" }}>Annulla</button>
                     </div>
                   </div>
                 : <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                    <button type="button" className="bt tap" onClick={() => nav("chat", { n: a.c, ini: a.c[0], cliente: true, tema: a.task })} style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: `1px solid ${T.line}`, color: T.pine, fontWeight: 700, textAlign: "center" }}>Scrivi in chat</button>
+                    <button type="button" className="bt tap" onClick={() => nav("chat", { n: a.c, ini: a.c[0], cliente: true, tema: a.task })} style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: `1px solid ${T.line}`, color: T.accent, fontWeight: 700, textAlign: "center" }}>Scrivi in chat</button>
                     <button type="button" className="bt tap" onClick={() => setDisdiciA(a.id)} style={{ flex: 1, padding: "10px 0", borderRadius: 10, color: T.ember, fontWeight: 600, textAlign: "center" }}>Non posso più</button>
                   </div>}
             </div>
@@ -1552,7 +1563,7 @@ function WorkerView({ nav, vai, paused, reqs, esempiTutti, setReqs, agenda, setA
       ))}
 
       {/* Richieste in arrivo — con i dettagli per decidere, e il prezzo calcolato sulla TUA tariffa */}
-      <div id="richieste" style={{ fontFamily: "'Fraunces',serif", fontSize: 17, fontWeight: 600, color: T.ink, margin: "22px 0 4px", scrollMarginTop: 12 }}>Richieste in arrivo</div>
+      <div id="richieste" style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 17, fontWeight: 700, color: T.ink, margin: "22px 0 4px", scrollMarginTop: 12 }}>Richieste in arrivo</div>
       <div style={{ fontSize: 13, color: T.stone, marginBottom: 12, lineHeight: 1.5 }}>Rifiutare non abbassa il tuo IDA e non ti fa sparire dalle ricerche. <span className="ticker-tag">ESEMPIO</span> {esempiTutti === "tutti" ? "Nessun esempio combacia con le tue competenze: te li mostriamo tutti. Nell'app vera ricevi solo quelli giusti per te." : esempiTutti === "fuorizona" ? "Esempi per le tue competenze, ma fuori dalle zone che hai scelto: nell'app vera ricevi solo quelli nelle tue zone." : "Richieste di esempio per le tue competenze e zone."}</div>
       {!avail && (
         <div style={{ textAlign: "center", padding: "22px 16px", color: T.stone, fontSize: 13, lineHeight: 1.6, background: T.card, borderRadius: 14, border: `1px dashed ${T.line}` }}>
@@ -1567,7 +1578,7 @@ function WorkerView({ nav, vai, paused, reqs, esempiTutti, setReqs, agenda, setA
               <div style={{ fontSize: 13, color: T.stone, marginTop: 2 }}>{r.c} · {r.zona} · {r.when}, {r.time}</div>
             </div>
             <div style={{ textAlign: "right" }}>
-              <Mono size={15} color={T.pine}>~{w.pr * r.ore}€</Mono>
+              <Mono size={15} color={T.accent}>~{w.pr * r.ore}€</Mono>
               <div style={{ fontSize: 11.5, color: T.stone }}>{r.ore}h × {w.pr}€</div>
             </div>
           </div>
@@ -1581,7 +1592,7 @@ function WorkerView({ nav, vai, paused, reqs, esempiTutti, setReqs, agenda, setA
             <div style={{ marginTop: 12, background: T.paper, borderRadius: 12, padding: 12, border: `1px solid ${T.line}` }}>
               <div style={{ fontSize: 13, color: T.ink, lineHeight: 1.5, marginBottom: 10 }}>Rifiuti? {r.c.split(" ")[0]} riceve un avviso gentile. Il tuo IDA non cambia.</div>
               <div style={{ display: "flex", gap: 8 }}>
-                <button type="button" className="bt tap" onClick={() => handle(r, false)} style={{ flex: 1, padding: "10px 0", borderRadius: 10, background: T.ink2, color: "#fff", fontWeight: 700, textAlign: "center" }}>Sì, rifiuta</button>
+                <button type="button" className="bt tap" onClick={() => handle(r, false)} style={{ flex: 1, padding: "10px 0", borderRadius: 10, background: T.faint, color: "#fff", fontWeight: 700, textAlign: "center" }}>Sì, rifiuta</button>
                 <button type="button" className="bt tap" onClick={() => setConferma(null)} style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: `1px solid ${T.line}`, color: T.ink, fontWeight: 600, textAlign: "center" }}>Annulla</button>
               </div>
             </div>
@@ -1604,7 +1615,7 @@ function WorkerView({ nav, vai, paused, reqs, esempiTutti, setReqs, agenda, setA
       )}
 
       {/* Il tuo mese */}
-      <div style={{ fontFamily: "'Fraunces',serif", fontSize: 17, fontWeight: 600, color: T.ink, margin: "22px 0 12px" }}>Il tuo mese</div>
+      <div style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 17, fontWeight: 700, color: T.ink, margin: "22px 0 12px" }}>Il tuo mese</div>
       <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
         <div style={{ flex: 1, background: T.card, borderRadius: 14, padding: 16, border: `1px solid ${T.line}` }}><Mono size={18} color={T.ink}>{MONTH.jobs}</Mono><div style={{ fontSize: 12.5, color: T.stone, marginTop: 3 }}>lavori conclusi</div></div>
         <div style={{ flex: 1, background: T.card, borderRadius: 14, padding: 16, border: `1px solid ${T.line}` }}><Mono size={18} color={T.ink}>{agenda.length}</Mono><div style={{ fontSize: 12.5, color: T.stone, marginTop: 3 }}>in agenda</div></div>
@@ -1612,21 +1623,21 @@ function WorkerView({ nav, vai, paused, reqs, esempiTutti, setReqs, agenda, setA
       <div style={{ fontSize: 12.5, color: T.stone, marginBottom: 22, lineHeight: 1.5 }}>I soldi non li vediamo: li gestisci tu, direttamente col cliente. Per questo qui non trovi incassi.</div>
 
       {/* Abbonamento — nuovo: gratis durante il lancio */}
-      <div style={{ fontFamily: "'Fraunces',serif", fontSize: 17, fontWeight: 600, color: T.ink, marginBottom: 12 }}>Il tuo abbonamento</div>
+      <div style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 17, fontWeight: 700, color: T.ink, marginBottom: 12 }}>Il tuo abbonamento</div>
       <div style={{ background: T.pine, borderRadius: 18, padding: 20, marginBottom: 22 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-          <span style={{ fontFamily: "'Fraunces',serif", fontSize: 18, fontWeight: 600, color: T.paper }}>TaskEase Base</span>
-          <div><Mono size={20} color={T.paper}>Gratis</Mono></div>
+          <span style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 18, fontWeight: 700, color: T.cream }}>TaskEase Base</span>
+          <div><Mono size={20} color={T.cream}>Gratis</Mono></div>
         </div>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(246,242,234,.12)", borderRadius: 8, padding: "5px 10px", marginTop: 10 }}>
           <Icon name="seal" size={13} color={T.ochre} />
-          <span style={{ fontSize: 12.5, color: T.paper, fontWeight: 600 }}>Tutto l'essenziale, gratis. Richieste illimitate.</span>
+          <span style={{ fontSize: 12.5, color: T.cream, fontWeight: 600 }}>Tutto l'essenziale, gratis. Richieste illimitate.</span>
         </div>
         <div style={{ fontSize: 13, color: "rgba(246,242,234,.8)", marginTop: 12, lineHeight: 1.5 }}>Pro ({PLAN.price}€/mese IVA inclusa, disdici quando vuoi) aggiunge statistiche, riepiloghi e strumenti per la fattura. Del tutto facoltativo: chi cerca ti sceglie per il tuo lavoro, non per l'abbonamento.</div>
       </div>
 
       {/* Reviews received */}
-      <div style={{ fontFamily: "'Fraunces',serif", fontSize: 17, fontWeight: 600, color: T.ink, marginBottom: 12 }}>Cosa dicono di te</div>
+      <div style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 17, fontWeight: 700, color: T.ink, marginBottom: 12 }}>Cosa dicono di te</div>
       {REVIEWS_IN.length === 0 ? (
         <div style={{ textAlign: "center", padding: "22px 16px", color: T.stone, fontSize: 13, lineHeight: 1.6, background: T.card, borderRadius: 14, border: `1px dashed ${T.line}` }}>
           Ancora nessun giudizio. Arriveranno coi primi lavori e costruiranno il tuo IDA.
@@ -1676,7 +1687,7 @@ function Dashboard({ nav }) {
       </div>
       <div style={{ padding: "16px 22px 24px", textAlign: "center" }}>
         <Seal score={w.ida} lv={w.lv} size={104} />
-        <h1 style={{ fontFamily: "'Fraunces',serif", fontSize: 22, fontWeight: 600, color: T.ink, marginTop: 16 }}>{w.n}</h1>
+        <h1 style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 22, fontWeight: 800, color: T.ink, marginTop: 16 }}>{w.n}</h1>
         <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 6, marginTop: 10 }}>
           <span className="badge">{w.tipo === "piva" ? "Professionista con P.IVA" : "Privato · prestazione occasionale"}</span>
           {w.abil && <span className="badge ok">Impresa abilitata DM 37/08 (dichiarata)</span>}
@@ -1686,7 +1697,7 @@ function Dashboard({ nav }) {
       </div>
       <div style={{ padding: "0 22px 24px" }}>
         {isNew && (
-          <div style={{ background: T.ochreSoft, borderRadius: 16, padding: 18, marginBottom: 14, lineHeight: 1.6, fontSize: 13, color: "#7a5418" }}>
+          <div style={{ background: T.ochreSoft, borderRadius: 16, padding: 18, marginBottom: 14, lineHeight: 1.6, fontSize: 13, color: T.ochreInk }}>
             Il tuo IDA compare dopo <strong>{IDA_MIN_LAVORI} lavori valutati</strong>: prima sul profilo c'è scritto NUOVO, non un numero inventato. Hai {w.rv} giudizi su {IDA_MIN_LAVORI}.
             <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
               {Array.from({ length: IDA_MIN_LAVORI }).map((_, i) => <div key={i} style={{ flex: 1, height: 6, borderRadius: 3, background: i < w.rv ? T.ochre : "rgba(169,118,43,.2)" }} />)}
@@ -1694,7 +1705,7 @@ function Dashboard({ nav }) {
           </div>
         )}
         <div style={{ background: T.card, borderRadius: 18, padding: 20, border: `1px solid ${T.line}`, marginBottom: 14 }}>
-          <div style={{ fontFamily: "'Fraunces',serif", fontSize: 16, fontWeight: 600, color: T.ink, marginBottom: 4 }}>Come ti giudicano</div>
+          <div style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 16, fontWeight: 700, color: T.ink, marginBottom: 4 }}>Come ti giudicano</div>
           <div style={{ fontSize: 12.5, color: T.stone, marginBottom: 16 }}>Cinque domande dopo ogni lavoro. Questi sono i pesi.</div>
           {IDA_VOCI.map((v) => (
             <div key={v.k} style={{ marginBottom: 13 }}>
@@ -1709,7 +1720,7 @@ function Dashboard({ nav }) {
         </div>
         {/* Come funziona l'IDA — trasparente, nessun premio alla disponibilità */}
         <div style={{ background: T.pineSoft, borderRadius: 18, padding: 20, marginBottom: 14 }}>
-          <div style={{ fontFamily: "'Fraunces',serif", fontSize: 16, fontWeight: 600, color: T.pine, marginBottom: 6 }}>Come cresce il tuo IDA</div>
+          <div style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 16, fontWeight: 700, color: T.accent, marginBottom: 6 }}>Come cresce il tuo IDA</div>
           <p style={{ fontSize: 13, color: T.ink2, lineHeight: 1.55, margin: 0 }}>
             Solo i clienti lo muovono, con i giudizi sui lavori conclusi. Non lo tocchiamo noi, non dipende da quanti lavori accetti né da quanto sei disponibile. È una reputazione, non un premio: la mostriamo a chi cerca, poi la scelta è sua.
           </p>
@@ -1748,13 +1759,13 @@ function Neighborhood({ nav, posts, onRemove, pro, paused }) {
             <div style={{ minWidth: 0 }}>
               <div className={"post-k" + (p.mine || p.t === "job" ? " job" : "")}>{p.mine ? "La tua" : p.t === "job" ? "Al lavoro" : "Cerca aiuto"} · {p.h}</div>
               <div className={"post-x a-capo" + (aperti.includes(p.id || i) ? "" : " tre-righe")}>{p.tx}</div>
-              {p.tx.length > 160 && <button type="button" className="bt tap" onClick={() => setAperti(a => a.includes(p.id || i) ? a.filter(x => x !== (p.id || i)) : [...a, p.id || i])} style={{ fontSize: 13, fontWeight: 700, color: T.pine }}>{aperti.includes(p.id || i) ? "Mostra meno" : "Leggi tutto"}</button>}
+              {p.tx.length > 160 && <button type="button" className="bt tap" onClick={() => setAperti(a => a.includes(p.id || i) ? a.filter(x => x !== (p.id || i)) : [...a, p.id || i])} style={{ fontSize: 13, fontWeight: 700, color: T.accent }}>{aperti.includes(p.id || i) ? "Mostra meno" : "Leggi tutto"}</button>}
               <div className="post-by">{p.a}{p.foto && " · con foto (simulata)"}</div>
               {p.mine && (togli === p.id
                 ? <div style={{ marginTop: 10 }}>
                     <div style={{ fontSize: 13.5, color: T.ink, marginBottom: 8 }}>Togliere la richiesta dalla bacheca?</div>
                     <div style={{ display: "flex", gap: 8 }}>
-                      <button type="button" className="bt tap" onClick={() => { onRemove?.(p.id); setTogli(null); }} style={{ flex: 1, minHeight: 44, borderRadius: 8, background: T.ember, color: "#fff", fontWeight: 700, fontSize: 14, textAlign: "center" }}>Sì, togli</button>
+                      <button type="button" className="bt tap" onClick={() => { onRemove?.(p.id); setTogli(null); }} style={{ flex: 1, minHeight: 44, borderRadius: 8, background: T.emberBtn, color: "#fff", fontWeight: 700, fontSize: 14, textAlign: "center" }}>Sì, togli</button>
                       <button type="button" className="bt tap" onClick={() => setTogli(null)} style={{ flex: 1, minHeight: 44, borderRadius: 8, border: `1.5px solid ${T.rule}`, color: T.ink, fontWeight: 600, fontSize: 14, textAlign: "center" }}>Annulla</button>
                     </div>
                   </div>
@@ -1767,7 +1778,7 @@ function Neighborhood({ nav, posts, onRemove, pro, paused }) {
               {serve === (p.id || i) && (
                 <div role="status" style={{ marginTop: 12, borderLeft: `3px solid ${T.ochre}`, padding: "2px 0 2px 12px", fontSize: 13.5, color: T.ink2, lineHeight: 1.5 }}>
                   {paused ? "Il tuo profilo da professionista è in pausa: riattivalo per rispondere." : "Per proporti a un lavoro serve il profilo da professionista: codice fiscale e le dichiarazioni previste dalla legge. Ci vogliono pochi minuti."}
-                  <div style={{ marginTop: 6 }}><button type="button" className="bt tap" onClick={() => paused ? nav("account", { ruolo: "worker" }) : nav("setup")} style={{ fontWeight: 700, color: T.pine, textDecoration: "underline", textUnderlineOffset: 3 }}>{paused ? "Vai al profilo" : "Crea il profilo da professionista"}</button></div>
+                  <div style={{ marginTop: 6 }}><button type="button" className="bt tap" onClick={() => paused ? nav("account", { ruolo: "worker" }) : nav("setup")} style={{ fontWeight: 700, color: T.accent, textDecoration: "underline", textUnderlineOffset: 3 }}>{paused ? "Vai al profilo" : "Crea il profilo da professionista"}</button></div>
                 </div>
               )}
             </div>
@@ -1791,11 +1802,11 @@ function Passport({ nav }) {
         <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
           {[[tot, "timbri"], [`${QUARTIERI.filter(q => q.s > 0).length}/7`, "zone"], [BADGES.filter(b => b.ok).length, "premi"]].map(([v, l], i) => (
             <div key={i} style={{ flex: 1, textAlign: "center", background: T.card, borderRadius: 14, padding: "16px 8px", border: `1px solid ${T.line}` }}>
-              <Mono size={22} color={T.pine}>{v}</Mono><div style={{ fontSize: 12.5, color: T.stone, marginTop: 3 }}>{l}</div>
+              <Mono size={22} color={T.accent}>{v}</Mono><div style={{ fontSize: 12.5, color: T.stone, marginTop: 3 }}>{l}</div>
             </div>
           ))}
         </div>
-        <div style={{ fontFamily: "'Fraunces',serif", fontSize: 18, fontWeight: 600, color: T.ink, marginBottom: 4 }}>La tua Forlì</div>
+        <div style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 18, fontWeight: 700, color: T.ink, marginBottom: 4 }}>La tua Forlì</div>
         <p style={{ fontSize: 13, color: T.ink2, marginTop: 0, marginBottom: 14 }}>Ogni lavoro finito colora un quartiere. Cinque timbri in una zona e diventi “di casa” lì.</p>
         <div style={{ width: "100%", height: 210, background: T.card, borderRadius: 20, position: "relative", border: `1px solid ${T.line}`, marginBottom: 14, overflow: "hidden" }}>
           {QUARTIERI.map(q => {
@@ -1806,23 +1817,23 @@ function Passport({ nav }) {
               </button>
             );
           })}
-          {QUARTIERI.filter(q => q.s > 0).map(q => <span key={`l${q.id}`} style={{ position: "absolute", left: `${q.x}%`, top: `${q.y + 9}%`, transform: "translateX(-50%)", fontSize: 8, fontWeight: 600, color: T.pine, pointerEvents: "none", whiteSpace: "nowrap" }}>{q.n}</span>)}
+          {QUARTIERI.filter(q => q.s > 0).map(q => <span key={`l${q.id}`} style={{ position: "absolute", left: `${q.x}%`, top: `${q.y + 9}%`, transform: "translateX(-50%)", fontSize: 8, fontWeight: 600, color: T.accent, pointerEvents: "none", whiteSpace: "nowrap" }}>{q.n}</span>)}
         </div>
         {sq && (
           <div style={{ background: T.card, borderRadius: 14, padding: 16, border: `1.5px solid ${T.pine}`, marginBottom: 16, animation: "rise .3s ease" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontFamily: "'Fraunces',serif", fontSize: 16, fontWeight: 600, color: T.ink }}>{sq.n}</span>
+              <span style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 16, fontWeight: 700, color: T.ink }}>{sq.n}</span>
               <Mono size={13} color={T.ink2}>{sq.s} timbri</Mono>
             </div>
-            {sq.s >= 5 ? <div style={{ fontSize: 13, color: T.pine, fontWeight: 600, marginTop: 8 }}>Sei “di casa” in {sq.n} ✓ · badge sbloccato</div>
+            {sq.s >= 5 ? <div style={{ fontSize: 13, color: T.accent, fontWeight: 600, marginTop: 8 }}>Sei “di casa” in {sq.n} ✓ · badge sbloccato</div>
               : sq.s > 0 ? <div style={{ marginTop: 10 }}><div style={{ height: 5, background: T.line, borderRadius: 3 }}><div style={{ height: 5, background: T.pine, borderRadius: 3, width: `${(sq.s / 5) * 100}%` }} /></div><div style={{ fontSize: 12.5, color: T.stone, marginTop: 5 }}>Ancora {5 - sq.s} per il badge della zona</div></div>
                 : <div style={{ fontSize: 13, color: T.stone, marginTop: 8, fontStyle: "italic" }}>Zona ancora da scoprire.</div>}
           </div>
         )}
-        <div style={{ fontFamily: "'Fraunces',serif", fontSize: 18, fontWeight: 600, color: T.ink, marginBottom: 12 }}>Premi</div>
+        <div style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 18, fontWeight: 700, color: T.ink, marginBottom: 12 }}>Premi</div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10 }}>
           {BADGES.map((b, i) => (
-            <div key={i} style={{ background: b.ok ? T.card : "transparent", borderRadius: 14, padding: "16px 8px", textAlign: "center", border: `1px solid ${b.ok ? T.line : "transparent"}`, opacity: b.ok ? 1 : .5 }}>
+            <div key={i} style={{ background: b.ok ? T.card : "transparent", borderRadius: 14, padding: "16px 8px", textAlign: "center", border: `1px solid ${b.ok ? T.line : "transparent"}`, opacity: b.ok ? 1 : .85 }}>
               <div style={{ display: "flex", justifyContent: "center", color: b.ok ? T.ochre : T.faint }}><Icon name={b.ic} size={24} color={b.ok ? T.ochre : T.faint} /></div>
               <div style={{ fontSize: 12, fontWeight: 600, color: b.ok ? T.ink : T.stone, marginTop: 8 }}>{b.n}</div>
               {!b.ok && b.p && <div style={{ fontSize: 9, color: T.stone, marginTop: 2 }}>{b.p}</div>}
@@ -1845,29 +1856,29 @@ function Rewards({ nav, profilo }) {
         {/* Status — riconoscimento, non denaro */}
         <div style={{ background: T.pine, borderRadius: 20, padding: 22, marginBottom: 16 }}>
           <div style={{ fontSize: 13, color: "rgba(246,242,234,.8)", letterSpacing: .4, textTransform: "uppercase", fontWeight: 600 }}>Il tuo livello</div>
-          <div style={{ fontFamily: "'Fraunces',serif", fontSize: 30, fontWeight: 600, color: T.paper, marginTop: 4, letterSpacing: -.5 }}>{PERKS.level}</div>
+          <div style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 30, fontWeight: 800, color: T.cream, marginTop: 4, letterSpacing: -.5 }}>{PERKS.level}</div>
           <div style={{ fontSize: 13, color: "rgba(246,242,234,.8)", marginTop: 2 }}>{PERKS.jobs} lavori richiesti a Forlì.</div>
           <div style={{ marginTop: 14 }}>
             <div style={{ height: 7, background: "rgba(246,242,234,.18)", borderRadius: 4, overflow: "hidden" }}>
               <div style={{ height: 7, background: T.ochre, borderRadius: 4, width: `${(PERKS.jobs / (PERKS.jobs + PERKS.toNext)) * 100}%` }} />
             </div>
-            <div style={{ fontSize: 12.5, color: "rgba(246,242,234,.8)", marginTop: 7 }}>Ancora {PERKS.toNext} lavori e diventi <strong style={{ color: T.paper }}>{PERKS.nextLevel}</strong>.</div>
+            <div style={{ fontSize: 12.5, color: "rgba(246,242,234,.8)", marginTop: 7 }}>Ancora {PERKS.toNext} lavori e diventi <strong style={{ color: T.cream }}>{PERKS.nextLevel}</strong>.</div>
           </div>
         </div>
 
         {/* Cosa ti dà — vantaggi reali ma non monetari */}
-        <div style={{ fontFamily: "'Fraunces',serif", fontSize: 16, fontWeight: 600, color: T.ink, margin: "6px 0 4px" }}>Cosa ti dà</div>
+        <div style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 16, fontWeight: 700, color: T.ink, margin: "6px 0 4px" }}>Cosa ti dà</div>
         <div style={{ fontSize: 12.5, color: T.stone, marginBottom: 12 }}>Comodità e riconoscimento. Nessun vantaggio cambia l'ordine dei risultati o l'IDA di qualcuno.</div>
         {PERK_LIST.map((p, i) => (
-          <div key={i} style={{ display: "flex", alignItems: "center", gap: 14, background: T.card, borderRadius: 14, padding: 16, marginBottom: 10, border: `1px solid ${T.line}`, opacity: p.ok ? 1 : .6 }}>
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 14, background: T.card, borderRadius: 14, padding: 16, marginBottom: 10, border: `1px solid ${T.line}`, opacity: p.ok ? 1 : .85 }}>
             <div style={{ width: 40, height: 40, borderRadius: 11, background: p.ok ? T.pineSoft : T.line, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <Icon name={p.ic} size={20} color={p.ok ? T.pine : T.stone} />
+              <Icon name={p.ic} size={20} color={p.ok ? T.accent : T.stone} />
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 13.5, fontWeight: 600, color: T.ink }}>{p.t}</div>
               <div style={{ fontSize: 12.5, color: T.stone, marginTop: 1 }}>{p.s}</div>
             </div>
-            {p.ok ? <Icon name="check" size={18} color={T.pine} /> : <span style={{ fontSize: 12, color: T.stone, fontWeight: 700 }}>{p.p || "presto"}</span>}
+            {p.ok ? <Icon name="check" size={18} color={T.accent} /> : <span style={{ fontSize: 12, color: T.stone, fontWeight: 700 }}>{p.p || "presto"}</span>}
           </div>
         ))}
 
@@ -1876,12 +1887,12 @@ function Rewards({ nav, profilo }) {
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
             <div style={{ width: 42, height: 42, borderRadius: 12, background: T.ochreSoft, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="heart" size={22} color={T.ochre} /></div>
             <div>
-              <div style={{ fontFamily: "'Fraunces',serif", fontSize: 17, fontWeight: 600, color: T.ink }}>Porta un vicino</div>
+              <div style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 17, fontWeight: 700, color: T.ink }}>Porta un vicino</div>
               <div style={{ fontSize: 13, color: T.ink2, marginTop: 1 }}>Più zona attiva, più gente fidata vicino a te.</div>
             </div>
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center", background: T.paper, borderRadius: 11, padding: "10px 14px", border: `1px dashed ${T.faint}` }}>
-            <Mono size={15} color={T.pine}>{codice}</Mono>
+            <Mono size={15} color={T.accent}>{codice}</Mono>
             <span style={{ flex: 1 }} />
             <span style={{ fontSize: 11.5, fontWeight: 700, color: T.stone, background: T.line, padding: "3px 8px", borderRadius: 6, letterSpacing: .3 }}>PRESTO</span>
           </div>
@@ -1889,7 +1900,7 @@ function Rewards({ nav, profilo }) {
         </div>
 
         <button type="button" onClick={() => nav("passport")} className="bt tap" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: 14, borderRadius: 12, border: `1px solid ${T.line}`, color: T.ink }}>
-          <Icon name="pin" size={18} color={T.pine} />
+          <Icon name="pin" size={18} color={T.accent} />
           <span style={{ fontSize: 13, fontWeight: 600 }}>Vedi i timbri delle tue zone nel Passaporto</span>
         </button>
       </div>
@@ -1917,8 +1928,8 @@ function Done({ nav, title, body, actions }) {
   return (
     <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
       <div style={{ minHeight: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, animation: "rise .4s ease" }}>
-        <div style={{ width: 68, height: 68, borderRadius: "50%", background: T.pineSoft, display: "flex", alignItems: "center", justifyContent: "center", animation: "stamp .5s ease both" }}><Icon name="check" size={34} color={T.pine} w={2} /></div>
-        <h1 style={{ fontFamily: "'Fraunces',serif", fontSize: 26, fontWeight: 600, color: T.ink, marginTop: 22, letterSpacing: -.3 }}>{title}</h1>
+        <div style={{ width: 68, height: 68, borderRadius: "50%", background: T.pineSoft, display: "flex", alignItems: "center", justifyContent: "center", animation: "stamp .5s ease both" }}><Icon name="check" size={34} color={T.accent} w={2} /></div>
+        <h1 style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 26, fontWeight: 800, color: T.ink, marginTop: 22, letterSpacing: -.3 }}>{title}</h1>
         <p style={{ fontSize: 14, color: T.ink2, textAlign: "center", lineHeight: 1.6, marginTop: 8, marginBottom: 28 }}>{body}</p>
         <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%", pointerEvents: pronto ? "auto" : "none" }}>{actions}</div>
       </div>
@@ -2045,7 +2056,7 @@ function DeleteAccount({ nav, role, onPause, onDeleted, onDeletedPro, entrambi, 
   if (fatto) return (
     <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
       <div className="del-done">
-        <div className="del-done-ic"><Icon name="check" size={32} color={T.pine} w={2} /></div>
+        <div className="del-done-ic"><Icon name="check" size={32} color={T.accent} w={2} /></div>
         <h1>Profilo eliminato.</h1>
         <p>I tuoi dati sono spariti dall'app adesso. Dai nostri archivi e dalle copie di sicurezza li cancelliamo entro 30 giorni.<br />Grazie per averci provato.</p>
         <Btn full onClick={onDeleted}>Torna all'inizio</Btn>
@@ -2077,7 +2088,7 @@ function DeleteAccount({ nav, role, onPause, onDeleted, onDeletedPro, entrambi, 
           </div>
         )}
         {(!soloPro && attive.length > 0 || agenda.length > 0) && (
-          <div role="alert" style={{ background: T.emberSoft, borderRadius: 14, padding: "14px 16px", marginBottom: 16, fontSize: 13.5, color: "#8a3a1f", lineHeight: 1.55 }}>
+          <div role="alert" style={{ background: T.emberSoft, borderRadius: 14, padding: "14px 16px", marginBottom: 16, fontSize: 13.5, color: T.ember, lineHeight: 1.55 }}>
             <strong>Hai degli appuntamenti in corso.</strong>
             {!soloPro && attive.map(b => <div key={b.id}>· {wById(b.wid)?.n}, {giornoDi(b).toLowerCase()} alle {b.time}</div>)}
             {agenda.map(a => <div key={a.id}>· {a.c}, {(a.data ? giornoDi(a) : String(a.when)).toLowerCase()} alle {a.time}</div>)}
@@ -2098,7 +2109,7 @@ function DeleteAccount({ nav, role, onPause, onDeleted, onDeletedPro, entrambi, 
         </div>
         <div className="del-box">
           <div className="del-lab">{soloPro ? "Resta" : "Resta, in forma anonima"}</div>
-          {resta.map(t => <div key={t} className="del-li"><Icon name="shield" size={15} color={T.pine} w={2} /><span>{t}</span></div>)}
+          {resta.map(t => <div key={t} className="del-li"><Icon name="shield" size={15} color={T.accent} w={2} /><span>{t}</span></div>)}
         </div>
 
         <div className="del-lab" style={{ margin: "22px 0 10px" }}>Perché te ne vai? <span style={{ fontWeight: 500, color: T.stone, textTransform: "none", letterSpacing: 0 }}>(facoltativo)</span></div>
@@ -2126,7 +2137,7 @@ function Eliminato({ onFine }) {
   return (
     <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
       <div className="del-done">
-        <div className="del-done-ic"><Icon name="check" size={32} color={T.pine} w={2} /></div>
+        <div className="del-done-ic"><Icon name="check" size={32} color={T.accent} w={2} /></div>
         <h1>Profilo eliminato.</h1>
         <p>I tuoi dati sono spariti dall'app adesso. Dai nostri archivi e dalle copie di sicurezza li cancelliamo entro 30 giorni.<br />Grazie per averci provato.</p>
         <Btn full onClick={onFine}>Torna all'inizio</Btn>
@@ -2169,16 +2180,16 @@ function Post({ nav, profilo, setProfilo, onPosted }) {
         <div style={{ marginTop: 18 }}><Label>Qualche dettaglio</Label>
           <textarea aria-label="Dettagli" value={det} onChange={e => setDet(e.target.value)} maxLength={600} style={{ ...is, height: 90, resize: "none" }} placeholder="Misure, accesso, materiali, quando ti farebbe comodo…" /></div>
         {privato
-          ? <div role="alert" style={{ fontSize: 13, color: "#8a3a1f", background: T.emberSoft, borderRadius: 10, padding: "10px 12px", marginTop: 8, lineHeight: 1.5, fontWeight: 600 }}>Sembra che tu abbia scritto {haTel && haVia ? "un contatto e un indirizzo" : haTel ? "un numero di telefono o un'email" : "un indirizzo"}. La bacheca la vedono tutti: toglilo, lo dai in chat solo a chi scegli.</div>
+          ? <div role="alert" style={{ fontSize: 13, color: T.ember, background: T.emberSoft, borderRadius: 10, padding: "10px 12px", marginTop: 8, lineHeight: 1.5, fontWeight: 600 }}>Sembra che tu abbia scritto {haTel && haVia ? "un contatto e un indirizzo" : haTel ? "un numero di telefono o un'email" : "un indirizzo"}. La bacheca la vedono tutti: toglilo, lo dai in chat solo a chi scegli.</div>
           : <div style={{ fontSize: 13, color: T.stone, marginTop: 6 }}>Non scrivere qui il tuo indirizzo preciso o il telefono: li condividi in chat solo con chi scegli.</div>}
         {/* Foto — vale più di mille parole */}
         <div style={{ marginTop: 18 }}><Label>Una foto aiuta</Label>
           <button type="button" className="bt tap" aria-pressed={photo} onClick={() => setPhoto(!photo)} style={{ width: "100%", marginTop: 6, border: `1.5px dashed ${photo ? T.pine : T.faint}`, borderRadius: 12, padding: 18, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, cursor: "pointer", background: photo ? T.pineSoft : "transparent" }}>
-            <Icon name={photo ? "check" : "plus"} size={20} color={photo ? T.pine : T.stone} />
-            <span style={{ fontSize: 13, fontWeight: 600, color: photo ? T.pine : T.ink2 }}>{photo ? "Foto aggiunta (simulata)" : "Aggiungi una foto del problema"}</span>
+            <Icon name={photo ? "check" : "plus"} size={20} color={photo ? T.accent : T.stone} />
+            <span style={{ fontSize: 13, fontWeight: 600, color: photo ? T.accent : T.ink2 }}>{photo ? "Foto aggiunta (simulata)" : "Aggiungi una foto del problema"}</span>
           </button>
         </div>
-        <div style={{ marginTop: 24 }}><Btn full onClick={() => { setProvato(true); if (pieno && !privato) (profilo && telOk(profilo.tel) ? pubblica(profilo) : setChiedi(true)); }} style={pieno && !privato ? {} : { background: T.ink2 }}>Pubblica sulla bacheca</Btn>{(!pieno || privato) && <div style={{ fontSize: 13, color: T.ink2, fontWeight: 600, textAlign: "center", marginTop: 8 }}>{privato ? "Togli telefono o indirizzo per pubblicare." : "Scrivi cosa ti serve (almeno qualche parola)."}</div>}</div>
+        <div style={{ marginTop: 24 }}><Btn full onClick={() => { setProvato(true); if (pieno && !privato) (profilo && telOk(profilo.tel) ? pubblica(profilo) : setChiedi(true)); }} style={pieno && !privato ? {} : { background: T.faint }}>Pubblica sulla bacheca</Btn>{(!pieno || privato) && <div style={{ fontSize: 13, color: T.ink2, fontWeight: 600, textAlign: "center", marginTop: 8 }}>{privato ? "Togli telefono o indirizzo per pubblicare." : "Scrivi cosa ti serve (almeno qualche parola)."}</div>}</div>
         {chiedi && <ProfileSheet initial={profilo} motivo="Per pubblicare serve un profilo, così chi risponde sa a chi scrivere. Quello che hai scritto resta." onClose={() => setChiedi(false)} onDone={p => { setProfilo(p); setChiedi(false); pubblica(p); }} />}
         <p style={{ fontSize: 13, color: T.stone, textAlign: "center", marginTop: 12, lineHeight: 1.5 }}>Più dettagli dai, migliori sono le proposte che ricevi.</p>
       </div>
@@ -2225,7 +2236,7 @@ function Report({ w, nav, profilo, onInviata }) {
         )}
         <div style={{ display: "flex", gap: 10, background: T.emberSoft, borderRadius: 12, padding: 14, marginTop: 18 }}>
           <Icon name="shield" size={18} color={T.ember} />
-          <span style={{ fontSize: 13, color: "#8a3a1f", lineHeight: 1.5 }}>In caso di pericolo immediato chiama il <strong>112</strong>. TaskEase non sostituisce le autorità.</span>
+          <span style={{ fontSize: 13, color: T.ember, lineHeight: 1.5 }}>In caso di pericolo immediato chiama il <strong>112</strong>. TaskEase non sostituisce le autorità.</span>
         </div>
       </div>
     </div>
@@ -2250,8 +2261,8 @@ function Notifications({ nav, items = [], viste = [], onSeen }) {
           const unread = !giaViste.includes(n.id);
           return (
             <button type="button" key={n.id} onClick={() => tap(n)} className="bt tap" style={{ width: "100%", textAlign: "left", display: "flex", gap: 12, padding: "14px 12px", borderRadius: 14, background: unread ? T.pineSoft : "transparent", marginBottom: 6 }}>
-              <div style={{ width: 36, height: 36, borderRadius: 11, background: ({ check: "#E6EEDC", message: "#E2EAF1", star: "#F1E7D2", pin: "#F3E3D9", bolt: "#F1E7D2", seal: "#F3E3D9" }[n.ic] || T.card), display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <Icon name={n.ic} size={18} color={({ check: "#4E7A3A", message: "#3E6B8A", star: "#A9762B", pin: "#B5612F", bolt: "#A9762B", seal: "#B5612F" }[n.ic] || T.pine)} />
+              <div style={{ width: 36, height: 36, borderRadius: 11, background: ({ check: "#22331C", message: "#1C2B38", star: "#3A2E1A", pin: "#3A2419", bolt: "#3A2E1A", seal: "#3A2419" }[n.ic] || T.card), display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <Icon name={n.ic} size={18} color={({ check: "#9CCB80", message: "#7FB0D6", star: "#E2B672", pin: "#E39A6E", bolt: "#E2B672", seal: "#E39A6E" }[n.ic] || T.pine)} />
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 13.5, color: T.ink, lineHeight: 1.5 }}>{n.t}</div>
@@ -2308,15 +2319,15 @@ function ShareSeal({ nav, verified }) {
         </p>
 
         {/* Credential card */}
-        <div style={{ background: T.pineDeep, borderRadius: 22, padding: 24, color: T.paper, position: "relative", overflow: "hidden", marginBottom: 20 }}>
-          <div style={{ position: "absolute", top: -30, right: -30, opacity: .08 }}><Seal score={null} lv="diamante" size={150} /></div>
+        <div style={{ background: T.pineDeep, borderRadius: 22, padding: 24, color: T.cream, position: "relative", overflow: "hidden", marginBottom: 20 }}>
+          <div style={{ position: "absolute", top: -30, right: -30, opacity: .04 }}><Seal score={null} lv="diamante" size={150} /></div>
           <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20, position: "relative" }}>
             <Seal score={w.ida} lv={w.lv} size={72} stamp tint={T.ochreLight} />
             <div style={{ minWidth: 0, flex: 1 }} className="a-capo">
-              <div style={{ fontFamily: "'Fraunces',serif", fontSize: 22, fontWeight: 600, letterSpacing: -.3 }}>{w.n}</div>
+              <div style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 22, fontWeight: 800, letterSpacing: -.3 }}>{w.n}</div>
               <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 4, background: "rgba(246,242,234,.12)", borderRadius: 7, padding: "3px 8px" }}>
                 <Icon name="shield" size={12} color={verified ? T.ochre : "rgba(246,242,234,.5)"} />
-                <span style={{ fontSize: 12, fontWeight: 700, opacity: verified ? 1 : .6 }}>{verified ? "Identità verificata" : "Identità non ancora verificata"}</span>
+                <span style={{ fontSize: 12, fontWeight: 700, opacity: verified ? 1 : .85 }}>{verified ? "Identità verificata" : "Identità non ancora verificata"}</span>
               </div>
             </div>
           </div>
@@ -2326,7 +2337,7 @@ function ShareSeal({ nav, verified }) {
             </div>
             <div style={{ flex: 1, minWidth: 0 }} className="a-capo">
               <div style={{ fontSize: 12.5, color: "rgba(246,242,234,.8)", textTransform: "uppercase", letterSpacing: .5, fontWeight: 600 }}>{isNew ? "Sigillo nuovo" : lv.l}</div>
-              <div style={{ fontSize: 13, color: T.paper, marginTop: 4, lineHeight: 1.5 }}>{isNew ? `Il numero compare dopo ${IDA_MIN_LAVORI} lavori giudicati.` : `${w.ida}/100 · ${w.rv} giudizi reali.`}</div>
+              <div style={{ fontSize: 13, color: T.cream, marginTop: 4, lineHeight: 1.5 }}>{isNew ? `Il numero compare dopo ${IDA_MIN_LAVORI} lavori giudicati.` : `${w.ida}/100 · ${w.rv} giudizi reali.`}</div>
               <div style={{ fontFamily: "'Space Mono',monospace", fontSize: 12.5, color: T.ochreLight, marginTop: 8 }}>{handle}</div>
             </div>
           </div>
@@ -2334,9 +2345,9 @@ function ShareSeal({ nav, verified }) {
 
         {/* Link riga */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, background: T.card, borderRadius: 12, padding: "12px 14px", border: `1px dashed ${T.faint}`, marginBottom: 16 }}>
-          <Icon name="compass" size={16} color={T.pine} />
+          <Icon name="compass" size={16} color={T.accent} />
           <span className="a-capo" style={{ flex: 1, minWidth: 0, fontFamily: "'Space Mono',monospace", fontSize: 13, color: T.ink }}>{handle}</span>
-          <button type="button" onClick={copy} className="bt tap" style={{ flexShrink: 0,  fontSize: 13, fontWeight: 700, color: copied === "ko" ? T.ember : T.pine }}>{copied === true ? "Copiato ✓" : copied === "ko" ? "Non riuscito" : "Copia"}</button>
+          <button type="button" onClick={copy} className="bt tap" style={{ flexShrink: 0,  fontSize: 13, fontWeight: 700, color: copied === "ko" ? T.ember : T.accent }}>{copied === true ? "Copiato ✓" : copied === "ko" ? "Non riuscito" : "Copia"}</button>
         </div>
 
         {/* Azioni condivisione */}
@@ -2347,8 +2358,8 @@ function ShareSeal({ nav, verified }) {
 
         {/* Perché conta */}
         <div style={{ background: T.pineSoft, borderRadius: 14, padding: 16, display: "flex", gap: 11 }}>
-          <Icon name="bolt" size={18} color={T.pine} />
-          <span style={{ fontSize: 13, color: T.pine, lineHeight: 1.55 }}>Ogni cliente che inquadra il tuo sigillo arriva sul tuo profilo{verified ? " verificato" : ""}. La tua reputazione lavora per te anche fuori dall'app.</span>
+          <Icon name="bolt" size={18} color={T.accent} />
+          <span style={{ fontSize: 13, color: T.accent, lineHeight: 1.55 }}>Ogni cliente che inquadra il tuo sigillo arriva sul tuo profilo{verified ? " verificato" : ""}. La tua reputazione lavora per te anche fuori dall'app.</span>
         </div>
         <div style={{ fontSize: 12, color: T.stone, textAlign: "center", marginTop: 14, lineHeight: 1.5 }}>In questa anteprima QR e link sono illustrativi: il profilo pubblico non esiste ancora, per questo l'invio su WhatsApp arriva al lancio.</div>
       </div>
@@ -2373,10 +2384,10 @@ function Help({ nav, from }) {
         {items.map(([ic, t, s], i) => (
           <div key={i} style={{ display: "flex", gap: 14, marginBottom: 20 }}>
             <div style={{ width: 44, height: 44, borderRadius: 12, background: T.pineSoft, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <Icon name={ic} size={22} color={T.pine} />
+              <Icon name={ic} size={22} color={T.accent} />
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontFamily: "'Fraunces',serif", fontSize: 16, fontWeight: 600, color: T.ink }}>{t}</div>
+              <div style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 16, fontWeight: 700, color: T.ink }}>{t}</div>
               <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.55, marginTop: 3 }}>{s}</div>
             </div>
           </div>
@@ -2512,7 +2523,7 @@ function Entrata({ onChoose, onLogin }) {
         </button>
         <button type="button" className="ent-btn ghost" onClick={() => onChoose("worker")}>
           <span><span className="ent-btn-t">Offro una mano</span><span className="ent-btn-s">So fare un lavoro e cerco clienti</span></span>
-          <Icon name="arrowR" size={22} color={T.paper} w={2} />
+          <Icon name="arrowR" size={22} color={T.cream} w={2} />
         </button>
         <p className="ent-note">Hai già un profilo? <button type="button" className="bt ent-acc" onClick={onLogin}>Accedi</button></p>
         <p className="ent-note" style={{ marginTop: -4 }}>Anteprima con profili di esempio · <button type="button" className="bt ent-acc" style={{ fontWeight: 500 }} onClick={() => legale.apri("info")}>Termini e privacy</button></p>
@@ -2591,7 +2602,7 @@ function Onboarding({ role, onDone, onBack, allaFine }) {
         <div className="ent-top">
           {step > 0 || !onBack
             ? <span className="ent-mark">TaskEase</span>
-            : <button type="button" className="ent-link" style={{ textDecoration: "none", padding: "6px 2px", display: "inline-flex", alignItems: "center", gap: 6 }} onClick={onBack}><Icon name="arrowL" size={18} color={T.paper} /> Indietro</button>}
+            : <button type="button" className="ent-link" style={{ textDecoration: "none", padding: "6px 2px", display: "inline-flex", alignItems: "center", gap: 6 }} onClick={onBack}><Icon name="arrowL" size={18} color={T.cream} /> Indietro</button>}
           <button type="button" className="ent-link" style={{ textDecoration: "none", padding: "6px 2px" }} onClick={onDone}>Salta</button>
         </div>
         <div className="onb-visual" key={"v" + step}>{cur.visual}</div>
@@ -2648,12 +2659,12 @@ function OtpStep({ tel, onOk, onBack, dark }) {
         <span className="cp-h" style={{ marginTop: -2 }}>L'abbiamo mandato via SMS al {tel}. Serve a confermare che il numero è tuo.</span>
         <input className="cp-in" aria-label="Codice di verifica" value={c} onChange={e => { setC(e.target.value.replace(/\D/g, "").slice(0, 6)); setErr(false); }} inputMode="numeric" autoComplete="one-time-code" placeholder="• • • • • •" style={{ letterSpacing: 6, fontFamily: "'Space Mono',monospace", fontSize: 20, textAlign: "center" }} />
         {err && <span className="cp-err" role="alert" style={{ marginTop: 0 }}>Codice errato. Controlla l'SMS e riprova.</span>}
-        <span className="cp-h" style={{ background: T.ochreSoft, color: "#7a5418", borderRadius: 10, padding: "8px 10px" }}>Anteprima: nessun SMS viene inviato. Il codice è <b>{CODICE_ANTEPRIMA}</b>.</span>
+        <span className="cp-h" style={{ background: T.ochreSoft, color: T.ochreInk, borderRadius: 10, padding: "8px 10px" }}>Anteprima: nessun SMS viene inviato. Il codice è <b>{CODICE_ANTEPRIMA}</b>.</span>
       </div>
       <button type="button" className="cp-btn" onClick={prova}>Conferma il numero</button>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         {onBack ? <button type="button" className="bt tap" onClick={onBack} style={{ fontSize: 13, fontWeight: 600, color: T.ink2 }}>Cambia numero</button> : <span />}
-        <button type="button" className="bt tap" onClick={() => setRimandato(true)} style={{ fontSize: 13, fontWeight: 600, color: T.pine }}>{rimandato ? "Codice rimandato" : "Non è arrivato? Rimanda"}</button>
+        <button type="button" className="bt tap" onClick={() => setRimandato(true)} style={{ fontSize: 13, fontWeight: 600, color: T.accent }}>{rimandato ? "Codice rimandato" : "Non è arrivato? Rimanda"}</button>
       </div>
     </div>
   );
@@ -2715,18 +2726,18 @@ function ProviderSetup({ onDone, nav, initial, edit, onSave, onLegal }) {
     <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
       <div style={{ minHeight: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 30, textAlign: "center" }}>
         <Seal score={null} lv="bronzo" size={96} stamp />
-        <h1 style={{ fontFamily: "'Fraunces',serif", fontSize: 25, fontWeight: 600, color: T.ink, marginTop: 20, letterSpacing: -.3 }}>Ci siamo, {nome.trim().split(/\s+/)[0]}.</h1>
+        <h1 style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 25, fontWeight: 800, color: T.ink, marginTop: 20, letterSpacing: -.3 }}>Ci siamo, {nome.trim().split(/\s+/)[0]}.</h1>
         <p style={{ fontSize: 14, color: T.ink2, lineHeight: 1.6, marginTop: 8, maxWidth: 300 }}>
           Parti da <strong style={{ color: T.ink }}>IDA nuovo</strong>: il numero compare dopo {IDA_MIN_LAVORI} lavori valutati. Fino ad allora sul profilo si legge <strong>“Profilo nuovo”</strong>.
         </p>
-        <div style={{ background: T.ochreSoft, borderRadius: 12, padding: "12px 14px", marginTop: 16, fontSize: 13, color: "#7a5418", lineHeight: 1.5, textAlign: "left" }}>
+        <div style={{ background: T.ochreSoft, borderRadius: 12, padding: "12px 14px", marginTop: 16, fontSize: 13, color: T.ochreInk, lineHeight: 1.5, textAlign: "left" }}>
           Manca solo la verifica dell'identità: la facciamo di persona o in videochiamata guardando il tuo documento, senza conservarne copie. Fino ad allora il profilo è attivo, ma senza il badge “Identità verificata”.
         </div>
         <div style={{ background: T.pineSoft, borderRadius: 16, padding: 18, marginTop: 22, textAlign: "left", width: "100%" }}>
-          <div style={{ fontFamily: "'Fraunces',serif", fontSize: 14, fontWeight: 600, color: T.pine, marginBottom: 10 }}>Come prendere il primo lavoro</div>
+          <div style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 14, fontWeight: 700, color: T.accent, marginBottom: 10 }}>Come prendere il primo lavoro</div>
           {["Profilo verificato: i clienti si fidano di più", "Un prezzo onesto convince più di mille parole", "Un primo lavoro fatto bene lancia il tuo IDA"].map((t, i) => (
             <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 8 }}>
-              <span aria-hidden="true" style={{ flexShrink: 0, width: 20, height: 20, borderRadius: 10, border: `1.5px solid ${T.pine}`, color: T.pine, fontSize: 11.5, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{i + 1}</span>
+              <span aria-hidden="true" style={{ flexShrink: 0, width: 20, height: 20, borderRadius: 10, border: `1.5px solid ${T.pine}`, color: T.accent, fontSize: 11.5, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{i + 1}</span>
               <span style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5 }}>{t}</span>
             </div>
           ))}
@@ -2812,7 +2823,7 @@ function ProviderSetup({ onDone, nav, initial, edit, onSave, onLegal }) {
           <Label>{preventivo ? "Tariffa oraria indicativa" : "La tua tariffa"}</Label>
           <div style={{ display: "flex", alignItems: "center", gap: 16, background: T.card, borderRadius: 14, padding: "14px 18px", border: `1px solid ${T.line}`, marginBottom: 22 }}>
             <button type="button" aria-label="Meno un euro" onClick={() => setPrice(Math.max(5, price - 1))} className="bt tap" style={{ width: 44, height: 44, borderRadius: "50%", border: `1px solid ${T.line}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, color: T.ink }}>−</button>
-            <div style={{ flex: 1, textAlign: "center" }}><Mono size={28} color={T.pine}>{price}€</Mono><span style={{ fontSize: 13, color: T.stone }}>/h</span></div>
+            <div style={{ flex: 1, textAlign: "center" }}><Mono size={28} color={T.accent}>{price}€</Mono><span style={{ fontSize: 13, color: T.stone }}>/h</span></div>
             <button type="button" aria-label="Più un euro" onClick={() => setPrice(Math.min(150, price + 1))} className="bt tap" style={{ width: 44, height: 44, borderRadius: "50%", border: `1px solid ${T.line}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, color: T.ink }}>+</button>
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: -12, marginBottom: 22 }}>
@@ -2869,7 +2880,7 @@ function ProviderSetup({ onDone, nav, initial, edit, onSave, onLegal }) {
             <span style={{ flex: 1, fontSize: 13, color: T.ink2, lineHeight: 1.5 }}>{tipo === "piva" ? "Dichiaro che fatturo i miei lavori con la mia Partita IVA. TaskEase non trattiene tasse né gestisce i pagamenti." : "Dichiaro che lavoro da privato solo ogni tanto (prestazione occasionale) e dichiaro quello che incasso. Se il lavoro diventa regolare, per legge apro la Partita IVA. TaskEase non trattiene tasse né gestisce i pagamenti."}</span>
           </button>
           <div style={{ display: "flex", gap: 10, background: T.card, border: `1px solid ${T.line}`, borderRadius: 12, padding: 14, marginBottom: 14 }}>
-            <Icon name="shield" size={18} color={T.pine} />
+            <Icon name="shield" size={18} color={T.accent} />
             <span style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5 }}><b>Verifica dell'identità:</b> dopo la registrazione fissiamo un incontro o una videochiamata e guardiamo il tuo documento. Non carichi foto di documenti e non ne teniamo copie.</span>
           </div>
           <label className="cp-check" style={{ marginBottom: 6 }}>
@@ -2878,7 +2889,7 @@ function ProviderSetup({ onDone, nav, initial, edit, onSave, onLegal }) {
           </label>
           <div style={{ display: "flex", gap: 10, background: T.ochreSoft, borderRadius: 12, padding: 14, marginTop: 10 }}>
             <Icon name="hand" size={18} color={T.ochre} />
-            <span style={{ fontSize: 12.5, color: "#7a5418", lineHeight: 1.5 }}>Lavori in totale autonomia: decidi prezzi, lavori, orari e zone. TaskEase ti mette in contatto con chi cerca, non è il tuo datore di lavoro e non dirige il lavoro.</span>
+            <span style={{ fontSize: 12.5, color: T.ochreInk, lineHeight: 1.5 }}>Lavori in totale autonomia: decidi prezzi, lavori, orari e zone. TaskEase ti mette in contatto con chi cerca, non è il tuo datore di lavoro e non dirige il lavoro.</span>
           </div>
         </>
       ),
@@ -2903,8 +2914,8 @@ function ProviderSetup({ onDone, nav, initial, edit, onSave, onLegal }) {
         <div style={{ width: 22 }} />
       </div>
       <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "14px 24px 20px" }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: T.pine, letterSpacing: .6, textTransform: "uppercase", marginBottom: 8 }}>{edit ? "Modifica il profilo" : cur.eyebrow}</div>
-        <h1 style={{ fontFamily: "'Fraunces',serif", fontSize: 26, fontWeight: 600, color: T.ink, letterSpacing: -.4, margin: 0 }}>{cur.title}</h1>
+        <div style={{ fontSize: 13, fontWeight: 700, color: T.accent, letterSpacing: .6, textTransform: "uppercase", marginBottom: 8 }}>{edit ? "Modifica il profilo" : cur.eyebrow}</div>
+        <h1 style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 26, fontWeight: 800, color: T.ink, letterSpacing: -.4, margin: 0 }}>{cur.title}</h1>
         <p style={{ fontSize: 13.5, color: T.ink2, lineHeight: 1.55, marginBottom: 22, marginTop: 6 }}>{cur.sub}</p>
         {cur.body}
       </div>
@@ -2978,7 +2989,7 @@ function Legal({ nav, doc = "info" }) {
         <div className="esempio-top" style={{ marginBottom: 16 }}><span className="ticker-tag">BOZZA</span><span>{LEGALE_VERS}. Testo per l'anteprima, da far revisionare a un legale prima del lancio.</span></div>
         {d.s.map(([t, x]) => (
           <section key={t} style={{ marginBottom: 18 }}>
-            <h2 style={{ fontFamily: "'Fraunces',serif", fontSize: 16, fontWeight: 600, color: T.ink, margin: "0 0 4px" }}>{t}</h2>
+            <h2 style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 16, fontWeight: 700, color: T.ink, margin: "0 0 4px" }}>{t}</h2>
             <p style={{ fontSize: 13.5, color: T.ink2, lineHeight: 1.6, margin: 0 }}>{x}</p>
           </section>
         ))}
@@ -3146,7 +3157,7 @@ function Assistenza({ nav }) {
         <div style={{ background: T.card, border: `1px solid ${T.line}`, borderRadius: 16, padding: 16, marginBottom: 14 }}>
           {[["message", "WhatsApp", "[numero WhatsApp]"], ["send", "Email", "[email di contatto]"]].map(([ic, l, v]) => (
             <div key={l} style={{ display: "flex", alignItems: "center", gap: 12, padding: "8px 0" }}>
-              <Icon name={ic} size={19} color={T.pine} />
+              <Icon name={ic} size={19} color={T.accent} />
               <span style={{ flex: 1 }}><span style={{ display: "block", fontSize: 13, color: T.stone }}>{l}</span><span style={{ fontSize: 14, fontWeight: 600, color: T.ink }}>{v}</span></span>
             </div>
           ))}
@@ -3157,7 +3168,7 @@ function Assistenza({ nav }) {
         <MenuRow ic="book" l="Informazioni legali e privacy" onClick={() => nav("legal", { doc: "info" })} />
         <div style={{ display: "flex", gap: 10, background: T.emberSoft, borderRadius: 12, padding: 14, marginTop: 16 }}>
           <Icon name="shield" size={18} color={T.ember} />
-          <span style={{ fontSize: 13, color: "#8a3a1f", lineHeight: 1.5 }}>In caso di pericolo immediato chiama il <strong>112</strong>.</span>
+          <span style={{ fontSize: 13, color: T.ember, lineHeight: 1.5 }}>In caso di pericolo immediato chiama il <strong>112</strong>.</span>
         </div>
       </div>
     </div>
@@ -3177,7 +3188,7 @@ function Bloccati({ nav, blocked, setBlocked }) {
           <div key={w.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 0", borderBottom: `1px solid ${T.line}` }}>
             <Avatar ini={w.ini} lv={w.lv} sz={40} />
             <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: T.ink }}>{w.n}</span>
-            <button type="button" className="bt tap" onClick={() => setBlocked(b => b.filter(x => x !== w.id))} style={{ fontSize: 13, fontWeight: 700, color: T.pine }}>Sblocca</button>
+            <button type="button" className="bt tap" onClick={() => setBlocked(b => b.filter(x => x !== w.id))} style={{ fontSize: 13, fontWeight: 700, color: T.accent }}>Sblocca</button>
           </div>
         ))}
       </div>
@@ -3187,23 +3198,23 @@ function Bloccati({ nav, blocked, setBlocked }) {
 
 /* ============================== APP SHELL ============================== */
 const STYLE = `
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
 *, *::before, *::after { box-sizing: border-box; }
 body, body * { margin: 0; padding: 0; }
 html, body, #root { height: 100%; }
 body { background: #E4DFD4; }
-@media (max-width: 520px) { body { background: #F6F2EA; } }
+@media (max-width: 520px) { body { background: ${T.paper}; } }
 ::-webkit-scrollbar { width: 0; }
-input::placeholder, textarea::placeholder { color: #857F74; }
-.campo { display: flex; align-items: center; gap: 10px; background: ${T.card}; border: 1.5px solid #B8B0A2; border-radius: 14px; padding: 0 14px; min-height: 48px; }
-.campo:focus-within { border-color: ${T.pine}; box-shadow: 0 0 0 3px rgba(31,78,70,.16); }
+input::placeholder, textarea::placeholder { color: ${T.stone}; }
+.campo { display: flex; align-items: center; gap: 10px; background: ${T.card}; border: 1.5px solid ${T.faint}; border-radius: 14px; padding: 0 14px; min-height: 48px; }
+.campo:focus-within { border-color: ${T.accent}; box-shadow: 0 0 0 3px rgba(127,209,188,.22); }
 .campo input { outline: none !important; }
-input:focus-visible, textarea:focus-visible { outline: 2.5px solid ${T.pine} !important; outline-offset: 1px; }
-.row:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(28,27,24,.06); border-color: ${T.faint}; }
+input:focus-visible, textarea:focus-visible { outline: 2.5px solid ${T.accent} !important; outline-offset: 1px; }
+.row:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,0,0,.25); border-color: ${T.faint}; }
 .btn:hover { filter: brightness(1.06); transform: translateY(-1px); }
 .btn:active { transform: translateY(0) scale(.99); }
-.cat:hover > div:first-child { border-color: ${T.pine}; background: ${T.pineSoft}; transform: translateY(-2px); }
-.opt:hover { border-color: ${T.pine}; background: ${T.pineSoft}; }
+.cat:hover > div:first-child { border-color: ${T.accent}; background: ${T.pineSoft}; transform: translateY(-2px); }
+.opt:hover { border-color: ${T.accent}; background: ${T.pineSoft}; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 .dot:hover { filter: brightness(1.1); transform: translate(-50%,-50%) scale(1.2); }
 .tap:active { transform: scale(.92); opacity: .7; }
@@ -3214,7 +3225,7 @@ input:focus-visible, textarea:focus-visible { outline: 2.5px solid ${T.pine} !im
 @keyframes stamp { 0% { transform: scale(0) rotate(-12deg); opacity: 0; } 60% { transform: scale(1.12) rotate(4deg); } 100% { transform: scale(1) rotate(0); opacity: 1; } }
 
 /* ---------- Ingresso moderno ---------- */
-.ent { position: relative; height: 100%; background: radial-gradient(120% 70% at 50% 18%, #1F4E46 0%, ${T.pineDeep} 55%, #0F2420 100%); color: ${T.paper}; overflow: hidden; }
+.ent { position: relative; height: 100%; background: radial-gradient(120% 70% at 50% 18%, #1F4E46 0%, ${T.pineDeep} 55%, #0F2420 100%); color: ${T.cream}; overflow: hidden; }
 .ent-scroll { height: 100%; overflow-y: auto; padding: 22px 24px 236px; display: flex; flex-direction: column; }
 .ent-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .ent-mark { font-family: 'Fraunces', Georgia, serif; font-weight: 600; font-size: 19px; letter-spacing: -.3px; }
@@ -3222,71 +3233,71 @@ input:focus-visible, textarea:focus-visible { outline: 2.5px solid ${T.pine} !im
 .ent-dot { width: 7px; height: 7px; border-radius: 50%; background: ${T.ochre}; animation: breathe 2s infinite; }
 .ent-hero { display: flex; flex-direction: column; align-items: center; gap: 12px; margin: 34px 0 30px; }
 .ent-cap { font-size: 13px; color: rgba(246,242,234,.8); text-align: center; max-width: 250px; line-height: 1.45; }
-.ent-h { font-family: 'Fraunces', Georgia, serif; font-weight: 600; font-size: clamp(36px, 11vw, 44px); line-height: 1.02; letter-spacing: -1.4px; margin: 0; text-wrap: balance; }
-.ent-h em { font-style: italic; color: ${T.ochreLight}; font-weight: 500; }
-.ent-sub { font-size: 15px; line-height: 1.55; color: rgba(246,242,234,.7); margin-top: 14px; max-width: 34ch; }
+.ent-h { font-family: 'Hanken Grotesk', sans-serif; font-weight: 800; font-size: clamp(36px, 11vw, 44px); line-height: 1.02; letter-spacing: -1.4px; margin: 0; text-wrap: balance; }
+.ent-h em { font-style: normal; color: ${T.ochreLight}; font-weight: 500; }
+.ent-sub { font-size: 15px; line-height: 1.55; color: rgba(246,242,234,.82); margin-top: 14px; max-width: 34ch; }
 .ent-points { display: flex; flex-direction: column; gap: 14px; margin-top: 24px; }
 .ent-point { display: flex; gap: 14px; align-items: flex-start; }
 .ent-ico { width: 40px; height: 40px; border-radius: 12px; background: rgba(169,118,43,.16); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.ent-pt { font-family: 'Fraunces', Georgia, serif; font-weight: 600; font-size: 16px; }
+.ent-pt { font-family: 'Hanken Grotesk', sans-serif; font-weight: 700; font-size: 16px; }
 .ent-ps { font-size: 13px; color: rgba(246,242,234,.8); line-height: 1.5; margin-top: 2px; }
 
 .esempio { border: 1.5px dashed ${T.faint}; border-radius: 20px; padding: 16px; margin-top: 4px; }
 .esempio-top { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; color: ${T.ink2}; line-height: 1.5; margin-bottom: 14px; }
 .esempio-top .ticker-tag { flex-shrink: 0; }
 .cp-priv { font-size: 13px; color: ${T.ink2}; background: ${T.card}; border: 1px solid ${T.line}; border-radius: 12px; padding: 10px 14px; }
-.cp-priv summary { cursor: pointer; font-weight: 700; color: ${T.pine}; }
+.cp-priv summary { cursor: pointer; font-weight: 700; color: ${T.accent}; }
 .cp-priv p { margin-top: 8px; line-height: 1.55; }
 .cp { padding: 8px 22px 36px; }
 .cp-eye { font-size: 12.5px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: ${T.ochreInk}; margin: 26px 0 8px; }
-.cp-h1 { font-family: 'Fraunces', Georgia, serif; font-size: 28px; font-weight: 600; letter-spacing: -.6px; line-height: 1.1; color: ${T.ink}; margin: 6px 0 0; }
-.cp-h1 em { font-style: italic; font-weight: 500; color: ${T.ochre}; }
+.cp-h1 { font-family: 'Hanken Grotesk', sans-serif; font-size: 28px; font-weight: 800; letter-spacing: -.6px; line-height: 1.1; color: ${T.ink}; margin: 6px 0 0; }
+.cp-h1 em { font-style: normal; font-weight: 500; color: ${T.ochre}; }
 .cp-sub { font-size: 14px; color: ${T.ink2}; line-height: 1.55; margin: 10px 0 0; }
 .cp-form { display: flex; flex-direction: column; gap: 20px; margin-top: 24px; }
 .cp-f { display: flex; flex-direction: column; gap: 7px; }
 .cp-l { font-size: 14px; font-weight: 700; color: ${T.ink}; }
 .cp-h { font-size: 13px; color: ${T.stone}; line-height: 1.45; }
-.cp-in { width: 100%; box-sizing: border-box; border: 1.5px solid #B8B0A2; border-radius: 14px; padding: 14px 15px; font-size: 16px; font-family: 'Hanken Grotesk', sans-serif; background: ${T.card}; color: ${T.ink}; outline: none; transition: border-color .15s; }
-.cp-in:focus { border-color: ${T.pine}; }
+.cp-in { width: 100%; box-sizing: border-box; border: 1.5px solid ${T.faint}; border-radius: 14px; padding: 14px 15px; font-size: 16px; font-family: 'Hanken Grotesk', sans-serif; background: ${T.card}; color: ${T.ink}; outline: none; transition: border-color .15s; }
+.cp-in:focus { border-color: ${T.accent}; }
 .cp-chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .cp-chip { background: ${T.card}; border: 1.5px solid ${T.line}; border-radius: 999px; min-height: 44px; padding: 0 16px; font-size: 14px; font-weight: 600; color: ${T.ink2}; cursor: pointer; font-family: inherit; }
-.cp-chip.on { background: ${T.pine}; border-color: ${T.pine}; color: #fff; }
+.cp-chip.on { background: ${T.pine}; border-color: ${T.accent}; color: #fff; }
 .cp-check { display: flex; gap: 12px; align-items: flex-start; font-size: 13px; color: ${T.ink2}; line-height: 1.5; cursor: pointer; }
 .cp-check b { color: ${T.ink}; }
-.cp-check input { width: 26px; height: 26px; margin: 0; flex-shrink: 0; accent-color: ${T.pine}; }
+.cp-check input { width: 26px; height: 26px; margin: 0; flex-shrink: 0; accent-color: ${T.accent}; }
 .cp-btn { width: 100%; border: 0; border-radius: 14px; padding: 16px; font-size: 15.5px; font-weight: 700; color: #fff; background: ${T.pine}; cursor: pointer; font-family: inherit; transition: opacity .15s; }
 .cp-btn.off { opacity: .45; }
 .cp-err { font-size: 13px; color: ${T.ember}; text-align: center; margin-top: -8px; }
 .cp-later { display: block; margin: 16px auto 0; background: none; border: 0; font-size: 14px; font-weight: 600; color: ${T.ink2}; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; font-family: inherit; padding: 8px; }
-.cp-guest { background: ${T.pine}; border-radius: 20px; padding: 20px; color: ${T.paper}; }
-.cp-guest-t { font-family: 'Fraunces', Georgia, serif; font-size: 19px; font-weight: 600; }
-.cp-guest-s { font-size: 13px; line-height: 1.55; color: rgba(246,242,234,.72); margin-top: 6px; }
-.cp-guest-b { display: inline-flex; align-items: center; gap: 8px; margin-top: 16px; background: ${T.paper}; color: ${T.pine}; border: 0; border-radius: 12px; padding: 12px 16px; font-size: 14.5px; font-weight: 700; cursor: pointer; font-family: inherit; }
-.cp-sheet-bg { position: absolute; inset: 0; z-index: 60; background: rgba(28,27,24,.45); display: flex; align-items: flex-end; animation: fade .2s ease; }
+.cp-guest { background: ${T.pine}; border-radius: 20px; padding: 20px; color: ${T.cream}; }
+.cp-guest-t { font-family: 'Hanken Grotesk', sans-serif; font-size: 19px; font-weight: 700; }
+.cp-guest-s { font-size: 13px; line-height: 1.55; color: rgba(246,242,234,.82); margin-top: 6px; }
+.cp-guest-b { display: inline-flex; align-items: center; gap: 8px; margin-top: 16px; background: ${T.paper}; color: ${T.accent}; border: 0; border-radius: 12px; padding: 12px 16px; font-size: 14.5px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.cp-sheet-bg { position: absolute; inset: 0; z-index: 60; background: rgba(0,0,0,.6); display: flex; align-items: flex-end; animation: fade .2s ease; }
 .cp-sheet { width: 100%; max-height: 92%; overflow-y: auto; background: ${T.paper}; border-radius: 26px 26px 0 0; padding: 10px 22px calc(24px + env(safe-area-inset-bottom, 0px)); box-sizing: border-box; animation: sheetup .3s cubic-bezier(.2,.8,.2,1); }
 .cp-grab { width: 40px; height: 4px; border-radius: 2px; background: ${T.faint}; margin: 0 auto 14px; }
 .cp-sheet-top { display: flex; gap: 12px; align-items: flex-start; }
 .cp-sheet-top > div { flex: 1; }
-.cp-sheet-t { font-family: 'Fraunces', Georgia, serif; font-size: 21px; font-weight: 600; color: ${T.ink}; }
+.cp-sheet-t { font-family: 'Hanken Grotesk', sans-serif; font-size: 21px; font-weight: 700; color: ${T.ink}; }
 .cp-sheet-s { font-size: 13px; color: ${T.ink2}; line-height: 1.5; margin-top: 4px; }
 .cp-x { width: 44px; height: 44px; border-radius: 50%; border: 0; background: ${T.line}; color: ${T.ink}; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
 .cp-sheet .cp-form { margin-top: 18px; }
 @keyframes sheetup { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
-.acc-paused { display: flex; align-items: center; gap: 10px; background: ${T.ochreSoft}; border-radius: 14px; padding: 12px 14px; margin-bottom: 16px; font-size: 13px; color: #7a5418; line-height: 1.45; }
+.acc-paused { display: flex; align-items: center; gap: 10px; background: ${T.ochreSoft}; border-radius: 14px; padding: 12px 14px; margin-bottom: 16px; font-size: 13px; color: ${T.ochreInk}; line-height: 1.45; }
 .acc-paused button { flex-shrink: 0; background: ${T.ochreBtn}; color: #fff; border: 0; border-radius: 10px; padding: 8px 12px; font-weight: 700; font-size: 13px; cursor: pointer; font-family: inherit; }
-.acc-sec { font-family: 'Fraunces', Georgia, serif; font-size: 17px; font-weight: 600; color: ${T.ink}; margin: 28px 0 10px; }
+.acc-sec { font-family: 'Hanken Grotesk', sans-serif; font-size: 17px; font-weight: 700; color: ${T.ink}; margin: 28px 0 10px; }
 .acc-list { background: ${T.card}; border: 1px solid ${T.line}; border-radius: 18px; overflow: hidden; }
 .acc-row { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; background: none; border: 0; padding: 14px 16px; cursor: pointer; font-family: inherit; color: ${T.ink}; }
 .acc-row + .acc-row { border-top: 1px solid ${T.line}; }
 .acc-row:active { background: ${T.paper}; }
-.acc-row:focus-visible { outline: 2.5px solid ${T.pine}; outline-offset: -3px; }
+.acc-row:focus-visible { outline: 2.5px solid ${T.accent}; outline-offset: -3px; }
 .acc-t { display: flex; flex-direction: column; font-size: 14.5px; font-weight: 600; }
 .acc-t small { font-size: 13px; font-weight: 500; color: ${T.stone}; margin-top: 2px; }
 .acc-row.danger .acc-t { color: ${T.ember}; }
 .del { padding: 8px 22px 32px; }
-.del-h { font-family: 'Fraunces', Georgia, serif; font-size: 24px; font-weight: 600; letter-spacing: -.4px; line-height: 1.15; color: ${T.ink}; margin: 6px 0 18px; }
+.del-h { font-family: 'Hanken Grotesk', sans-serif; font-size: 24px; font-weight: 800; letter-spacing: -.4px; line-height: 1.15; color: ${T.ink}; margin: 6px 0 18px; }
 .del-alt { display: flex; flex-direction: column; gap: 12px; background: ${T.pineSoft}; border-radius: 16px; padding: 16px; margin-bottom: 16px; }
-.del-alt b { display: block; font-size: 14.5px; color: ${T.pine}; }
+.del-alt b { display: block; font-size: 14.5px; color: ${T.accent}; }
 .del-alt span { display: block; font-size: 13px; color: ${T.ink2}; line-height: 1.5; margin-top: 3px; }
 .del-box { background: ${T.card}; border: 1px solid ${T.line}; border-radius: 16px; padding: 14px 16px; margin-bottom: 12px; }
 .del-lab { font-size: 12.5px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: ${T.ink2}; margin-bottom: 8px; }
@@ -3294,24 +3305,24 @@ input:focus-visible, textarea:focus-visible { outline: 2.5px solid ${T.pine} !im
 .del-li svg { flex-shrink: 0; margin-top: 2px; }
 .del-chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .del-chip { background: ${T.card}; border: 1.5px solid ${T.line}; border-radius: 999px; min-height: 44px; padding: 0 16px; font-size: 14px; font-weight: 600; color: ${T.ink2}; cursor: pointer; font-family: inherit; }
-.del-chip.on { background: ${T.pine}; border-color: ${T.pine}; color: #fff; }
+.del-chip.on { background: ${T.pine}; border-color: ${T.accent}; color: #fff; }
 .del-check { display: flex; gap: 12px; align-items: flex-start; margin: 24px 0 16px; font-size: 13.5px; color: ${T.ink}; line-height: 1.45; cursor: pointer; }
 .del-check input { width: 20px; height: 20px; margin: 0; flex-shrink: 0; accent-color: ${T.ember}; }
-.del-btn { width: 100%; border: 0; border-radius: 14px; padding: 15px; font-size: 15px; font-weight: 700; color: #fff; background: ${T.ember}; cursor: pointer; font-family: inherit; transition: opacity .15s; }
+.del-btn { width: 100%; border: 0; border-radius: 14px; padding: 15px; font-size: 15px; font-weight: 700; color: #fff; background: ${T.emberBtn}; cursor: pointer; font-family: inherit; transition: opacity .15s; }
 .del-btn:disabled { opacity: .35; cursor: not-allowed; }
-.del-keep { width: 100%; background: none; border: 0; padding: 14px; font-size: 14px; font-weight: 600; color: ${T.pine}; cursor: pointer; font-family: inherit; }
+.del-keep { width: 100%; background: none; border: 0; padding: 14px; font-size: 14px; font-weight: 600; color: ${T.accent}; cursor: pointer; font-family: inherit; }
 .del-note { font-size: 13px; color: ${T.stone}; text-align: center; line-height: 1.5; margin: 0; }
 .del-done { min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px; text-align: center; animation: rise .4s ease; }
 .del-done-ic { width: 68px; height: 68px; border-radius: 50%; background: ${T.pineSoft}; display: flex; align-items: center; justify-content: center; }
-.del-done h1 { font-family: 'Fraunces', Georgia, serif; font-size: 26px; font-weight: 600; color: ${T.ink}; margin: 22px 0 8px; }
+.del-done h1 { font-family: 'Hanken Grotesk', sans-serif; font-size: 26px; font-weight: 800; color: ${T.ink}; margin: 22px 0 8px; }
 .del-done p { font-size: 14px; color: ${T.ink2}; line-height: 1.6; margin: 0 0 28px; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .bt { background: none; border: 0; font: inherit; color: inherit; text-align: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 700; color: ${T.ink2}; background: ${T.line}; border-radius: 8px; padding: 4px 9px; }
-.badge.ok { color: ${T.pine}; background: ${T.pineSoft}; }
-.cp-link { color: ${T.pine}; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; display: inline; padding: 0; }
-.ent-acc { color: ${T.paper}; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; font-size: inherit; }
-.book-bar { position: sticky; bottom: 0; z-index: 5; background: ${T.paper}; box-shadow: 0 -10px 24px -14px rgba(28,27,24,.28); border-top: 1px solid ${T.line}; padding: 14px 22px calc(16px + env(safe-area-inset-bottom, 0px)); }
+.badge.ok { color: ${T.accent}; background: ${T.pineSoft}; }
+.cp-link { color: ${T.accent}; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; display: inline; padding: 0; }
+.ent-acc { color: ${T.cream}; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; font-size: inherit; }
+.book-bar { position: sticky; bottom: 0; z-index: 5; background: ${T.paper}; box-shadow: 0 -10px 24px -14px rgba(0,0,0,.5); border-top: 1px solid ${T.line}; padding: 14px 22px calc(16px + env(safe-area-inset-bottom, 0px)); }
 @media (max-width: 399px) { .bb-sub { display: none; } }
 .toast, .a-capo { overflow-wrap: anywhere; }
 .tre-righe { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
@@ -3323,16 +3334,16 @@ input:focus-visible, textarea:focus-visible { outline: 2.5px solid ${T.pine} !im
 .onb-dots button::after { content: ""; position: absolute; inset: -14px -6px; }
 .link { position: relative; }
 .link::after { content: ""; position: absolute; inset: -12px -8px; }
-.bt:focus-visible { outline: 2.5px solid ${T.pine}; outline-offset: 2px; border-radius: 8px; }
-button:focus-visible { outline: 2.5px solid ${T.pine}; outline-offset: 2px; }
+.bt:focus-visible { outline: 2.5px solid ${T.accent}; outline-offset: 2px; border-radius: 8px; }
+button:focus-visible { outline: 2.5px solid ${T.accent}; outline-offset: 2px; }
 .del-chip.on:focus-visible { outline-color: ${T.ochre}; }
 .ent-h1 { margin-top: 30px; }
 .ent-ida { display: flex; gap: 18px; align-items: center; margin-top: 26px; padding: 16px 18px 16px 14px; border-radius: 22px; background: rgba(246,242,234,.06); border: 1px solid rgba(246,242,234,.1); }
 .ent-ida .seal-hero { flex-shrink: 0; }
 .ent-ida .seal-num { font-size: 30px; letter-spacing: -1px; }
 .ent-ida .seal-lab { font-size: 9px; letter-spacing: 2px; margin-top: 3px; }
-.ent-ida-t { font-family: 'Fraunces', Georgia, serif; font-weight: 600; font-size: 17px; }
-.ent-ida-s { font-size: 13px; color: rgba(246,242,234,.68); line-height: 1.5; margin-top: 4px; }
+.ent-ida-t { font-family: 'Hanken Grotesk', sans-serif; font-weight: 700; font-size: 17px; }
+.ent-ida-s { font-size: 13px; color: rgba(246,242,234,.82); line-height: 1.5; margin-top: 4px; }
 .ent-eyebrow { font-size: 12.5px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: ${T.ochreLight}; margin: 28px 0 12px; }
 .ent-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 16px; }
 .ent-step { display: flex; gap: 14px; align-items: flex-start; }
@@ -3356,158 +3367,169 @@ button:focus-visible { outline: 2.5px solid ${T.pine}; outline-offset: 2px; }
 .ent-btn > span { display: flex; flex-direction: column; gap: 2px; }
 @media (max-height: 700px) { .ent-btn-s { display: none; } .ent-btn { padding: 12px 16px !important; } .ent-scroll { padding-bottom: 180px !important; } .ent-bar { gap: 6px !important; } }
 .ent-btn.primary { background: ${T.ochreBtn}; border: 0; color: #fff; box-shadow: 0 10px 28px -10px rgba(169,118,43,.7); }
-.ent-btn.ghost { background: rgba(246,242,234,.06); border: 1px solid rgba(246,242,234,.18); color: ${T.paper}; }
+.ent-btn.ghost { background: rgba(246,242,234,.06); border: 1px solid rgba(246,242,234,.18); color: ${T.cream}; }
 .ent-btn:hover { filter: brightness(1.07); }
 .ent-btn:active { transform: scale(.985); }
-.ent-btn:focus-visible, .ent-link:focus-visible { outline: 2.5px solid ${T.paper}; outline-offset: 3px; }
+.ent-btn:focus-visible, .ent-link:focus-visible { outline: 2.5px solid ${T.cream}; outline-offset: 3px; }
 .ent-btn-t { font-size: 17px; font-weight: 700; }
 .ent-btn-s { font-size: 13px; opacity: .92; }
-.ent-note { font-size: 12.5px; color: rgba(246,242,234,.5); text-align: center; }
-.ent-link { background: none; border: 0; color: rgba(246,242,234,.65); font-size: 13.5px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; padding: 6px; font-family: 'Hanken Grotesk', sans-serif; }
+.ent-note { font-size: 12.5px; color: rgba(246,242,234,.82); text-align: center; }
+.ent-link { background: none; border: 0; color: rgba(246,242,234,.82); font-size: 13.5px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; padding: 6px; font-family: 'Hanken Grotesk', sans-serif; }
 .rise { animation: rise .6s cubic-bezier(.2,.8,.2,1) both; }
 
-/* ---------- Dentro l'app — "bottega": righe su filetti, numeri in mono, niente card flottanti ---------- */
+/* ---------- Dentro l'app — "notte e ocra": riquadri arrotondati, numeri grandi, accenti ocra ---------- */
 .home { flex: 1; min-height: 0; overflow-y: auto; background: ${T.paper}; }
 .home-hero { padding: 18px 20px 0; color: ${T.ink}; }
-.home-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+.home-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .home-sub { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: ${T.stone}; margin-top: 2px; }
-.kicker { font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: ${T.stone}; }
-.glass-ic { position: relative; width: 44px; height: 44px; border-radius: 50%; background: transparent; border: 1px solid ${T.rule}; display: flex; align-items: center; justify-content: center; cursor: pointer; color: ${T.ink}; }
-.glass-dot { position: absolute; top: 10px; right: 11px; width: 8px; height: 8px; border-radius: 50%; background: ${T.ochre}; box-shadow: 0 0 0 2px ${T.paper}; }
-.home-h { font-family: 'Fraunces', Georgia, serif; font-weight: 500; font-size: clamp(28px, 8.6vw, 34px); line-height: 1.08; letter-spacing: -1px; margin: 8px 0 22px; text-wrap: balance; }
-.home-h em { font-style: italic; font-weight: 500; color: ${T.ochreInk}; }
-.home-search, .home-cta { width: 100%; display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 16px; border-radius: 12px; font-family: 'Hanken Grotesk', sans-serif; font-size: 16px; cursor: pointer; text-align: left; }
-.home-search { background: ${T.card}; border: 1.5px solid ${T.ink}; color: ${T.stone}; box-shadow: 3px 3px 0 ${T.ink}; }
-.home-search:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 ${T.ink}; }
+.kicker { font-size: 13px; font-weight: 600; color: ${T.stone}; }
+.glass-ic { position: relative; width: 44px; height: 44px; border-radius: 14px; background: ${T.card}; border: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; color: ${T.ink}; }
+.glass-dot { position: absolute; top: 11px; right: 12px; width: 8px; height: 8px; border-radius: 50%; background: ${T.ochreLight}; box-shadow: 0 0 0 2px ${T.card}; }
+.home-h { font-family: 'Hanken Grotesk', sans-serif; font-weight: 800; font-size: clamp(28px, 8.6vw, 34px); line-height: 1.04; letter-spacing: -1.3px; margin: 6px 0 20px; text-wrap: balance; }
+.home-h em { font-style: normal; background: linear-gradient(90deg, ${T.ochreLight}, #F0CF95); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.home-search, .home-cta { width: 100%; display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 16px; border-radius: 16px; font-family: 'Hanken Grotesk', sans-serif; font-size: 16px; cursor: pointer; text-align: left; }
+.home-search { background: ${T.card}; border: 1px solid ${T.line}; color: ${T.stone}; }
+.home-search:active { background: ${T.pineSoft}; }
 .home-cta { background: ${T.ochreBtn}; border: 0; color: #fff; font-weight: 700; }
 .home-cta span { flex: 1; }
 .home-body { padding: 0 0 32px; }
-/* categorie come indice tipografico: parole e quanti sono, nessuna icona decorativa */
-.cats { display: flex; gap: 22px; overflow-x: auto; padding: 18px 20px 0; scrollbar-width: none; }
+.cats { display: flex; gap: 8px; overflow-x: auto; padding: 14px 20px 0; scrollbar-width: none; }
 .cats::-webkit-scrollbar { display: none; }
-.cat2 { flex-shrink: 0; background: none; border: 0; padding: 0; min-height: 44px; cursor: pointer; font-family: 'Fraunces', Georgia, serif; font-size: 17px; color: ${T.ink2}; white-space: nowrap; }
-.cat2 sup { font-family: 'Space Mono', monospace; font-size: 10px; color: ${T.stone}; margin-left: 2px; }
-.cat2:hover { color: ${T.ink}; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 6px; }
-/* mappa della zona: le persone disponibili sui quartieri */
-.zona { position: relative; display: block; width: calc(100% - 40px); margin: 18px 20px 0; padding: 0; border: 1px solid ${T.rule}; border-radius: 12px; overflow: hidden; background: #EFE9DD; cursor: pointer; text-align: left; }
-.zona svg { display: block; width: 100%; height: 128px; }
-.zona-l { position: absolute; left: 10px; bottom: 10px; background: ${T.card}; border: 1px solid ${T.rule}; border-radius: 6px; padding: 4px 8px; font-size: 12.5px; font-weight: 600; color: ${T.ink}; font-family: 'Hanken Grotesk', sans-serif; }
-.zona-l b { font-family: 'Space Mono', monospace; }
+.cat2 { flex-shrink: 0; min-height: 40px; padding: 0 14px; border-radius: 12px; background: ${T.card}; border: 1px solid ${T.line}; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; font-size: 14px; font-weight: 600; color: ${T.ink2}; white-space: nowrap; }
+.cat2:active { background: ${T.pineSoft}; }
+/* griglia a riquadri */
+.bento { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 14px 20px 0; }
+.tl { position: relative; overflow: hidden; min-height: 112px; border-radius: 20px; background: ${T.card}; padding: 14px; border: 0; text-align: left; cursor: pointer; color: ${T.ink}; font-family: 'Hanken Grotesk', sans-serif; display: flex; flex-direction: column; }
+.tl:active { filter: brightness(1.12); }
+.tl small { font-size: 12.5px; color: ${T.stone}; font-weight: 600; }
+.tl .big { font-family: 'Space Mono', monospace; font-weight: 700; font-size: 34px; letter-spacing: -2px; line-height: 1; margin-top: auto; padding-top: 10px; }
+.tl .sub { font-size: 12.5px; color: ${T.stone}; margin-top: 4px; }
+.tl.ida { background: linear-gradient(150deg, #23493F, #16332D); }
+.tl.ida .big { color: ${T.ochreLight}; }
+.tl.ida small, .tl.ida .sub { color: rgba(246,242,234,.75); }
+.tl.map { grid-row: span 2; padding: 0; min-height: 234px; }
+.tl.map svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.tl.map .lbl { position: absolute; left: 14px; right: 14px; bottom: 14px; }
+.tl.map .lbl b { display: block; font-size: 26px; font-weight: 800; letter-spacing: -.6px; }
+.tl.next { grid-column: span 2; flex-direction: row; align-items: center; gap: 14px; min-height: 0; background: ${T.ochreLight}; color: #1C1408; }
+.tl.next .tm { font-family: 'Space Mono', monospace; font-weight: 700; font-size: 26px; letter-spacing: -1px; }
+.tl.next div { flex: 1; font-size: 15px; font-weight: 700; min-width: 0; }
+.tl.next div small { display: block; font-weight: 600; color: rgba(28,20,8,.75); }
 .ticker { display: flex; align-items: center; gap: 8px; margin: 16px 20px 0; font-size: 13px; color: ${T.ink2}; min-height: 18px; white-space: nowrap; overflow: hidden; }
 .ticker > span:last-child { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .scorri { scrollbar-width: none; } .scorri::-webkit-scrollbar { display: none; }
-.ticker-tag { white-space: nowrap; font-family: 'Space Mono', monospace; font-size: 10.5px; font-weight: 400; letter-spacing: 1px; color: ${T.stone}; border: 1px solid ${T.rule}; border-radius: 4px; padding: 1px 5px; flex-shrink: 0; }
-.sec-h { display: flex; justify-content: space-between; align-items: baseline; margin: 30px 20px 8px; }
-.sec-h h2 { font-family: 'Fraunces', Georgia, serif; font-size: 20px; font-weight: 600; letter-spacing: -.3px; color: ${T.ink}; margin: 0; }
-.link { background: none; border: 0; color: ${T.pine}; font-weight: 700; font-size: 14px; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; text-decoration: underline; text-underline-offset: 3px; }
+.ticker-tag { white-space: nowrap; font-family: 'Space Mono', monospace; font-size: 10.5px; font-weight: 400; letter-spacing: 1px; color: ${T.stone}; border: 1px solid ${T.faint}; border-radius: 5px; padding: 1px 5px; flex-shrink: 0; }
+.sec-h { display: flex; justify-content: space-between; align-items: baseline; margin: 28px 20px 10px; }
+.sec-h h2 { font-family: 'Hanken Grotesk', sans-serif; font-size: 20px; font-weight: 800; letter-spacing: -.5px; color: ${T.ink}; margin: 0; }
+.link { background: none; border: 0; color: ${T.ochreLight}; font-weight: 700; font-size: 14px; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; }
 .campo input:focus-visible { outline: none !important; }
-/* righe persona */
-.wlist { display: flex; flex-direction: column; margin: 0 20px; border-top: 1px solid ${T.rule}; }
-.wcard { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 4px 14px; width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid ${T.rule}; padding: 16px 0; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; color: ${T.ink}; animation: fade .4s ease both; }
-.wcard:active { background: #EFE9DD; }
+/* persone come riquadri */
+.wlist { display: flex; flex-direction: column; gap: 10px; margin: 0 20px; }
+.wcard { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 2px 14px; align-items: center; width: 100%; text-align: left; background: ${T.card}; border: 0; border-radius: 20px; padding: 14px; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; color: ${T.ink}; animation: rise .45s cubic-bezier(.2,.8,.2,1) both; }
+.wcard:active { filter: brightness(1.12); }
 .wcard.solo { grid-template-columns: minmax(0, 1fr) auto; }
 .wcard-b { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.wcard-n { display: flex; align-items: center; gap: 7px; font-family: 'Fraunces', Georgia, serif; font-size: 18px; font-weight: 600; color: ${T.ink}; letter-spacing: -.2px; line-height: 1.2; }
-.wcard-av { width: 7px; height: 7px; border-radius: 50%; background: ${T.ok}; }
-.wcard-bio { font-size: 14px; color: ${T.ink2}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.wcard-q { font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 15px; line-height: 1.4; color: ${T.ink}; margin-top: 6px; }
-.wcard-q span { font-family: 'Hanken Grotesk', sans-serif; font-style: normal; font-size: 12px; color: ${T.stone}; }
-.wcard-tags { grid-column: 2 / 4; display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 6px; font-family: 'Space Mono', monospace; font-size: 12px; color: ${T.ink2}; }
+.wcard-n { display: flex; align-items: center; gap: 7px; font-size: 16px; font-weight: 700; color: ${T.ink}; line-height: 1.25; }
+.wcard-av { width: 7px; height: 7px; border-radius: 50%; background: ${T.ok}; flex-shrink: 0; }
+.wcard-bio { font-size: 13px; color: ${T.stone}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wcard-q { font-size: 13.5px; line-height: 1.45; color: ${T.ink2}; margin-top: 6px; }
+.wcard-q span { color: ${T.stone}; }
+.wcard-tags { grid-column: 2 / 4; display: flex; flex-wrap: wrap; gap: 4px 8px; margin-top: 8px; }
 .wcard.solo .wcard-tags { grid-column: 1 / 3; }
+.wcard-tags > span { font-size: 12px; font-weight: 600; color: ${T.ink2}; background: ${T.pineSoft}; border-radius: 8px; padding: 3px 8px; white-space: nowrap; }
 .wcard-tags b { color: ${T.ink}; }
-.wcard-tags .ok { color: ${T.ok}; }
-.wcard-tags .no { color: ${T.ember}; }
-.tag { font-family: 'Space Mono', monospace; font-size: 12px; color: ${T.ink2}; white-space: nowrap; }
+.wcard-tags .no { color: ${T.ember}; background: ${T.emberSoft}; }
+.tag { font-size: 12px; font-weight: 600; color: ${T.ink2}; white-space: nowrap; }
 .wcard-r { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0; line-height: 1; text-align: right; }
-.ida-n { font-family: 'Space Mono', monospace; font-weight: 700; font-size: 26px; letter-spacing: -1px; color: ${T.ink}; }
-.ida-n.top { color: ${T.pine}; }
-.ida-n.nuovo { font-size: 12px; letter-spacing: 1px; color: ${T.ochreInk}; border: 1.5px solid ${T.ochre}; border-radius: 4px; padding: 2px 5px; }
-.ida-lab { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 1.5px; color: ${T.stone}; }
-/* nota a margine al posto della card scura */
-.ida-card { display: block; width: calc(100% - 40px); margin: 30px 20px 0; padding: 4px 0 4px 16px; border: 0; border-left: 3px solid ${T.ochre}; border-radius: 0; text-align: left; cursor: pointer; background: none; color: ${T.ink2}; font-family: 'Hanken Grotesk', sans-serif; font-size: 14px; line-height: 1.55; }
-.ida-t { font-family: 'Fraunces', Georgia, serif; font-size: 16px; font-weight: 600; color: ${T.ink}; }
-.ida-l { display: inline-block; margin-top: 6px; font-size: 14px; font-weight: 700; color: ${T.pine}; text-decoration: underline; text-underline-offset: 3px; }
-.tiles { list-style: none; margin: 30px 20px 0; padding: 0; border-top: 1px solid ${T.rule}; }
-.tile { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 0; background: none; border: 0; border-bottom: 1px solid ${T.rule}; cursor: pointer; text-align: left; font-family: 'Hanken Grotesk', sans-serif; color: ${T.ink}; }
-.tile-l { font-size: 16px; font-weight: 600; }
-.tile-s { flex: 1; font-size: 14px; color: ${T.stone}; }
+.ida-n { font-family: 'Space Mono', monospace; font-weight: 700; font-size: 24px; letter-spacing: -1px; color: ${T.ochreLight}; }
+.ida-n.top { color: ${T.ochreLight}; }
+.ida-n.nuovo { font-size: 11px; letter-spacing: 1px; color: ${T.ochreLight}; border: 1.5px solid ${T.ochre}; border-radius: 6px; padding: 3px 6px; }
+.ida-lab { font-size: 11px; font-weight: 600; color: ${T.stone}; margin-top: 3px; }
+.ida-card { display: block; width: calc(100% - 40px); margin: 22px 20px 0; padding: 18px; border: 0; border-radius: 20px; text-align: left; cursor: pointer; background: linear-gradient(150deg, #23493F, #16332D); color: rgba(246,242,234,.8); font-family: 'Hanken Grotesk', sans-serif; font-size: 14px; line-height: 1.5; }
+.ida-t { font-size: 16px; font-weight: 800; color: ${T.cream}; }
+.ida-l { display: inline-block; margin-top: 8px; font-size: 14px; font-weight: 700; color: ${T.ochreLight}; }
+.tiles { list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 10px 20px 0; padding: 0; }
+.tile { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%; min-height: 92px; padding: 14px 12px; background: ${T.card}; border: 0; border-radius: 18px; cursor: pointer; text-align: left; font-family: 'Hanken Grotesk', sans-serif; color: ${T.ink}; }
+.tile:active { filter: brightness(1.12); }
+.tile svg { margin-bottom: auto; color: ${T.ochreLight}; }
+.tile-l { font-size: 14px; font-weight: 700; margin-top: 10px; }
+.tile-s { font-size: 12.5px; color: ${T.stone}; line-height: 1.3; }
 
-.head { position: sticky; top: 0; z-index: 6; display: flex; align-items: center; gap: 12px; padding: 14px 20px 12px; background: ${T.paper}; border-bottom: 1px solid ${T.rule}; }
+.head { position: sticky; top: 0; z-index: 6; display: flex; align-items: center; gap: 12px; padding: 14px 20px 12px; background: ${T.paper}; }
 .head-root { padding-top: 22px; }
-.head-root .head-t { font-size: 28px; font-weight: 500; letter-spacing: -.8px; }
-.head-back { width: 44px; height: 44px; border-radius: 50%; border: 1px solid ${T.rule}; background: transparent; color: ${T.ink}; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
-.head-t { font-family: 'Fraunces', Georgia, serif; font-size: 20px; font-weight: 600; letter-spacing: -.3px; color: ${T.ink}; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.head-root .head-t { font-size: 28px; font-weight: 800; letter-spacing: -1px; }
+.head-back { width: 44px; height: 44px; border-radius: 14px; border: 0; background: ${T.card}; color: ${T.ink}; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+.head-t { font-family: 'Hanken Grotesk', sans-serif; font-size: 20px; font-weight: 800; letter-spacing: -.5px; color: ${T.ink}; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-/* barra in basso piatta, su filetto */
-.dock-wrap { background: ${T.paper}; border-top: 1px solid ${T.rule}; padding: 6px 4px calc(8px + env(safe-area-inset-bottom, 0px)); flex-shrink: 0; }
-.dock { display: flex; align-items: stretch; }
-.dock-i, .dock-plus { flex: 1; min-height: 52px; border: 0; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; position: relative; color: ${T.stone}; }
-.dock-i span, .dock-plus > span:last-child { font-size: 12px; font-weight: 600; white-space: nowrap; }
-.dock-i.on { color: ${T.ink}; }
-.dock-i.on::before { content: ""; position: absolute; top: -7px; left: 28%; right: 28%; height: 2px; background: ${T.ink}; }
-.dock-plus { color: ${T.ochreInk}; }
-.dock-plus-i { width: 32px; height: 24px; border-radius: 6px; background: ${T.ochreBtn}; display: flex; align-items: center; justify-content: center; }
-.next-card { display: flex; align-items: center; gap: 12px; width: calc(100% - 40px); margin: 18px 20px 0; padding: 14px 16px; border-radius: 12px; border: 1.5px solid ${T.ink}; background: ${T.card}; text-align: left; cursor: pointer; font-family: inherit; color: ${T.ink}; }
-.next-t { display: block; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 1px; color: ${T.ok}; text-transform: uppercase; }
-.next-s { display: block; font-size: 15px; font-weight: 600; color: ${T.ink}; margin-top: 2px; }
-.dock-i:focus-visible, .dock-plus:focus-visible, .wcard:focus-visible, .cat2:focus-visible, .tile:focus-visible, .head-back:focus-visible, .ida-card:focus-visible, .zona:focus-visible, .lrow:focus-visible { outline: 2.5px solid ${T.pine}; outline-offset: 2px; }
+/* barra in basso: icone su sfumatura, la voce attiva in un riquadro */
+.dock-wrap { background: ${T.paper}; padding: 6px 12px calc(10px + env(safe-area-inset-bottom, 0px)); flex-shrink: 0; border-top: 1px solid ${T.line}; }
+.dock { display: flex; align-items: center; justify-content: space-around; gap: 4px; }
+.dock-i, .dock-plus { flex: 1; max-width: 72px; min-height: 52px; border: 0; border-radius: 16px; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; color: ${T.stone}; }
+.dock-i span, .dock-plus > span:last-child { font-size: 11.5px; font-weight: 600; white-space: nowrap; }
+.dock-i.on { color: ${T.ink}; background: ${T.card}; }
+.dock-plus { color: ${T.ochreLight}; }
+.dock-plus-i { width: 34px; height: 26px; border-radius: 9px; background: ${T.ochreLight}; color: #1C1408; display: flex; align-items: center; justify-content: center; }
+.next-card { display: flex; align-items: center; gap: 12px; width: calc(100% - 40px); margin: 14px 20px 0; padding: 14px 16px; border-radius: 18px; border: 0; background: ${T.ochreLight}; text-align: left; cursor: pointer; font-family: inherit; color: #1C1408; }
+.next-t { display: block; font-size: 12px; font-weight: 700; color: rgba(28,20,8,.75); text-transform: uppercase; letter-spacing: .5px; }
+.next-s { display: block; font-size: 15px; font-weight: 700; color: #1C1408; margin-top: 2px; }
+.dock-i:focus-visible, .dock-plus:focus-visible, .wcard:focus-visible, .cat2:focus-visible, .tile:focus-visible, .head-back:focus-visible, .ida-card:focus-visible, .tl:focus-visible, .lrow:focus-visible, .next-card:focus-visible { outline: 2.5px solid ${T.ochreLight}; outline-offset: 2px; }
 
-/* cerca: registro ordinabile */
-.ledger-h { display: grid; grid-template-columns: minmax(0, 1fr) 56px 52px 52px; gap: 8px; padding: 0 20px; border-top: 1.5px solid ${T.ink}; border-bottom: 1px solid ${T.rule}; position: sticky; top: 0; background: ${T.paper}; z-index: 2; }
-.ledger-h > span, .ledger-h button { font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 1px; text-transform: uppercase; color: ${T.stone}; min-height: 40px; display: flex; align-items: center; }
-.ledger-h button { justify-content: flex-end; background: none; border: 0; cursor: pointer; }
-.ledger-h button[aria-pressed="true"] { color: ${T.ink}; font-weight: 700; }
-.lrow { display: grid; grid-template-columns: minmax(0, 1fr) 56px 52px 52px; gap: 8px; align-items: center; width: 100%; min-height: 64px; padding: 10px 20px; background: none; border: 0; border-bottom: 1px solid ${T.line}; text-align: left; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; color: ${T.ink}; }
-.lrow:active { background: #EFE9DD; }
+/* cerca: righe-riquadro con colonne ordinabili */
+.ledger-h { display: grid; grid-template-columns: minmax(0, 1fr) 52px 48px 48px; gap: 8px; padding: 0 34px; position: sticky; top: 0; background: ${T.paper}; z-index: 2; }
+.ledger-h > span, .ledger-h button { font-size: 12px; font-weight: 600; color: ${T.stone}; min-height: 40px; display: flex; align-items: center; }
+.ledger-h button { justify-content: flex-end; background: none; border: 0; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; }
+.ledger-h button[aria-pressed="true"] { color: ${T.ochreLight}; font-weight: 800; }
+.lrow { display: grid; grid-template-columns: minmax(0, 1fr) 52px 48px 48px; gap: 8px; align-items: center; width: calc(100% - 40px); margin: 0 20px 8px; min-height: 66px; padding: 10px 14px; background: ${T.card}; border: 0; border-radius: 18px; text-align: left; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; color: ${T.ink}; }
+.lrow:active { filter: brightness(1.12); }
 .lrow > span:not(:first-child) { text-align: right; font-family: 'Space Mono', monospace; font-size: 14px; }
-.lrow-n { display: flex; align-items: center; gap: 6px; font-family: 'Fraunces', Georgia, serif; font-size: 16px; font-weight: 600; }
-.lrow-s { display: block; font-size: 12.5px; color: ${T.ink2}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.lrow .lrow-ida { font-weight: 700; font-size: 18px !important; }
-.lrow.off { opacity: .62; }
-.fchip { flex-shrink: 0; min-height: 40px; padding: 0 12px; border-radius: 6px; border: 1px solid ${T.rule}; background: ${T.card}; font-size: 14px; font-weight: 600; color: ${T.ink2}; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; white-space: nowrap; }
-.fchip[aria-pressed="true"] { background: ${T.ink}; border-color: ${T.ink}; color: ${T.paper}; }
+.lrow-n { display: flex; align-items: center; gap: 6px; font-size: 15.5px; font-weight: 700; }
+.lrow-s { display: block; font-size: 12.5px; color: ${T.stone}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lrow .lrow-ida { font-weight: 700; font-size: 18px !important; color: ${T.ochreLight}; }
+.lrow.off { opacity: .6; }
+.fchip { flex-shrink: 0; min-height: 40px; padding: 0 14px; border-radius: 12px; border: 1px solid ${T.line}; background: ${T.card}; font-size: 14px; font-weight: 600; color: ${T.ink2}; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; white-space: nowrap; }
+.fchip[aria-pressed="true"] { background: ${T.ochreLight}; border-color: ${T.ochreLight}; color: #1C1408; }
 
-/* profilo professionista */
-.pro-k { font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: ${T.ochreInk}; }
-.pro-h { font-family: 'Fraunces', Georgia, serif; font-weight: 500; font-size: 38px; letter-spacing: -1.3px; line-height: 1.02; color: ${T.ink}; margin: 6px 0 0; }
-.facts { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 14px; font-size: 14px; color: ${T.ink2}; }
+/* profilo di chi lavora */
+.pro-k { font-size: 13px; font-weight: 700; color: ${T.ochreLight}; }
+.pro-h { font-family: 'Hanken Grotesk', sans-serif; font-weight: 800; font-size: 34px; letter-spacing: -1.3px; line-height: 1.05; color: ${T.ink}; margin: 6px 0 0; }
+.facts { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 14px; font-size: 14px; color: ${T.ink2}; }
 .facts > span { display: inline-flex; align-items: center; gap: 6px; }
-.slot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 18px; padding: 12px 14px; border-radius: 10px; background: ${T.pineSoft}; font-size: 14px; color: ${T.ink}; }
-.slot b { font-family: 'Space Mono', monospace; font-size: 15px; color: ${T.pine}; white-space: nowrap; }
-.slot.no { background: ${T.ochreSoft}; } .slot.no b { color: ${T.ochreInk}; }
-.ida-block { margin-top: 28px; border-top: 1.5px solid ${T.ink}; padding-top: 16px; }
+.slot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 18px; padding: 14px 16px; border-radius: 18px; background: ${T.ochreLight}; font-size: 14px; font-weight: 600; color: rgba(28,20,8,.8); }
+.slot b { font-family: 'Space Mono', monospace; font-size: 15px; color: #1C1408; white-space: nowrap; }
+.slot.no { background: ${T.card}; color: ${T.ink2}; } .slot.no b { color: ${T.ochreLight}; }
+.ida-block { margin-top: 12px; border-radius: 20px; padding: 18px; background: linear-gradient(150deg, #23493F, #16332D); }
 .ida-hero { display: flex; align-items: flex-end; gap: 14px; }
-.ida-hero > b { font-family: 'Space Mono', monospace; font-size: 60px; line-height: .85; letter-spacing: -4px; color: ${T.pine}; }
-.ida-hero > b.nuovo { font-size: 20px; letter-spacing: 1px; color: ${T.ochreInk}; border: 2px solid ${T.ochre}; border-radius: 6px; padding: 6px 8px; line-height: 1; }
-.ida-hero strong { display: block; font-family: 'Fraunces', Georgia, serif; font-size: 19px; font-weight: 600; color: ${T.ink}; }
-.ida-hero small { font-size: 14px; color: ${T.ink2}; }
-.voci { list-style: none; margin: 16px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: ${T.stone}; }
-.voci b { font-family: 'Space Mono', monospace; font-weight: 400; color: ${T.ink2}; }
-.trio { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 24px; border-top: 1px solid ${T.rule}; border-bottom: 1px solid ${T.rule}; }
-.trio > div { padding: 14px 4px; text-align: center; }
-.trio > div + div { border-left: 1px solid ${T.rule}; }
-.trio b { display: block; font-family: 'Space Mono', monospace; font-size: 18px; color: ${T.ink}; white-space: nowrap; }
+.ida-hero > b { font-family: 'Space Mono', monospace; font-size: 56px; line-height: .85; letter-spacing: -4px; color: ${T.ochreLight}; }
+.ida-hero > b.nuovo { font-size: 18px; letter-spacing: 1px; border: 2px solid ${T.ochreLight}; border-radius: 8px; padding: 6px 8px; line-height: 1; }
+.ida-hero strong { display: block; font-size: 17px; font-weight: 800; color: ${T.cream}; }
+.ida-hero small { font-size: 13.5px; color: rgba(246,242,234,.78); }
+.voci { list-style: none; margin: 16px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; font-size: 12px; color: rgba(246,242,234,.85); }
+.voci li { background: rgba(246,242,234,.08); border-radius: 8px; padding: 4px 8px; }
+.voci b { font-family: 'Space Mono', monospace; font-weight: 700; color: ${T.cream}; }
+.trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+.trio > div { padding: 14px 6px; text-align: center; background: ${T.card}; border-radius: 16px; }
+.trio b { display: block; font-family: 'Space Mono', monospace; font-size: 17px; color: ${T.ink}; white-space: nowrap; }
 .trio small { font-size: 12px; color: ${T.stone}; }
-.rev q { display: block; font-family: 'Fraunces', Georgia, serif; font-size: 18px; line-height: 1.38; letter-spacing: -.2px; color: ${T.ink}; quotes: "«" "»"; }
-.rev-f { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 6px; font-size: 12.5px; color: ${T.stone}; }
-.rev-f b { font-family: 'Space Mono', monospace; font-size: 14px; color: ${T.ink}; margin-right: 6px; }
+.rev { background: ${T.card}; border-radius: 18px; padding: 16px !important; margin-top: 10px; border: 0 !important; }
+.rev q { display: block; font-size: 15.5px; line-height: 1.5; color: ${T.ink}; quotes: "“" "”"; }
+.rev-f { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 8px; font-size: 12.5px; color: ${T.stone}; }
+.rev-f b { font-family: 'Space Mono', monospace; font-size: 14px; color: ${T.ochreLight}; margin-right: 6px; }
 
-/* bacheca: righe con l'ora a margine */
-.seg { display: flex; margin: 0 20px; border-bottom: 1px solid ${T.rule}; }
-.seg button { position: relative; min-height: 44px; margin-right: 22px; background: none; border: 0; font-size: 14px; font-weight: 600; color: ${T.stone}; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; }
-.seg button[aria-pressed="true"] { color: ${T.ink}; }
-.seg button[aria-pressed="true"]::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: ${T.ink}; }
-.post { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 12px; padding: 16px 0; border-top: 1px solid ${T.rule}; animation: fade .4s ease both; }
-.post-t { font-family: 'Space Mono', monospace; font-size: 11.5px; color: ${T.stone}; padding-top: 3px; line-height: 1.3; }
-.post-k { font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 1px; text-transform: uppercase; color: ${T.ochreInk}; }
-.post-k.job { color: ${T.pine}; }
-.post-x { font-family: 'Fraunces', Georgia, serif; font-size: 17px; line-height: 1.38; letter-spacing: -.1px; color: ${T.ink}; margin-top: 3px; }
+/* bacheca */
+.seg { display: flex; gap: 8px; margin: 0 20px; }
+.seg button { min-height: 40px; padding: 0 14px; border-radius: 12px; background: ${T.card}; border: 1px solid ${T.line}; font-size: 14px; font-weight: 600; color: ${T.ink2}; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; }
+.seg button[aria-pressed="true"] { background: ${T.ochreLight}; border-color: ${T.ochreLight}; color: #1C1408; }
+.post { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; padding: 16px; margin-bottom: 10px; background: ${T.card}; border-radius: 20px; animation: rise .45s cubic-bezier(.2,.8,.2,1) both; position: relative; }
+.post-t { position: absolute; top: 16px; right: 16px; font-family: 'Space Mono', monospace; font-size: 11.5px; color: ${T.stone}; }
+.post-k { font-size: 12px; font-weight: 700; color: ${T.ochreLight}; padding-right: 70px; }
+.post-k.job { color: ${T.accent}; }
+.post-x { font-size: 15.5px; line-height: 1.45; color: ${T.ink}; margin-top: 6px; }
 .post-by { font-size: 12.5px; color: ${T.stone}; margin-top: 6px; }
-.post-a { display: flex; align-items: center; gap: 14px; margin-top: 8px; }
-.post-a .rispondi { min-height: 40px; padding: 0 16px; border-radius: 8px; border: 1.5px solid ${T.ink}; background: none; font-size: 14px; font-weight: 700; color: ${T.ink}; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; }
-.post-a .n { font-family: 'Space Mono', monospace; font-size: 12px; color: ${T.ink2}; }
-.post-a .segn { margin-left: auto; font-size: 12.5px; color: ${T.stone}; text-decoration: underline; text-underline-offset: 3px; }
-.post.mine { margin: 0 -20px; padding-left: 20px; padding-right: 20px; background: linear-gradient(90deg, ${T.ochreSoft}, transparent 75%); }
+.post-a { display: flex; align-items: center; gap: 14px; margin-top: 12px; }
+.post-a .rispondi { min-height: 40px; padding: 0 16px; border-radius: 12px; border: 0; background: ${T.ochreLight}; font-size: 14px; font-weight: 700; color: #1C1408; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; }
+.post-a .n { font-size: 12.5px; font-weight: 600; color: ${T.ink2}; }
+.post-a .segn { margin-left: auto; font-size: 12.5px; color: ${T.stone}; }
+.post.mine { box-shadow: inset 0 0 0 1.5px ${T.ochre}; }
 
 .onb-visual { display: flex; justify-content: center; align-items: center; min-height: 230px; margin: 18px 0 8px; animation: rise .5s cubic-bezier(.2,.8,.2,1) both; }
 .onb-glyph { width: 150px; height: 150px; border-radius: 44px; background: rgba(169,118,43,.12); border: 1px solid rgba(169,118,43,.28); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 80px -10px rgba(169,118,43,.35); }
@@ -3681,8 +3703,8 @@ export default function App() {
     ? { height: "100%", background: dark ? T.pineDeep : T.paper, fontFamily: "'Hanken Grotesk',sans-serif" }
     : { display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100%", background: "#E4DFD4", fontFamily: "'Hanken Grotesk',sans-serif", padding: 12, boxSizing: "border-box" };
   const frame = phone
-    ? { width: "100%", height: "100%", overflow: "hidden", background: dark ? T.ink : T.paper, position: "relative" }
-    : { width: 384, maxWidth: "100%", height: "min(760px, calc(100dvh - 24px))", borderRadius: 46, overflow: "hidden", background: dark ? T.ink : T.paper, position: "relative", boxShadow: "0 1px 0 1px rgba(28,27,24,.04), 0 40px 80px -20px rgba(28,27,24,.35)", border: `7px solid ${T.ink}` };
+    ? { width: "100%", height: "100%", overflow: "hidden", background: dark ? T.pineDeep : T.paper, position: "relative" }
+    : { width: 384, maxWidth: "100%", height: "min(760px, calc(100dvh - 24px))", borderRadius: 46, overflow: "hidden", background: dark ? T.pineDeep : T.paper, position: "relative", boxShadow: "0 1px 0 1px rgba(28,27,24,.04), 0 40px 80px -20px rgba(28,27,24,.35)", border: `7px solid ${T.ink}` };
 
   return (
     <div style={outer}>
@@ -3690,10 +3712,10 @@ export default function App() {
       <div style={frame}>
         {/* barra di stato finta, solo nella cornice da computer */}
         {!phone && (
-          <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 100, padding: "12px 26px 0", display: "flex", justifyContent: "space-between", alignItems: "center", color: dark ? T.paper : T.ink }}>
-            <Mono size={12} color={dark ? T.paper : T.ink} w={700}>{new Date().toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" })}</Mono>
+          <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 100, padding: "12px 26px 0", display: "flex", justifyContent: "space-between", alignItems: "center", color: dark ? T.cream : T.ink }}>
+            <Mono size={12} color={dark ? T.cream : T.ink} w={700}>{new Date().toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" })}</Mono>
             <div style={{ display: "flex", gap: 4, alignItems: "center", opacity: .8 }}>
-              <Icon name="message" size={13} color={dark ? T.paper : T.ink} />
+              <Icon name="message" size={13} color={dark ? T.cream : T.ink} />
               <span style={{ fontSize: 12.5, fontWeight: 600 }}>5G</span>
             </div>
           </div>
@@ -3705,7 +3727,7 @@ export default function App() {
             {sc === "intro-worker" && <IntroWorker onWorker={() => choose("worker")} onOther={() => nav("entrata")} onLogin={() => nav("login")} />}
             {sc === "onboarding" && <Onboarding role={role} allaFine={!!dt?.fine} onDone={finishOnb} onBack={() => nav.back("entrata")} />}
             {sc === "setup" && <ProviderSetup onDone={finishSetup} onLegal={setFoglio} nav={nav} initial={profilo} edit={!!dt?.edit && setupDone} onSave={d => { Object.assign(ME, { n: d.nome, ini: iniOf(d.nome), pr: d.pr, sk: d.sk, zona: d.zone[0] || ME.zona, zone: d.zone, tipo: d.tipo, piva: d.piva, abil: d.abil, rc: d.rc, foto: d.foto, preventivo: d.preventivo, bio: d.bio }); setProfilo(p => p ? { ...p, nome: d.nome } : p); }} />}
-            {sc === "home" && <Home nav={nav} fermo={paused ? "pausa" : !avail ? "off" : null} role={role} profilo={profilo} blocked={blocked} prossima={prossimeDi(prenotazioni)[0]} nuove={nuove} richieste={avail && !paused ? reqsVis.length : 0} reqsHome={avail && !paused ? reqsVis : []} />}
+            {sc === "home" && <Home nav={nav} fermo={paused ? "pausa" : !avail ? "off" : null} role={role} profilo={profilo} blocked={blocked} prossima={prossimeDi(prenotazioni)[0]} nuove={nuove} richieste={avail && !paused ? reqsVis.length : 0} reqsHome={avail && !paused ? reqsVis : []} bacheca={posts.filter(p => p.t === "req" && !blocked.some(id => wById(id)?.n === p.a)).length} />}
             {sc === "csetup" && <ClientSetup nav={nav} onIndietro={() => { setDt({ fine: true }); setSc("onboarding"); setK(x => x + 1); }} pro={setupDone} initial={dt?.edit ? profilo : null} back={dt?.back} fromOnb={!!dt?.onb} onDone={p => { const nuovo = !profilo; setProfiloIn(p); if (setupDone) Object.assign(ME, { n: p.nome, ini: iniOf(p.nome) }); avviso.mostra(nuovo ? `Profilo pronto, ${p.nome.split(" ")[0]}.` : "Dati salvati."); nav(dt?.back || "home"); }} />}
             {sc === "search" && <Search nav={nav} init={dt} role={role} blocked={blocked} />}
             {sc === "worker" && dt && <Worker w={dt} nav={nav} from={pv} saved={saved} giaPrenotata={prossimeDi(prenotazioni).find(b => b.wid === dt.id)} mioGiudizio={giudizi.filter(g => g.su === dt.n).slice(-1)[0]} onSave={toggleSave} bloccato={blocked.includes(dt.id)} onUnblock={id => { setBlocked(b => b.filter(x => x !== id)); avviso.mostra("Sbloccato."); }} onBlock={id => { const sue = prossimeDi(prenotazioni).filter(b => b.wid === id); const conf = sue.some(b => b.stato === "confermata"); setBlocked(b => b.includes(id) ? b : [...b, id]); if (sue.length) setPrenotazioni(ps => ps.map(p => p.wid === id && ATTIVA(p) && !passata(p) ? { ...p, stato: p.stato === "in attesa" ? "annullata" : "disdetta" } : p)); avviso.mostra(`Hai bloccato ${wById(id)?.n.split(" ")[0]}.${conf ? " L'appuntamento è disdetto e l'abbiamo avvisato." : sue.length ? " La richiesta in attesa è ritirata." : ""}`); }} />}
