@@ -114,6 +114,7 @@ export function MappaGrande({ persone, mia, categorie }: { persone: PersonaMappa
       <div className="mappa-g">
         <svg
           ref={svg}
+          data-mappa={`${MW} ${MH}`}
           viewBox={`${vista.x} ${vista.y} ${vbW} ${vbH}`}
           preserveAspectRatio="xMidYMid meet"
           role="group"
@@ -170,6 +171,15 @@ export function MappaGrande({ persone, mia, categorie }: { persone: PersonaMappa
                 aria-pressed={on}
                 className="pin"
                 style={{ animationDelay: `${i * 0.06}s` }}
+                data-id={p.id}
+                data-nome={p.nome}
+                data-competenze={p.competenze.join('|')}
+                data-libero={p.disponibile ? '1' : '0'}
+                data-ida={p.ida ?? ''}
+                data-tariffa={p.preventivo ? '' : p.tariffa}
+                data-zona={p.zona}
+                data-x={x}
+                data-y={y}
                 onClick={() => scegli(p)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
