@@ -8,6 +8,7 @@
 export const T = {
   /* Tema "notte e ocra": tutta l'app sul verde scuro dell'ingresso */
   paper: "#0E1C19",       // fondo delle schermate
+  paperVetro: "rgba(14,28,25,.78)", // barre fisse: lasciano intravedere i bagliori sotto
   card: "#182B27",        // riquadri
   ink: "#F3EFE6",         // testo principale
   ink2: "#C4CEC9",        // testo secondario

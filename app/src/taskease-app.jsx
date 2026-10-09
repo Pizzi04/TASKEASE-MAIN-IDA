@@ -375,7 +375,7 @@ function Search({ nav, init, role, blocked = [] }) {
     .sort((a, b) => sort === "ida" ? (b.ida ?? -1) - (a.ida ?? -1) : sort === "price" ? a.pr - b.pr : a.d - b.d);
   const COL = [["ida", "IDA"], ["price", "€/h"], ["dist", "km"]];
   return (
-    <div style={{ flex: 1, minHeight: 0, background: T.paper, display: "flex", flexDirection: "column" }}>
+    <div style={{ flex: 1, minHeight: 0, background: "transparent", display: "flex", flexDirection: "column" }}>
       <div style={{ padding: "16px 20px 14px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <button type="button" className="head-back" aria-label="Indietro" onClick={() => nav.back("home")}><Icon name="arrowL" size={20} /></button>
@@ -450,7 +450,7 @@ function Worker({ w, nav, from, saved, onSave, onBlock, bloccato, onUnblock, gia
   const lv = LV[w.lv];
   const isSaved = saved?.includes(w.id);
   return (
-    <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
+    <div style={{ flex: 1, minHeight: 0, background: "transparent", overflow: "auto" }}>
       <div style={{ padding: "16px 20px 0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <button type="button" className="head-back" aria-label="Indietro" onClick={() => nav.back(from || "home")}><Icon name="arrowL" size={20} /></button>
         {!w.self && <button type="button" className="bt tap" aria-label={isSaved ? "Togli dai preferiti" : "Salva tra i preferiti"} aria-pressed={!!isSaved} onClick={() => onSave?.(w.id)} style={{ cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", width: 44, height: 44, borderRadius: "50%", border: `1px solid ${isSaved ? T.ember : T.line}`, background: isSaved ? T.emberSoft : "transparent" }}>
@@ -646,7 +646,7 @@ function Booking({ w, nav, profilo, setProfilo, onBooked, bozza, onBozza, occupa
   useIndietro(status === "pending" && w.av, () => { avviso.mostra(`Richiesta annullata: ${fn} non riceve nulla.`); nav.back("worker", w); return true; });
   // In attesa che il lavoratore accetti
   if (status === "pending") return (
-    <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
+    <div style={{ flex: 1, minHeight: 0, background: "transparent", overflow: "auto" }}>
       <div style={{ minHeight: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32 }}>
         <div style={{ position: "relative", width: 90, height: 90, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 22 }}>
           {[0, 1].map(i => <div key={i} style={{ position: "absolute", width: 70, height: 70, borderRadius: 40, border: `1.5px solid ${T.pine}`, animation: `rg 2s ease-out infinite ${i * .6}s` }} />)}
@@ -692,7 +692,7 @@ function Booking({ w, nav, profilo, setProfilo, onBooked, bozza, onBozza, occupa
       ["Arriva e fa il lavoro", false], ["Paghi e lasci il giudizio", false],
     ];
     return (
-      <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
+      <div style={{ flex: 1, minHeight: 0, background: "transparent", overflow: "auto" }}>
         <div style={{ padding: "28px 24px 0", textAlign: "center" }}>
           <div style={{ width: 64, height: 64, borderRadius: "50%", background: T.pineSoft, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto", animation: "stamp .5s ease both" }}><Icon name="check" size={32} color={T.accent} w={2} /></div>
           <h1 style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 26, fontWeight: 800, color: T.ink, marginTop: 18, letterSpacing: -.3 }}>{fn} ci sarà.</h1>
@@ -744,7 +744,7 @@ function Booking({ w, nav, profilo, setProfilo, onBooked, bozza, onBozza, occupa
 
   // Form
   return (
-    <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
+    <div style={{ flex: 1, minHeight: 0, background: "transparent", overflow: "auto" }}>
       <Head nav={nav} to="worker" data={w} title="Prenota" />
       <div style={{ padding: "4px 22px 22px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 22 }}>
@@ -855,7 +855,7 @@ function Review({ w, nav, onReviewed }) {
   if (sent) {
     const sc = scoreFromVoci(ans);
     return (
-      <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
+      <div style={{ flex: 1, minHeight: 0, background: "transparent", overflow: "auto" }}>
         <div style={{ minHeight: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, animation: "rise .4s ease" }}>
           <Seal score={sc} lv={lvKeyOf(sc)} size={92} stamp />
           <h1 style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 24, fontWeight: 800, color: T.ink, marginTop: 20 }}>Grazie.</h1>
@@ -870,7 +870,7 @@ function Review({ w, nav, onReviewed }) {
   if (st >= qs.length) {
     const sc = scoreFromVoci(ans);
     return (
-      <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
+      <div style={{ flex: 1, minHeight: 0, background: "transparent", overflow: "auto" }}>
         <Head nav={() => setSt(qs.length - 1)} title={w.esempio ? "Il tuo giudizio (esempio)" : "Controlla e invia"} />
         <div style={{ padding: "4px 22px 24px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 16, background: T.card, border: `1px solid ${T.line}`, borderRadius: 18, padding: 18, marginBottom: 18 }}>
@@ -898,7 +898,7 @@ function Review({ w, nav, onReviewed }) {
 
   const cur = qs[st];
   return (
-    <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
+    <div style={{ flex: 1, minHeight: 0, background: "transparent", overflow: "auto" }}>
       <div style={{ minHeight: "100%", padding: 24, display: "flex", flexDirection: "column", justifyContent: "center", position: "relative" }}>
         <button type="button" className="bt tap" aria-label={st > 0 ? "Domanda precedente" : "Chiudi"} onClick={() => st > 0 ? setSt(st - 1) : nav.back("account")} style={{ position: "absolute", top: 8, [st > 0 ? "left" : "right"]: 8, width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center", color: T.ink2 }}><Icon name={st > 0 ? "arrowL" : "x"} size={22} /></button>
         <div style={{ display: "flex", gap: 6, marginBottom: 30, justifyContent: "center" }}>
@@ -970,7 +970,7 @@ function Chat({ w, nav, from }) {
     if (r) timers.current.push(setTimeout(() => setMsgs(m => [...m, typeof r === "string" ? { me: false, t: r } : { me: false, nota: true, t: r.t }]), 1100));
   };
   return (
-    <div style={{ flex: 1, minHeight: 0, background: T.paper, display: "flex", flexDirection: "column" }}>
+    <div style={{ flex: 1, minHeight: 0, background: "transparent", display: "flex", flexDirection: "column" }}>
       <div style={{ padding: "14px 18px", background: T.card, borderBottom: `1px solid ${T.line}`, display: "flex", alignItems: "center", gap: 12 }}>
         <button type="button" className="head-back" aria-label="Indietro" onClick={() => nav.back("home")}><Icon name="arrowL" size={20} /></button>
         {w && <Avatar ini={w.ini} lv={w.lv} sz={38} />}
@@ -1031,7 +1031,7 @@ function Account({ nav, vai, role, setRole, saved, paused, setPaused, onEsci, on
   const ospite = role === "client" && !profilo;
   const nome = role === "worker" ? ME.n : (profilo?.nome || ME.n);
   return (
-    <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
+    <div style={{ flex: 1, minHeight: 0, background: "transparent", overflow: "auto" }}>
       <div style={{ padding: "22px 22px 0" }}>
         {/* Identità: la stessa persona, sia che cerchi sia che offra */}
         <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 18 }}>
@@ -1484,7 +1484,7 @@ function Dashboard({ nav }) {
   const w = ME; const lv = LV[w.lv];
   const isNew = w.ida == null;
   return (
-    <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
+    <div style={{ flex: 1, minHeight: 0, background: "transparent", overflow: "auto" }}>
       <div style={{ padding: "16px 18px 0" }}>
         <button type="button" className="head-back" aria-label="Indietro" onClick={() => nav.back("account")}><Icon name="arrowL" size={20} /></button>
       </div>
@@ -1548,7 +1548,7 @@ function Neighborhood({ nav, posts, onRemove, pro, paused }) {
   const [aperti, setAperti] = useState([]); // annunci lunghi aperti per intero
   const f = (posts || POSTS).filter(p => tab === "all" || p.t === tab);
   return (
-    <div style={{ flex: 1, minHeight: 0, background: T.paper, display: "flex", flexDirection: "column" }}>
+    <div style={{ flex: 1, minHeight: 0, background: "transparent", display: "flex", flexDirection: "column" }}>
       <Head nav={nav} to="home" title="Bacheca del quartiere" root />
       <div className="seg" role="group" aria-label="Filtra la bacheca" style={{ marginTop: 4 }}>
         {[["all", "Tutto"], ["req", "Richieste"], ["job", "Al lavoro"]].map(([k, l]) => <button type="button" key={k} aria-pressed={tab === k} onClick={() => setTab(k)}>{l}</button>)}
@@ -1598,7 +1598,7 @@ function Passport({ nav }) {
   const tot = STAMPS;
   const sq = sel ? QUARTIERI.find(q => q.id === sel) : null;
   return (
-    <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
+    <div style={{ flex: 1, minHeight: 0, background: "transparent", overflow: "auto" }}>
       <Head nav={nav} to="home" title="Passaporto" />
       <div style={{ padding: "0 22px 24px" }}>
         <div className="esempio-top" style={{ marginBottom: 14 }}><span className="ticker-tag">ESEMPIO</span><span>Timbri e premi sono di esempio: ogni lavoro finito colora un quartiere.</span></div>
@@ -1652,7 +1652,7 @@ function Passport({ nav }) {
 function Rewards({ nav, profilo }) {
   const codice = ((profilo?.nome || "amico").split(" ")[0].normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Za-z]/g, "").toUpperCase() || "AMICO") + "-FORLI";
   return (
-    <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
+    <div style={{ flex: 1, minHeight: 0, background: "transparent", overflow: "auto" }}>
       <Head nav={nav} to="home" title="Vantaggi" />
       <div style={{ padding: "4px 22px 24px" }}>
         <div className="esempio-top" style={{ marginBottom: 14 }}><span className="ticker-tag">ESEMPIO</span><span>Livello e numeri sono di esempio: così appare dopo qualche lavoro.</span></div>
@@ -1729,7 +1729,7 @@ function Sum({ k, v }) { return <div style={{ display: "flex", justifyContent: "
 function Done({ nav, title, body, actions }) {
   const pronto = usePronto();
   return (
-    <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
+    <div style={{ flex: 1, minHeight: 0, background: "transparent", overflow: "auto" }}>
       <div style={{ minHeight: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, animation: "rise .4s ease" }}>
         <div style={{ width: 68, height: 68, borderRadius: "50%", background: T.pineSoft, display: "flex", alignItems: "center", justifyContent: "center", animation: "stamp .5s ease both" }}><Icon name="check" size={34} color={T.accent} w={2} /></div>
         <h1 style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 26, fontWeight: 800, color: T.ink, marginTop: 22, letterSpacing: -.3 }}>{title}</h1>
@@ -1809,7 +1809,7 @@ function ClientProfileForm({ initial, onDone, cta = "Crea il profilo", pro }) {
 
 function ClientSetup({ nav, initial, back, onDone, fromOnb, pro, onIndietro }) {
   return (
-    <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
+    <div style={{ flex: 1, minHeight: 0, background: "transparent", overflow: "auto" }}>
       {!fromOnb && <Head nav={nav} to={back || "account"} title={initial ? "I tuoi dati" : "Crea il profilo"} />}
       <div className="cp">
         {fromOnb && (
@@ -1857,7 +1857,7 @@ function DeleteAccount({ nav, role, onPause, onDeleted, onDeletedPro, entrambi, 
   const [fatto, setFatto] = useState(false);
   const isW = haPro && !entrambi;
   if (fatto) return (
-    <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
+    <div style={{ flex: 1, minHeight: 0, background: "transparent", overflow: "auto" }}>
       <div className="del-done">
         <div className="del-done-ic"><Icon name="check" size={32} color={T.accent} w={2} /></div>
         <h1>Profilo eliminato.</h1>
@@ -1876,7 +1876,7 @@ function DeleteAccount({ nav, role, onPause, onDeleted, onDeletedPro, entrambi, 
     ...(haPro ? ["I dati fiscali già comunicati all'Agenzia delle Entrate restano negli archivi per il tempo previsto dalla legge."] : []),
   ];
   return (
-    <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
+    <div style={{ flex: 1, minHeight: 0, background: "transparent", overflow: "auto" }}>
       <Head nav={nav} to="account" title="Elimina il profilo" />
       <div className="del">
         <h1 className="del-h">Prima di confermare, ecco cosa succede.</h1>
@@ -1938,7 +1938,7 @@ function DeleteAccount({ nav, role, onPause, onDeleted, onDeletedPro, entrambi, 
 /* Dopo l'eliminazione: i dati sono già spariti, questa è solo la conferma */
 function Eliminato({ onFine }) {
   return (
-    <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
+    <div style={{ flex: 1, minHeight: 0, background: "transparent", overflow: "auto" }}>
       <div className="del-done">
         <div className="del-done-ic"><Icon name="check" size={32} color={T.accent} w={2} /></div>
         <h1>Profilo eliminato.</h1>
@@ -1974,7 +1974,7 @@ function Post({ nav, profilo, setProfilo, onPosted }) {
   if (ok) return <Done nav={nav} title="Pubblicato." body={<>La tua richiesta è sulla bacheca.<br />Chi lavora in zona la vede quando apre l'app. Ti avvisiamo appena qualcuno risponde.</>} actions={<><Btn full onClick={() => nav("neighborhood")}>Vedi la bacheca</Btn><Btn full kind="ghost" onClick={() => nav("home")}>Torna alla home</Btn></>} />;
   const is = { width: "100%", border: "1.5px solid #B8B0A2", borderRadius: 14, padding: "13px 14px", fontSize: 16, fontFamily: "'Hanken Grotesk',sans-serif", background: T.card, color: T.ink, marginTop: 6 };
   return (
-    <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
+    <div style={{ flex: 1, minHeight: 0, background: "transparent", overflow: "auto" }}>
       <Head nav={nav} to="home" title="Pubblica una richiesta" root />
       <div style={{ padding: "16px 22px 22px" }}>
         <Label>Cosa ti serve?</Label>
@@ -2012,7 +2012,7 @@ function Report({ w, nav, profilo, onInviata }) {
   const can = why && (why !== "Altro" || txt.trim().length >= 10) && (!serveContatto || telOk(contatto));
   if (done) return <Done nav={nav} title="Segnalazione inviata." body={<>Leggiamo ogni segnalazione di persona.<br />Sentiamo anche {fn} prima di decidere e ti rispondiamo entro 48 ore, via SMS al {serveContatto ? contatto : "tuo numero"}.</>} actions={<Btn full onClick={() => nav("home")}>Torna alla home</Btn>} />;
   return (
-    <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
+    <div style={{ flex: 1, minHeight: 0, background: "transparent", overflow: "auto" }}>
       <Head nav={nav} to={w?.demo ? "worker" : "home"} data={w} title="Segnala un problema" />
       <div style={{ padding: "4px 22px 22px" }}>
         <p style={{ fontSize: 13.5, color: T.ink2, lineHeight: 1.6, marginTop: 0, marginBottom: 18 }}>Cos'è successo con {fn}? Non la pubblichiamo: ne parliamo con te e con {fn}.</p>
@@ -2052,7 +2052,7 @@ function Notifications({ nav, items = [], viste = [], onSeen }) {
   useEffect(() => { onSeen?.(); }, []);
   const tap = (n) => n.go && nav(n.go[0], n.go[1] || null);
   return (
-    <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
+    <div style={{ flex: 1, minHeight: 0, background: "transparent", overflow: "auto" }}>
       <Head nav={nav} to="home" title="Notifiche" />
       <div style={{ padding: "4px 18px 22px" }}>
         {items.length === 0 && (
@@ -2114,7 +2114,7 @@ function ShareSeal({ nav, verified }) {
   };
 
   return (
-    <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
+    <div style={{ flex: 1, minHeight: 0, background: "transparent", overflow: "auto" }}>
       <Head nav={nav} to="account" title="Il tuo sigillo" />
       <div style={{ padding: "4px 22px 28px" }}>
         <p style={{ fontSize: 13.5, color: T.ink2, lineHeight: 1.6, marginTop: 0, marginBottom: 20 }}>
@@ -2181,7 +2181,7 @@ function Help({ nav, from }) {
     ["hand", "Chi lavora decide in autonomia", "Decide prezzi, orari, zone e quali lavori accettare. Rifiutare non abbassa l'IDA. TaskEase mette in contatto, non è il datore di lavoro di nessuno."],
   ];
   return (
-    <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
+    <div style={{ flex: 1, minHeight: 0, background: "transparent", overflow: "auto" }}>
       <Head nav={nav} to={from || "home"} title="Come funziona" />
       <div style={{ padding: "4px 22px 24px" }}>
         {items.map(([ic, t, s], i) => (
@@ -2526,7 +2526,7 @@ function ProviderSetup({ onDone, nav, initial, edit, onSave, onLegal }) {
 
   // Codice di verifica del numero, poi la schermata finale
   if (otp && step < 4) return (
-    <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
+    <div style={{ flex: 1, minHeight: 0, background: "transparent", overflow: "auto" }}>
       <div className="cp">
         <div className="cp-eye">Ultimo controllo</div>
         <h1 className="cp-h1">Conferma il tuo numero</h1>
@@ -2536,7 +2536,7 @@ function ProviderSetup({ onDone, nav, initial, edit, onSave, onLegal }) {
   );
 
   if (step === 4) return (
-    <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
+    <div style={{ flex: 1, minHeight: 0, background: "transparent", overflow: "auto" }}>
       <div style={{ minHeight: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 30, textAlign: "center" }}>
         <Seal score={null} lv="bronzo" size={96} stamp />
         <h1 style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 25, fontWeight: 800, color: T.ink, marginTop: 20, letterSpacing: -.3 }}>Ci siamo, {nome.trim().split(/\s+/)[0]}.</h1>
@@ -2718,7 +2718,7 @@ function ProviderSetup({ onDone, nav, initial, edit, onSave, onLegal }) {
     setStep(step + 1);
   };
   return (
-    <div style={{ flex: 1, minHeight: 0, background: T.paper, display: "flex", flexDirection: "column" }}>
+    <div style={{ flex: 1, minHeight: 0, background: "transparent", display: "flex", flexDirection: "column" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 18px 8px" }}>
         <button type="button" className="head-back" aria-label="Indietro" onClick={() => step > 0 ? setStep(step - 1) : nav.back("entrata")}><Icon name="arrowL" size={20} /></button>
         <div style={{ display: "flex", gap: 6 }}>
@@ -2796,7 +2796,7 @@ const LEGAL = {
 function Legal({ nav, doc = "info" }) {
   const d = LEGAL[doc] || LEGAL.info;
   return (
-    <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
+    <div style={{ flex: 1, minHeight: 0, background: "transparent", overflow: "auto" }}>
       <Head nav={nav} to="account" title={d.t} />
       <div style={{ padding: "4px 22px 28px" }}>
         <div className="esempio-top" style={{ marginBottom: 16 }}><span className="ticker-tag">BOZZA</span><span>{LEGALE_VERS}. Testo per l'anteprima, da far revisionare a un legale prima del lancio.</span></div>
@@ -2870,7 +2870,7 @@ function SegnalaContenuto({ nav, cosa, onInviata, profilo }) {
   const manca = !motivo ? "Scegli un motivo." : txt.trim().length < 20 ? "Spiega in almeno 20 caratteri cosa non va." : nomeS.trim().length < 2 ? "Serve il tuo nome." : !emailOk ? "Serve un'email per mandarti la decisione." : !buonaFede ? "Manca la dichiarazione di buona fede." : null;
   if (fatto) return <Done nav={nav} title="Segnalazione ricevuta." body={<>La esaminiamo e ti scriviamo a {email} la decisione con la motivazione.<br />Se il contenuto viene rimosso, anche chi l'ha pubblicato riceve la motivazione e può contestarla.</>} actions={<Btn full onClick={() => nav.back("home")}>Torna indietro</Btn>} />;
   return (
-    <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
+    <div style={{ flex: 1, minHeight: 0, background: "transparent", overflow: "auto" }}>
       <Head nav={nav} to="home" title="Segnala un contenuto" />
       <div style={{ padding: "4px 22px 24px" }}>
         <div style={{ background: T.card, border: `1px solid ${T.line}`, borderRadius: 14, padding: 14, marginBottom: 18 }}>
@@ -2914,7 +2914,7 @@ function Login({ nav, profilo, setupDone, onLogin, motivo }) {
   const invia = () => { if (!telOk(tel)) return; setFase(profilo && norm(profilo.tel) === norm(tel) ? "codice" : "nessuno"); };
   const dopoCodice = () => { if (profilo && norm(profilo.tel) === norm(tel)) onLogin(); else setFase("nessuno"); };
   return (
-    <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
+    <div style={{ flex: 1, minHeight: 0, background: "transparent", overflow: "auto" }}>
       <Head nav={nav} to="entrata" title="Accedi" />
       <div className="cp">
         <h1 className="cp-h1">Bentornati.<br /><em>Accedi col tuo numero.</em></h1>
@@ -2949,7 +2949,7 @@ function MieiDati({ nav, dati }) {
   const txt = JSON.stringify(dati, null, 2);
   const copia = () => { try { const p = navigator.clipboard?.writeText(txt); p && p.then ? p.then(() => setCopiato(true), () => setCopiato(false)) : setCopiato(false); } catch (e) { setCopiato(false); } };
   return (
-    <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
+    <div style={{ flex: 1, minHeight: 0, background: "transparent", overflow: "auto" }}>
       <Head nav={nav} to="account" title="I miei dati" />
       <div style={{ padding: "4px 22px 24px" }}>
         <p style={{ fontSize: 13.5, color: T.ink2, lineHeight: 1.6, marginTop: 0 }}>Tutto quello che TaskEase sa di te, in un formato leggibile e riutilizzabile. Nell'app vera arriva anche come file da scaricare.</p>
@@ -2963,7 +2963,7 @@ function MieiDati({ nav, dati }) {
 /* ============================== ASSISTENZA (punto di contatto DSA art. 11-12) ============================== */
 function Assistenza({ nav }) {
   return (
-    <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
+    <div style={{ flex: 1, minHeight: 0, background: "transparent", overflow: "auto" }}>
       <Head nav={nav} to="account" title="Assistenza e contatti" />
       <div style={{ padding: "4px 22px 24px" }}>
         <p style={{ fontSize: 13.5, color: T.ink2, lineHeight: 1.6, marginTop: 0 }}>Rispondiamo di persona, in italiano, di solito entro un giorno lavorativo.</p>
@@ -2992,7 +2992,7 @@ function Assistenza({ nav }) {
 function Bloccati({ nav, blocked, setBlocked }) {
   const lista = blocked.map(wById).filter(Boolean);
   return (
-    <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
+    <div style={{ flex: 1, minHeight: 0, background: "transparent", overflow: "auto" }}>
       <Head nav={nav} to="account" title="Persone bloccate" />
       <div style={{ padding: "4px 22px 24px" }}>
         <p style={{ fontSize: 13, color: T.ink2, lineHeight: 1.6, marginTop: 0 }}>Non compaiono nelle ricerche, nei preferiti e in bacheca. Non ricevono nessun avviso.</p>
@@ -3188,7 +3188,7 @@ export default function App() {
   return (
     <div style={outer}>
       <style>{STYLE}</style>
-      <div style={frame}>
+      <div style={frame} className={dark ? undefined : "sfondo"}>
         {/* barra di stato finta, solo nella cornice da computer */}
         {!phone && (
           <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 100, padding: "12px 26px 0", display: "flex", justifyContent: "space-between", alignItems: "center", color: dark ? T.cream : T.ink }}>
@@ -3200,7 +3200,7 @@ export default function App() {
           </div>
         )}
 
-        <div key={k} style={{ display: "flex", flexDirection: "column", height: "100%", paddingTop: phone ? 0 : 40, animation: "fade .25s ease" }}>
+        <div key={k} style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", height: "100%", paddingTop: phone ? 0 : 40, animation: "fade .25s ease" }}>
           <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>
             {sc === "entrata" && <Entrata onChoose={choose} onLogin={() => nav("login")} />}
             {sc === "intro-worker" && <IntroWorker onWorker={() => choose("worker")} onOther={() => nav("entrata")} onLogin={() => nav("login")} />}

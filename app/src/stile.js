@@ -124,7 +124,7 @@ input:focus-visible, textarea:focus-visible { outline: 2.5px solid ${T.accent} !
 .badge.ok { color: ${T.accent}; background: ${T.pineSoft}; }
 .cp-link { color: ${T.accent}; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; display: inline; padding: 0; }
 .ent-acc { color: ${T.cream}; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; font-size: inherit; }
-.book-bar { position: sticky; bottom: 0; z-index: 5; background: ${T.paper}; box-shadow: 0 -10px 24px -14px rgba(0,0,0,.5); border-top: 1px solid ${T.line}; padding: 14px 22px calc(16px + env(safe-area-inset-bottom, 0px)); }
+.book-bar { position: sticky; bottom: 0; z-index: 5; background: ${T.paperVetro}; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: 0 -10px 24px -14px rgba(0,0,0,.5); border-top: 1px solid ${T.line}; padding: 14px 22px calc(16px + env(safe-area-inset-bottom, 0px)); }
 @media (max-width: 399px) { .bb-sub { display: none; } }
 .toast, .a-capo { overflow-wrap: anywhere; }
 .tre-righe { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
@@ -180,7 +180,7 @@ button:focus-visible { outline: 2.5px solid ${T.accent}; outline-offset: 2px; }
 .rise { animation: rise .6s cubic-bezier(.2,.8,.2,1) both; }
 
 /* ---------- Dentro l'app — "notte e ocra": riquadri arrotondati, numeri grandi, accenti ocra ---------- */
-.home { flex: 1; min-height: 0; overflow-y: auto; background: ${T.paper}; }
+.home { flex: 1; min-height: 0; overflow-y: auto; background: transparent; }
 .home-hero { padding: 18px 20px 0; color: ${T.ink}; }
 .home-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .home-sub { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: ${T.stone}; margin-top: 2px; }
@@ -257,14 +257,14 @@ button:focus-visible { outline: 2.5px solid ${T.accent}; outline-offset: 2px; }
 .tile-l { font-size: 14px; font-weight: 700; margin-top: 10px; }
 .tile-s { font-size: 12.5px; color: ${T.stone}; line-height: 1.3; }
 
-.head { position: sticky; top: 0; z-index: 6; display: flex; align-items: center; gap: 12px; padding: 14px 20px 12px; background: ${T.paper}; }
+.head { position: sticky; top: 0; z-index: 6; display: flex; align-items: center; gap: 12px; padding: 14px 20px 12px; background: ${T.paperVetro}; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
 .head-root { padding-top: 22px; }
 .head-root .head-t { font-size: 28px; font-weight: 800; letter-spacing: -1px; }
 .head-back { width: 44px; height: 44px; border-radius: 14px; border: 0; background: ${T.card}; color: ${T.ink}; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
 .head-t { font-family: 'Hanken Grotesk', sans-serif; font-size: 20px; font-weight: 800; letter-spacing: -.5px; color: ${T.ink}; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* barra in basso: icone su sfumatura, la voce attiva in un riquadro */
-.dock-wrap { background: ${T.paper}; padding: 6px 12px calc(10px + env(safe-area-inset-bottom, 0px)); flex-shrink: 0; border-top: 1px solid ${T.line}; }
+.dock-wrap { background: ${T.paperVetro}; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); padding: 6px 12px calc(10px + env(safe-area-inset-bottom, 0px)); flex-shrink: 0; border-top: 1px solid ${T.line}; }
 .dock { display: flex; align-items: center; justify-content: space-around; gap: 4px; }
 .dock-i, .dock-plus { flex: 1; max-width: 72px; min-height: 52px; border: 0; border-radius: 16px; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; color: ${T.stone}; }
 .dock-i span, .dock-plus > span:last-child { font-size: 12px; font-weight: 600; white-space: nowrap; }
@@ -277,7 +277,7 @@ button:focus-visible { outline: 2.5px solid ${T.accent}; outline-offset: 2px; }
 .dock-i:focus-visible, .dock-plus:focus-visible, .wcard:focus-visible, .cat2:focus-visible, .tile:focus-visible, .head-back:focus-visible, .ida-card:focus-visible, .tl:focus-visible, .lrow:focus-visible, .next-card:focus-visible { outline: 2.5px solid ${T.ochreLight}; outline-offset: 2px; }
 
 /* cerca: righe-riquadro con colonne ordinabili */
-.ledger-h { display: grid; grid-template-columns: minmax(0, 1fr) 52px 48px 48px; gap: 8px; padding: 0 34px; position: sticky; top: 0; background: ${T.paper}; z-index: 2; }
+.ledger-h { display: grid; grid-template-columns: minmax(0, 1fr) 52px 48px 48px; gap: 8px; padding: 0 34px; position: sticky; top: 0; background: ${T.paperVetro}; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); z-index: 2; }
 .ledger-h > span, .ledger-h button { font-size: 12px; font-weight: 600; color: ${T.stone}; min-height: 44px; display: flex; align-items: center; }
 .ledger-h button { justify-content: flex-end; background: none; border: 0; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; }
 .ledger-h button[aria-pressed="true"] { color: ${T.ochreLight}; font-weight: 800; }
@@ -366,6 +366,18 @@ button:focus-visible { outline: 2.5px solid ${T.accent}; outline-offset: 2px; }
 /* pulsante premuto */
 .tl, .wcard, .lrow, .tile, .post-a .rispondi, .fchip, .cat2, .seg button { transition: transform .15s, filter .15s, background .2s; }
 .tl:active, .wcard:active, .lrow:active, .tile:active { transform: scale(.98); }
+
+/* ---------- sfondo dell'app: bagliori verdi e ocra del tema, fermi mentre il contenuto scorre ---------- */
+.sfondo { isolation: isolate; }
+.sfondo::before { content: ""; position: absolute; inset: -25%; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(42% 32% at 18% 12%, rgba(36,94,83,.75), transparent 70%),
+    radial-gradient(40% 32% at 92% 36%, rgba(224,182,118,.26), transparent 70%),
+    radial-gradient(45% 30% at 30% 92%, rgba(79,209,160,.12), transparent 70%),
+    radial-gradient(34% 24% at 85% 86%, rgba(224,182,118,.18), transparent 70%);
+  animation: bagliore-in 1.4s ease both, deriva 36s ease-in-out 1.4s infinite alternate; }
+@keyframes bagliore-in { from { opacity: 0; transform: scale(1.08); } to { opacity: 1; transform: none; } }
+@keyframes deriva { from { transform: translate(0, 0) rotate(0deg); } to { transform: translate(-4%, 3%) rotate(6deg); } }
 
 .onb-visual { display: flex; justify-content: center; align-items: center; min-height: 230px; margin: 18px 0 8px; animation: rise .5s cubic-bezier(.2,.8,.2,1) both; }
 .onb-glyph { width: 150px; height: 150px; border-radius: 44px; background: rgba(169,118,43,.12); border: 1px solid rgba(169,118,43,.28); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 80px -10px rgba(169,118,43,.35); }
