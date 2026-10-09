@@ -31,8 +31,10 @@ export default function ModuloAccesso() {
     }
     setErrore('')
     setAttesa(true)
-    const { error } = await supabaseBrowser().auth.signInWithOtp({ phone: tel })
+    const supabase = supabaseBrowser()
+    const { error } = await supabase.auth.signInWithOtp({ phone: tel })
     setAttesa(false)
+    supabase.rpc('registra_evento', { p_nome: 'accesso_avviato' }).then(() => {}, () => {})
     if (error) return setErrore(messaggioErrore(error))
     setTelefono(tel)
     setCodice('')
@@ -47,11 +49,13 @@ export default function ModuloAccesso() {
     }
     setErrore('')
     setAttesa(true)
-    const { error } = await supabaseBrowser().auth.verifyOtp({ phone: telefono, token: codice.trim(), type: 'sms' })
+    const supabase = supabaseBrowser()
+    const { error } = await supabase.auth.verifyOtp({ phone: telefono, token: codice.trim(), type: 'sms' })
     if (error) {
       setAttesa(false)
       return setErrore(messaggioErrore(error))
     }
+    await supabase.rpc('registra_evento', { p_nome: 'accesso_riuscito' }).then(() => {}, () => {})
     router.replace('/')
     router.refresh()
   }

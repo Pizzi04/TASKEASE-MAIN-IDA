@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0E1C19" />
+    <title>Sei offline · TaskEase</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        background: #0e1c19;
+        color: #f3efe6;
+        font-family: system-ui, sans-serif;
+      }
+      main {
+        max-width: 400px;
+        margin: 0 auto;
+        padding: 64px 16px;
+        text-align: center;
+      }
+      img {
+        border-radius: 24px;
+      }
+      p {
+        color: #c4cec9;
+        line-height: 1.5;
+      }
+      button {
+        margin-top: 16px;
+        min-height: 48px;
+        padding: 0 24px;
+        border: 0;
+        border-radius: 14px;
+        background: #8f6320;
+        color: #fff;
+        font: inherit;
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <img src="/icona-192.png" width="96" height="96" alt="" />
+      <h1>Sei offline</h1>
+      <p>TaskEase ha bisogno di internet per mostrarti prenotazioni e messaggi aggiornati. Appena torna la connessione, riprova.</p>
+      <button type="button" onclick="location.reload()">Riprova</button>
+    </main>
+  </body>
+</html>

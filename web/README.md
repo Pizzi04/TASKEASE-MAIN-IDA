@@ -1,40 +1,54 @@
 # TaskEase · app vera (Next.js + Supabase)
 
-Modulo 1: **accesso con SMS e profilo**. Il resto dell'app arriverà un modulo alla volta.
+L'app completa, collegata al database Supabase del progetto `taskease` (Francoforte, UE).
 
 ## Avvio
 
 ```bash
-cp .env.example .env.local   # URL e chiave pubblica del progetto Supabase "taskease"
+cp .env.example .env.local   # poi completa i valori (vedi sotto)
 npm install
 npm run dev                  # http://localhost:3000
-npm test                     # test delle regole (telefono, codice, nome, zona, consenso)
+npm test                     # 50 test sulle regole (telefono, CF, P.IVA, orari, IDA, contatti, ordine dei risultati)
+npm run build                # controllo completo prima di pubblicare
 ```
 
-## Cosa c'è
+## Cosa fa
 
-| File | Cosa fa |
+| Area | Schermate |
 |---|---|
-| `app/accedi/` | Numero di telefono → codice SMS → dentro |
-| `app/profilo/nuovo/` | Nome, zona, consenso a termini e privacy (salvato con versione e data) |
-| `app/page.tsx` | Home minima: il tuo profilo ed "Esci" |
-| `app/esci/route.ts` | Chiude la sessione |
-| `proxy.ts` | Rinfresca la sessione a ogni pagina (in Next 16 `middleware` si chiama `proxy`) |
-| `lib/validazione.ts` | Regole dei campi, usate da pagine e server |
-| `lib/supabase/` | Client Supabase per browser e server |
+| Accesso | `/accedi` (numero + codice SMS), `/profilo/nuovo` (nome, zona, consenso, “cerco” o “lavoro”) |
+| Cliente | Home con selettore **Cerco · Lavoro**, `/cerca` (categorie, zone, ordine per vicinanza/prezzo/IDA), scheda del professionista, prenotazione con orari liberi |
+| Prenotazioni | Conferma, rifiuto, **proposta di altro orario**, annullamento con motivo, lavoro fatto, chat in tempo reale, giudizio IDA a 5 voci, risposta al giudizio |
+| Bacheca | Richieste pubbliche in zona (con foto), proposte dei professionisti, “prenota” dalla proposta |
+| Lavoro | Crea/modifica scheda (privato o P.IVA, impianti solo con abilitazione), dati fiscali privati, disponibilità, verifica d'identità, giudizi ricevuti |
+| Profilo | Modifica con foto, pausa, preferiti, bloccati, passaporto di quartiere, notifiche, **scarica i miei dati**, elimina account |
+| Sicurezza | Segnalazioni (DSA) su profili, giudizi, richieste, messaggi e lavori; esito motivato a entrambe le parti |
+| Amministrazione | `/admin`: numeri (anonimi), segnalazioni da decidere, verifiche d'identità, account sospesi |
+| Telefono | Installabile (PWA), pagina offline, notifiche push |
+| Documenti | `/legale/termini`, `privacy`, `giudizi`, `ranking`, `sicurezza`, `info` |
 
-## Database (già creato su Supabase)
+## Regole che stanno nel database (non aggirabili dall'app)
 
-- `profili`: nome, zona, ruolo. Ognuno legge e modifica solo il suo (RLS).
-- `consensi`: cosa ha accettato l'utente, versione e quando. Non si modifica né cancella.
-- Il telefono resta solo in `auth.users`, non viene copiato.
+- Ognuno vede e modifica solo ciò che gli spetta (regole di sicurezza su ogni tabella, provate con utenti simulati).
+- L'**IDA** lo calcola il database: pesi 20/30/20/15/15, ultimi 12 mesi pieni, 12–24 mesi a metà, ricalcolo ogni notte. Nessuno può scriverlo a mano.
+- Si giudica solo un lavoro completato, una volta. Chi lavora risponde una volta.
+- Lo stesso orario non si prenota due volte; serve almeno un'ora di anticipo; massimo 30 giorni.
+- L'**indirizzo** lo vede chi lavora solo dopo aver confermato. Il telefono non lo vede nessun utente.
+- Niente telefono/email nelle richieste in bacheca. Chi è bloccato non può prenotarti né scriverti.
+- Idraulica ed elettricità solo con Partita IVA e abilitazione dichiarata. Per lavorare servono 18 anni.
+- Dati fiscali visibili solo all'interessato e agli amministratori; dopo l'eliminazione dell'account restano in un archivio non accessibile dall'app (obbligo fiscale).
+- Le migrazioni sono in `supabase/migrations/` (in ordine).
 
-## Numeri di prova (senza SMS veri)
+## Da configurare (una volta)
 
-Supabase → Authentication → Sign In / Providers → **Phone**:
-1. Attiva "Enable Phone provider".
-2. Provider SMS: scegli Twilio e metti valori qualsiasi (con i soli numeri di prova non parte nessun SMS).
-3. "Test Phone Numbers and OTPs": `393331234567=123456`.
-4. Salva. Ora con 333 123 4567 il codice è sempre 123456.
+1. **SMS di prova** — Supabase → Authentication → Sign In / Providers → Phone: attiva, provider Twilio con valori qualsiasi, *Test Phone Numbers* `393331234567=123456`.
+2. **Chiave segreta** — Supabase → Settings → API Keys → *Secret key* → in `.env.local` come `SUPABASE_SECRET_KEY` (serve per eliminare account e inviare push). Mai su GitHub.
+3. **Diventare amministratore** — Supabase → SQL Editor:
+   `insert into public.amministratori (utente) select id from auth.users where phone = '393331234567';`
+4. **Notifiche push** (dopo la pubblicazione online) — Supabase → Database → Webhooks → nuovo: tabella `notifiche`, evento *Insert*, URL `https://<tuo-dominio>/api/push`, header `x-webhook-secret` = `PUSH_WEBHOOK_SECRET`.
+5. **Dati legali** — compila `lib/legale.ts` (titolare, P.IVA, contatti): finché mancano, i documenti mostrano “Bozza”.
+6. **SMS veri** — account Twilio (SID, token, mittente) in Supabase → Phone provider.
 
-Per gli SMS veri servirà un account Twilio (o Vonage/MessageBird) con SID, token e mittente.
+## Pubblicare online
+
+Vercel (gratis per iniziare): importa il repository, cartella `web`, e copia le variabili di `.env.local` in *Environment Variables*. Poi in Supabase → Authentication → URL Configuration metti l'indirizzo del sito.

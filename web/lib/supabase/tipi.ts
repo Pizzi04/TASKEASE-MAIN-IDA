@@ -30,6 +30,42 @@ export type Database = {
         }
         Relationships: []
       }
+      archivio_fiscale: {
+        Row: {
+          archiviato_il: string
+          codice_fiscale: string
+          conservare_fino_al: string
+          data_nascita: string
+          id: number
+          nome: string | null
+          partita_iva: string | null
+          residenza: string
+          utente: string
+        }
+        Insert: {
+          archiviato_il?: string
+          codice_fiscale: string
+          conservare_fino_al?: string
+          data_nascita: string
+          id?: never
+          nome?: string | null
+          partita_iva?: string | null
+          residenza: string
+          utente: string
+        }
+        Update: {
+          archiviato_il?: string
+          codice_fiscale?: string
+          conservare_fino_al?: string
+          data_nascita?: string
+          id?: never
+          nome?: string | null
+          partita_iva?: string | null
+          residenza?: string
+          utente?: string
+        }
+        Relationships: []
+      }
       bacheca: {
         Row: {
           autore: string
@@ -195,7 +231,7 @@ export type Database = {
       }
       giudizi: {
         Row: {
-          cliente: string
+          cliente: string | null
           commento: string | null
           comunicazione: number
           creato_il: string
@@ -211,7 +247,7 @@ export type Database = {
           risposta_il: string | null
         }
         Insert: {
-          cliente: string
+          cliente?: string | null
           commento?: string | null
           comunicazione: number
           creato_il?: string
@@ -227,7 +263,7 @@ export type Database = {
           risposta_il?: string | null
         }
         Update: {
-          cliente?: string
+          cliente?: string | null
           commento?: string | null
           comunicazione?: number
           creato_il?: string
@@ -407,7 +443,7 @@ export type Database = {
       prenotazioni: {
         Row: {
           aggiornato_il: string
-          cliente: string
+          cliente: string | null
           competenza: string
           controproposta: boolean
           creato_il: string
@@ -426,7 +462,7 @@ export type Database = {
         }
         Insert: {
           aggiornato_il?: string
-          cliente: string
+          cliente?: string | null
           competenza: string
           controproposta?: boolean
           creato_il?: string
@@ -445,7 +481,7 @@ export type Database = {
         }
         Update: {
           aggiornato_il?: string
-          cliente?: string
+          cliente?: string | null
           competenza?: string
           controproposta?: boolean
           creato_il?: string
@@ -628,6 +664,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      push_iscrizioni: {
+        Row: {
+          auth: string
+          creato_il: string
+          endpoint: string
+          id: number
+          p256dh: string
+          utente: string
+        }
+        Insert: {
+          auth: string
+          creato_il?: string
+          endpoint: string
+          id?: never
+          p256dh: string
+          utente: string
+        }
+        Update: {
+          auth?: string
+          creato_il?: string
+          endpoint?: string
+          id?: never
+          p256dh?: string
+          utente?: string
+        }
+        Relationships: []
       }
       segnalazioni: {
         Row: {

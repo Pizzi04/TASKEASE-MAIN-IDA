@@ -1,12 +1,12 @@
 'use server'
 
 import { redirect } from 'next/navigation'
+import type { StatoAzione } from '@/components/Modulo'
+import { registra } from '@/lib/eventi'
 import { utenteCorrente } from '@/lib/supabase/server'
 import { DOCUMENTI, leggiProfilo } from '@/lib/validazione'
 
-export type StatoProfilo = { errore: string } | null
-
-export async function creaProfilo(_prima: StatoProfilo, form: FormData): Promise<StatoProfilo> {
+export async function creaProfilo(_prima: StatoAzione, form: FormData): Promise<StatoAzione> {
   const { supabase, id } = await utenteCorrente()
   if (!id) redirect('/accedi')
 
@@ -16,6 +16,7 @@ export async function creaProfilo(_prima: StatoProfilo, form: FormData): Promise
     consenso: form.get('consenso'),
   })
   if (!letto.ok) return { errore: letto.errore }
+  const vuoleLavorare = form.get('intento') === 'lavoro'
 
   // Prima i consensi: se il profilo poi fallisce resta solo la traccia di un'accettazione, mai un profilo senza consenso.
   const consensi = await supabase
@@ -27,6 +28,6 @@ export async function creaProfilo(_prima: StatoProfilo, form: FormData): Promise
   if (profilo.error && profilo.error.code !== '23505') {
     return { errore: 'Non riesco a salvare il profilo. Riprova tra poco.' }
   }
-
-  redirect('/')
+  await registra(supabase, 'profilo_creato')
+  redirect(vuoleLavorare ? '/lavoro/diventa' : '/')
 }
