@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TaskEase Direzioni</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root { color-scheme: light; --pine: #1F4E46; --pine-d: #16332E; --ochre: #A9762B; --ochre-l: #D9AC66; --ember: #B04A26; --ink: #1C1B18; --ok: #2E9E6E; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #E4DFD4; font-family: 'Hanken Grotesk', system-ui, sans-serif; color: var(--ink); -webkit-font-smoothing: antialiased; }
+button { font: inherit; color: inherit; background: none; border: 0; text-align: inherit; cursor: pointer; }
+svg { display: block; }
+.wall { display: flex; flex-wrap: wrap; gap: 40px; justify-content: center; padding: 40px 16px; }
+.cap { width: 390px; max-width: 100%; }
+.cap > h2 { font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: #67615A; margin-bottom: 4px; }
+.cap > p { font-size: 13px; color: #56524A; margin-bottom: 12px; min-height: 36px; }
+.phone { width: 390px; max-width: 100%; height: 844px; border-radius: 28px; overflow: hidden; position: relative; display: flex; flex-direction: column; box-shadow: 0 30px 60px -30px rgba(28,27,24,.35); }
+.sc { flex: 1; overflow-y: auto; scrollbar-width: none; }
+.sc::-webkit-scrollbar { width: 0; }
+.ex { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 1px; border: 1px solid currentColor; border-radius: 4px; padding: 1px 5px; opacity: .6; }
+
+/* ============ A · PULITO ============ */
+#va { background: #F7F5F0; }
+#va .top { display: flex; justify-content: space-between; align-items: center; padding: 20px 20px 0; }
+#va .logo { font-family: 'Fraunces', serif; font-weight: 600; font-size: 20px; letter-spacing: -.3px; }
+#va .me { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #2D6A5F, var(--pine-d)); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 15px; }
+#va h1 { font-size: 32px; font-weight: 800; letter-spacing: -1.2px; line-height: 1.05; padding: 22px 20px 0; }
+#va h1 span { color: #8B8578; }
+#va .search { margin: 20px 20px 0; display: flex; align-items: center; gap: 12px; height: 56px; padding: 0 8px 0 18px; border-radius: 28px; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 24px -8px rgba(28,27,24,.16); color: #8B8578; font-size: 16px; }
+#va .search span { flex: 1; }
+#va .search i { width: 40px; height: 40px; border-radius: 50%; background: var(--pine); color: #fff; display: grid; place-items: center; }
+#va .pills { display: flex; gap: 8px; overflow-x: auto; padding: 18px 20px 0; scrollbar-width: none; }
+#va .pill { flex-shrink: 0; display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px 0 6px; border-radius: 20px; background: #fff; border: 1px solid #EAE5DA; font-size: 14px; font-weight: 600; }
+#va .pill b { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: #EEF3F1; color: var(--pine); }
+#va .pill.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+#va .pill.on b { background: rgba(255,255,255,.14); color: #fff; }
+#va .next { margin: 20px 20px 0; padding: 16px; border-radius: 20px; background: var(--pine); color: #fff; display: flex; align-items: center; gap: 14px; }
+#va .next .d { width: 52px; height: 56px; border-radius: 14px; background: rgba(255,255,255,.12); display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; }
+#va .next .d small { font-size: 11px; font-weight: 700; text-transform: uppercase; opacity: .7; }
+#va .next .d b { font-size: 22px; font-weight: 800; margin-top: 3px; }
+#va .next div:nth-child(2) { flex: 1; }
+#va .next strong { display: block; font-size: 16px; }
+#va .next span { font-size: 13px; opacity: .75; }
+#va .sec { display: flex; justify-content: space-between; align-items: baseline; padding: 28px 20px 12px; }
+#va .sec h3 { font-size: 20px; font-weight: 800; letter-spacing: -.5px; }
+#va .sec a { font-size: 14px; font-weight: 700; color: var(--pine); }
+#va .row { display: flex; gap: 12px; overflow-x: auto; padding: 0 20px 4px; scrollbar-width: none; }
+#va .pc { flex-shrink: 0; width: 236px; border-radius: 22px; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 10px 26px -14px rgba(28,27,24,.22); overflow: hidden; }
+#va .pc .hd { height: 96px; position: relative; display: flex; align-items: flex-end; padding: 12px 14px; }
+#va .pc .hd .ini { width: 56px; height: 56px; border-radius: 18px; background: rgba(255,255,255,.9); display: grid; place-items: center; font-weight: 800; font-size: 20px; color: var(--ink); transform: translateY(26px); box-shadow: 0 6px 16px -6px rgba(0,0,0,.25); }
+#va .pc .ida { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,.92); border-radius: 12px; padding: 4px 9px; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 15px; display: flex; align-items: baseline; gap: 4px; }
+#va .pc .ida small { font-size: 9px; letter-spacing: 1px; color: #8B8578; }
+#va .pc .bd { padding: 34px 14px 14px; }
+#va .pc .n { font-size: 17px; font-weight: 800; letter-spacing: -.3px; display: flex; align-items: center; gap: 6px; }
+#va .pc .n i { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); }
+#va .pc .j { font-size: 13px; color: #6F6A60; margin-top: 2px; }
+#va .pc q { display: block; font-size: 13.5px; line-height: 1.4; margin-top: 10px; color: #3A3832; quotes: "“" "”"; }
+#va .pc .ft { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 12px; border-top: 1px solid #F0ECE3; font-size: 13px; color: #6F6A60; }
+#va .pc .ft b { font-size: 16px; color: var(--ink); }
+#va .idab { margin: 24px 20px 28px; padding: 18px; border-radius: 22px; background: #fff; display: flex; gap: 14px; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+#va .idab .bg { width: 56px; height: 56px; border-radius: 16px; background: #F4EBDA; color: var(--ochre); display: grid; place-items: center; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 18px; }
+#va .idab b { font-size: 16px; }
+#va .idab p { font-size: 13px; color: #6F6A60; line-height: 1.45; margin-top: 2px; }
+#va .nav { position: absolute; left: 16px; right: 16px; bottom: 16px; height: 64px; border-radius: 32px; background: rgba(255,255,255,.92); backdrop-filter: blur(12px); box-shadow: 0 10px 30px -10px rgba(28,27,24,.3); display: flex; align-items: center; justify-content: space-around; padding: 0 8px; }
+#va .nav button { width: 52px; height: 48px; border-radius: 24px; display: grid; place-items: center; color: #8B8578; }
+#va .nav button.on { background: var(--ink); color: #fff; width: 88px; display: flex; gap: 6px; justify-content: center; font-size: 13px; font-weight: 700; }
+#va .nav button.plus { background: var(--ochre); color: #fff; }
+
+/* ============ B · SCURO ============ */
+#vb { background: #0E1C19; color: #F3EFE6; }
+#vb .top { display: flex; justify-content: space-between; align-items: center; padding: 20px 20px 0; }
+#vb .logo { font-family: 'Fraunces', serif; font-weight: 600; font-size: 20px; }
+#vb .bell { width: 44px; height: 44px; border-radius: 14px; background: #182B27; display: grid; place-items: center; position: relative; }
+#vb .bell i { position: absolute; top: 11px; right: 12px; width: 8px; height: 8px; border-radius: 50%; background: var(--ochre-l); }
+#vb h1 { font-size: 34px; font-weight: 800; letter-spacing: -1.3px; line-height: 1.04; padding: 24px 20px 0; }
+#vb h1 em { font-style: normal; background: linear-gradient(90deg, var(--ochre-l), #F0CF95); -webkit-background-clip: text; background-clip: text; color: transparent; }
+#vb .search { margin: 20px 20px 0; height: 56px; border-radius: 16px; background: #182B27; border: 1px solid #24403A; display: flex; align-items: center; gap: 12px; padding: 0 16px; color: #8FA39D; font-size: 16px; }
+#vb .bento { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 14px 20px 0; }
+#vb .t { border-radius: 20px; background: #182B27; padding: 14px; position: relative; overflow: hidden; min-height: 112px; }
+#vb .t small { font-size: 12px; color: #8FA39D; font-weight: 600; }
+#vb .t .big { font-family: 'Space Mono', monospace; font-weight: 700; font-size: 34px; letter-spacing: -2px; line-height: 1; margin-top: 10px; }
+#vb .t.ida { background: linear-gradient(150deg, #2C5A50, #1A3A33); }
+#vb .t.ida .big { color: var(--ochre-l); }
+#vb .t.map { grid-row: span 2; padding: 0; }
+#vb .t.map svg { width: 100%; height: 100%; position: absolute; inset: 0; }
+#vb .t.map .lbl { position: absolute; left: 12px; bottom: 12px; right: 12px; }
+#vb .t.map .lbl b { display: block; font-size: 26px; font-weight: 800; }
+#vb .t.next { grid-column: span 2; display: flex; align-items: center; gap: 14px; min-height: 0; background: var(--ochre); color: #1C1408; }
+#vb .t.next .tm { font-family: 'Space Mono', monospace; font-weight: 700; font-size: 26px; letter-spacing: -1px; }
+#vb .t.next div { flex: 1; font-size: 14px; font-weight: 600; }
+#vb .t.next small { color: rgba(28,20,8,.7); display: block; }
+#vb .sec { display: flex; justify-content: space-between; padding: 26px 20px 10px; }
+#vb .sec h3 { font-size: 20px; font-weight: 800; letter-spacing: -.5px; }
+#vb .sec a { font-size: 14px; font-weight: 700; color: var(--ochre-l); }
+#vb .p { display: flex; gap: 14px; align-items: center; margin: 0 20px 10px; padding: 14px; border-radius: 20px; background: #182B27; }
+#vb .p .ini { width: 48px; height: 48px; border-radius: 15px; display: grid; place-items: center; font-weight: 800; font-size: 17px; color: #0E1C19; }
+#vb .p div { flex: 1; min-width: 0; }
+#vb .p strong { font-size: 16px; display: flex; align-items: center; gap: 6px; }
+#vb .p strong i { width: 7px; height: 7px; border-radius: 50%; background: #4FD1A0; }
+#vb .p span { font-size: 13px; color: #8FA39D; }
+#vb .p .r { text-align: right; }
+#vb .p .r b { display: block; font-family: 'Space Mono', monospace; font-size: 22px; color: var(--ochre-l); }
+#vb .p .r small { font-size: 12px; color: #8FA39D; }
+#vb .nav { position: absolute; left: 0; right: 0; bottom: 0; height: 84px; padding: 0 12px 18px; background: linear-gradient(180deg, transparent, #0E1C19 35%); display: flex; align-items: flex-end; justify-content: space-around; }
+#vb .nav button { width: 56px; height: 52px; border-radius: 16px; display: grid; place-items: center; color: #6F837D; }
+#vb .nav button.on { color: #F3EFE6; background: #182B27; }
+#vb .nav button.plus { background: var(--ochre-l); color: #0E1C19; }
+
+/* ============ C · BENTO ============ */
+#vc { background: #F3EFE6; }
+#vc .top { display: flex; justify-content: space-between; align-items: center; padding: 20px 20px 0; }
+#vc .logo { font-family: 'Fraunces', serif; font-weight: 600; font-size: 20px; }
+#vc .av { display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 12px 0 4px; border-radius: 20px; background: #fff; font-size: 13px; font-weight: 700; }
+#vc .av b { width: 32px; height: 32px; border-radius: 50%; background: var(--ochre); color: #fff; display: grid; place-items: center; }
+#vc h1 { font-size: 34px; font-weight: 800; letter-spacing: -1.4px; line-height: 1.02; padding: 22px 20px 0; }
+#vc .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 18px 20px 0; }
+#vc .b { border-radius: 24px; padding: 16px; position: relative; overflow: hidden; }
+#vc .b.s { grid-column: span 2; background: var(--pine); color: #fff; padding: 18px; }
+#vc .b.s small { font-size: 13px; opacity: .75; font-weight: 600; }
+#vc .b.s .in { margin-top: 12px; height: 52px; border-radius: 14px; background: #fff; color: #8B8578; display: flex; align-items: center; gap: 10px; padding: 0 14px; font-size: 16px; }
+#vc .b.s .tags { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
+#vc .b.s .tags span { font-size: 13px; font-weight: 600; padding: 6px 11px; border-radius: 12px; background: rgba(255,255,255,.12); }
+#vc .b.o { background: var(--ochre); color: #1C1408; min-height: 150px; }
+#vc .b.e { background: #E9DCC9; min-height: 150px; }
+#vc .b .k { font-size: 13px; font-weight: 700; opacity: .8; }
+#vc .b .big { font-size: 44px; font-weight: 800; letter-spacing: -2px; line-height: 1; position: absolute; left: 16px; bottom: 34px; }
+#vc .b .sub { position: absolute; left: 16px; bottom: 14px; font-size: 13px; font-weight: 600; opacity: .8; }
+#vc .b .arr { position: absolute; top: 14px; right: 14px; width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,.35); display: grid; place-items: center; }
+#vc .sec { display: flex; justify-content: space-between; padding: 26px 20px 12px; align-items: baseline; }
+#vc .sec h3 { font-size: 22px; font-weight: 800; letter-spacing: -.7px; }
+#vc .sec a { font-size: 14px; font-weight: 700; color: var(--pine); }
+#vc .pw { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 20px 110px; }
+#vc .pc { border-radius: 24px; background: #fff; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+#vc .pc.wide { grid-column: span 2; flex-direction: row; align-items: center; }
+#vc .pc .h { display: flex; justify-content: space-between; align-items: flex-start; }
+#vc .pc .ini { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; font-weight: 800; font-size: 16px; }
+#vc .pc .ida { font-size: 30px; font-weight: 800; letter-spacing: -1.5px; line-height: 1; }
+#vc .pc .ida small { display: block; font-size: 10px; letter-spacing: 1px; font-weight: 700; color: #8B8578; text-align: right; }
+#vc .pc strong { font-size: 16px; font-weight: 800; letter-spacing: -.3px; display: block; }
+#vc .pc span { font-size: 13px; color: #6F6A60; }
+#vc .pc .pr { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; padding-top: 10px; border-top: 1px solid #F0ECE3; }
+#vc .nav { position: absolute; left: 50%; transform: translateX(-50%); bottom: 18px; height: 60px; border-radius: 30px; background: var(--ink); display: flex; align-items: center; gap: 4px; padding: 0 6px; }
+#vc .nav button { width: 52px; height: 48px; border-radius: 24px; display: grid; place-items: center; color: #9C968A; }
+#vc .nav button.on { background: #F3EFE6; color: var(--ink); }
+#vc .nav button.plus { background: var(--ochre); color: #fff; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="s" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+  <symbol id="h" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></symbol>
+  <symbol id="p" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="g" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 4h16v13H8l-4 3z"/></symbol>
+  <symbol id="u" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></symbol>
+  <symbol id="b" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 1 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9z"/><path d="M10 20a2 2 0 0 0 4 0"/></symbol>
+  <symbol id="d" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3s6 6 6 10a6 6 0 1 1-12 0c0-4 6-10 6-10z"/></symbol>
+  <symbol id="w" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 7a4 4 0 0 1-5 5l-5 5 2 2 5-5a4 4 0 0 0 5-5l-2 2-2-2 2-2z"/></symbol>
+  <symbol id="k" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4l4 4M14 6l4 4-7 7H6l-2-2 8-9z"/></symbol>
+  <symbol id="c" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 4v8h12V4M6 12l-1 8M18 12l1 8M5 12h14"/></symbol>
+  <symbol id="r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></symbol>
+</defs></svg>
+
+<main class="wall">
+
+<section class="cap">
+  <h2>A · Pulito</h2>
+  <p>Chiaro e morbido, stile app di servizi recenti: schede bianche arrotondate, titoli grandi in grassetto, persone in un carosello orizzontale, barra flottante.</p>
+  <div class="phone" id="va">
+    <div class="sc">
+      <div class="top"><span class="logo">TaskEase</span><span class="me">G</span></div>
+      <h1>Buongiorno, Giulia.<br><span>Cosa sistemiamo?</span></h1>
+      <div class="search"><span>Perde il lavandino…</span><i><svg width="18" height="18"><use href="#s"/></svg></i></div>
+      <div class="pills">
+        <span class="pill on"><b><svg width="15" height="15"><use href="#d"/></svg></b>Idraulica</span>
+        <span class="pill"><b><svg width="15" height="15"><use href="#k"/></svg></b>Pulizie</span>
+        <span class="pill"><b><svg width="15" height="15"><use href="#c"/></svg></b>Montaggio</span>
+        <span class="pill"><b><svg width="15" height="15"><use href="#w"/></svg></b>Riparazioni</span>
+      </div>
+      <div class="next"><div class="d"><small>Ven</small><b>9</b></div><div><strong>Marco Rosetti · 16:00</strong><span>Confermato · Via Roma 10</span></div><svg width="20" height="20"><use href="#r"/></svg></div>
+      <div class="sec"><h3>Vicini a te</h3><a>Vedi tutti</a></div>
+      <div class="row">
+        <div class="pc"><div class="hd" style="background:linear-gradient(135deg,#CFE3DD,#9CC3B8)"><span class="ini">SL</span><span class="ida">91<small>IDA</small></span></div>
+          <div class="bd"><div class="n">Sofia Leoni <i></i></div><div class="j">Pulizie profonde · 0,8 km</div><q>Casa lasciata splendente, profumava di pulito.</q><div class="ft"><span>Libera oggi</span><b>15 €/h</b></div></div></div>
+        <div class="pc"><div class="hd" style="background:linear-gradient(135deg,#D7E2EC,#A3BCD2)"><span class="ini">MR</span><span class="ida">96<small>IDA</small></span></div>
+          <div class="bd"><div class="n">Marco Rosetti <i></i></div><div class="j">Idraulico · 1,2 km</div><q>Perdita chiusa in mezz'ora, prezzo esatto.</q><div class="ft"><span>Libero oggi</span><b>18 €/h</b></div></div></div>
+      </div>
+      <div class="idab"><span class="bg">94</span><div><b>Cos'è l'IDA?</b><p>Un voto su 100 fatto solo di lavori veri. Non si compra.</p></div></div>
+      <div style="height:80px"></div>
+    </div>
+    <nav class="nav"><button class="on"><svg width="20" height="20"><use href="#h"/></svg>Home</button><button><svg width="22" height="22"><use href="#s"/></svg></button><button class="plus"><svg width="22" height="22"><use href="#p"/></svg></button><button><svg width="22" height="22"><use href="#g"/></svg></button><button><svg width="22" height="22"><use href="#u"/></svg></button></nav>
+  </div>
+</section>
+
+<section class="cap">
+  <h2>B · Scuro</h2>
+  <p>Notte e ocra: tutta l'app sul verde scuro dell'ingresso, numeri grandi, griglia a riquadri con mappa e IDA. Più "premium".</p>
+  <div class="phone" id="vb">
+    <div class="sc">
+      <div class="top"><span class="logo">TaskEase</span><span class="bell"><svg width="20" height="20"><use href="#b"/></svg><i></i></span></div>
+      <h1>Buongiorno, Giulia.<br><em>Chi ti serve oggi?</em></h1>
+      <div class="search"><svg width="20" height="20"><use href="#s"/></svg>Perde il lavandino…</div>
+      <div class="bento">
+        <div class="t next"><span class="tm">16:00</span><div>Marco Rosetti<small>Oggi · confermato</small></div><svg width="20" height="20"><use href="#r"/></svg></div>
+        <div class="t map">
+          <svg viewBox="0 0 160 240" preserveAspectRatio="xMidYMid slice"><g fill="none" stroke="#24403A" stroke-width="7" stroke-linecap="round"><path d="M-10 150 C 40 130, 90 160, 170 110"/><path d="M70 -10 L 90 250"/></g><circle cx="82" cy="128" r="34" fill="none" stroke="#4FD1A0" stroke-dasharray="3 4"/><g fill="#D9AC66"><circle cx="70" cy="110" r="5"/><circle cx="96" cy="120" r="5"/><circle cx="40" cy="80" r="5"/><circle cx="120" cy="170" r="5"/><circle cx="130" cy="60" r="5"/></g></svg>
+          <div class="lbl"><small>In zona ora</small><b>5 libere</b></div></div>
+        <div class="t ida"><small>IDA medio in zona</small><div class="big">93</div></div>
+        <div class="t"><small>Bacheca</small><div class="big" style="font-size:28px">4</div><small>richieste nuove</small></div>
+      </div>
+      <div class="sec"><h3>Vicini a te</h3><a>Vedi tutti</a></div>
+      <div class="p"><span class="ini" style="background:#9CC3B8">SL</span><div><strong>Sofia Leoni <i></i></strong><span>Pulizie · 0,8 km · 15 €/h</span></div><div class="r"><b>91</b><small>IDA</small></div></div>
+      <div class="p"><span class="ini" style="background:#A3BCD2">MR</span><div><strong>Marco Rosetti <i></i></strong><span>Idraulico · 1,2 km · 18 €/h</span></div><div class="r"><b>96</b><small>IDA</small></div></div>
+      <div class="p"><span class="ini" style="background:#C2B6E0">EF</span><div><strong>Elena Ferri <i></i></strong><span>Tecnico · 1,5 km · 30 €/h</span></div><div class="r"><b>93</b><small>IDA</small></div></div>
+      <div style="height:90px"></div>
+    </div>
+    <nav class="nav"><button class="on"><svg width="22" height="22"><use href="#h"/></svg></button><button><svg width="22" height="22"><use href="#s"/></svg></button><button class="plus"><svg width="22" height="22"><use href="#p"/></svg></button><button><svg width="22" height="22"><use href="#g"/></svg></button><button><svg width="22" height="22"><use href="#u"/></svg></button></nav>
+  </div>
+</section>
+
+<section class="cap">
+  <h2>C · Bento</h2>
+  <p>Riquadri colorati nei colori del marchio, come una bacheca: la ricerca è il blocco più grande, le persone in griglia con l'IDA enorme.</p>
+  <div class="phone" id="vc">
+    <div class="sc">
+      <div class="top"><span class="logo">TaskEase</span><span class="av"><b>G</b>Centro</span></div>
+      <h1>Cosa sistemiamo oggi, Giulia?</h1>
+      <div class="grid">
+        <div class="b s"><small>Descrivilo con parole tue</small><div class="in"><svg width="18" height="18"><use href="#s"/></svg>Perde il lavandino…</div><div class="tags"><span>Idraulica</span><span>Pulizie</span><span>Montaggio</span><span>+3</span></div></div>
+        <div class="b o"><span class="k">Bacheca</span><span class="arr"><svg width="16" height="16"><use href="#r"/></svg></span><span class="big">4</span><span class="sub">richieste in zona</span></div>
+        <div class="b e"><span class="k">Passaporto</span><span class="arr"><svg width="16" height="16"><use href="#r"/></svg></span><span class="big">7</span><span class="sub">timbri · 3 quartieri</span></div>
+      </div>
+      <div class="sec"><h3>Vicini a te</h3><a>Vedi tutti</a></div>
+      <div class="pw">
+        <div class="pc"><div class="h"><span class="ini" style="background:#DCEBE6;color:var(--pine)">SL</span><span class="ida">91<small>IDA</small></span></div><div><strong>Sofia Leoni</strong><span>Pulizie · 0,8 km</span></div><div class="pr"><span style="color:var(--ok)">Libera oggi</span><span>15 €/h</span></div></div>
+        <div class="pc"><div class="h"><span class="ini" style="background:#DFE7F0;color:#3E6B8A">MR</span><span class="ida" style="color:var(--pine)">96<small>IDA</small></span></div><div><strong>Marco Rosetti</strong><span>Idraulico · 1,2 km</span></div><div class="pr"><span style="color:var(--ok)">Libero oggi</span><span>18 €/h</span></div></div>
+        <div class="pc wide"><span class="ini" style="background:#F4EBDA;color:var(--ochre);width:56px;height:56px;font-size:20px">94</span><div style="flex:1"><strong>Cos'è l'IDA?</strong><span>Un voto su 100 fatto solo di lavori veri.</span></div></div>
+      </div>
+    </div>
+    <nav class="nav"><button class="on"><svg width="22" height="22"><use href="#h"/></svg></button><button><svg width="22" height="22"><use href="#s"/></svg></button><button class="plus"><svg width="22" height="22"><use href="#p"/></svg></button><button><svg width="22" height="22"><use href="#g"/></svg></button><button><svg width="22" height="22"><use href="#u"/></svg></button></nav>
+  </div>
+</section>
+
+</main>
+</body>
+</html>
