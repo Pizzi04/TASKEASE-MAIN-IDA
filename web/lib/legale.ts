@@ -85,7 +85,7 @@ export const LEGALE: Record<string, Documento> = {
       ],
       [
         'Chi li vede',
-        'Pubblici per chi usa l’app: la scheda di chi lavora (nome e cognome, foto, competenze, tariffa, zone, IDA, se è privato o con P.IVA), i giudizi con nome e iniziale di chi li ha scritti, le richieste in bacheca con nome e zona. Riservati: l’indirizzo lo vede solo chi conferma il lavoro; il telefono non lo vede nessun utente; i dati fiscali solo noi e, quando dovuto, l’Agenzia delle Entrate. I fornitori tecnici (hosting nell’Unione europea e invio SMS) li trattano per nostro conto.',
+        'Pubblici per chi usa l’app: la scheda di chi lavora (nome e cognome, foto, competenze, tariffa, zone, IDA, se è privato o con P.IVA), i giudizi con nome e iniziale di chi li ha scritti, le richieste in bacheca con nome e zona. Riservati: l’indirizzo lo vede solo chi conferma il lavoro; il telefono non lo vede nessun utente; i dati fiscali solo noi e, quando dovuto, l’Agenzia delle Entrate. I fornitori tecnici li trattano solo per nostro conto (responsabili del trattamento): Supabase (database e foto, server a Francoforte), Vercel (sito, server a Francoforte), Twilio (invio dei codici SMS), Cloudflare Turnstile (controllo anti-bot all’accesso) e il servizio di notifiche del tuo browser o telefono (Google, Apple o Mozilla), se le attivi. Alcuni hanno sede negli Stati Uniti: il trasferimento avviene con le garanzie previste dal GDPR (Data Privacy Framework UE-USA o clausole contrattuali standard).',
       ],
       [
         'Per quanto tempo',
@@ -99,7 +99,7 @@ export const LEGALE: Record<string, Documento> = {
         'I tuoi diritti',
         'Accesso, correzione, cancellazione, portabilità (“Scarica i miei dati” in Profilo), opposizione e limitazione. Puoi fare reclamo al Garante per la protezione dei dati personali.',
       ],
-      ['Cookie', 'Solo cookie tecnici necessari per restare collegato. Nessun cookie di profilazione o di statistica. Le statistiche dell’app contano solo eventi anonimi, senza sapere chi sei.'],
+      ['Cookie', 'Solo cookie tecnici necessari per restare collegato; all’accesso Cloudflare Turnstile verifica che tu non sia un bot. Nessun cookie di profilazione o di statistica. Le statistiche dell’app contano solo eventi anonimi, senza sapere chi sei.'],
     ],
   },
   ranking: {

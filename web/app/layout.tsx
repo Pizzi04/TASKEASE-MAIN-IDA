@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from 'next'
 import localFont from 'next/font/local'
+import { connection } from 'next/server'
 import { RegistraSw } from '@/components/AppInstallabile'
+import { DESCRIZIONE, urlSito } from '@/lib/sito'
 import './globals.css'
 
 const hanken = localFont({
@@ -15,8 +17,11 @@ const fraunces = localFont({
 })
 
 export const metadata: Metadata = {
+  metadataBase: urlSito(),
   title: 'TaskEase',
-  description: 'Chi lavora vicino a casa tua a Forlì e Cesena, giudicato solo da chi l’ha davvero chiamato.',
+  description: DESCRIZIONE,
+  openGraph: { type: 'website', locale: 'it_IT', siteName: 'TaskEase', title: 'TaskEase', description: DESCRIZIONE },
+  twitter: { card: 'summary_large_image', title: 'TaskEase', description: DESCRIZIONE },
   applicationName: 'TaskEase',
   appleWebApp: { capable: true, title: 'TaskEase', statusBarStyle: 'black-translucent' },
   formatDetection: { telephone: false },
@@ -29,7 +34,9 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 }
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default async function Layout({ children }: { children: React.ReactNode }) {
+  // Ogni pagina è creata al momento: così porta il nonce della CSP (vedi proxy.ts)
+  await connection()
   return (
     <html lang="it" className={`${hanken.variable} ${fraunces.variable}`}>
       <body>

@@ -67,3 +67,12 @@ npm run build                # controllo completo prima di pubblicare
 ## Pubblicare online
 
 Vercel (gratis per iniziare): importa il repository, cartella `web`, e copia le variabili di `.env.local` in *Environment Variables*. Poi in Supabase → Authentication → URL Configuration metti l'indirizzo del sito.
+
+### Prima di aprire al pubblico (produzione)
+
+- **Supabase a pagamento (Pro, ~25 $/mese)**: il piano gratuito non ha backup scaricabili e mette in pausa il progetto dopo 7 giorni senza visite. Con Pro: backup giornalieri (7 giorni) e niente pause.
+- **Regione**: `vercel.json` fa girare il server a Francoforte (`fra1`), vicino al database. Non toglierla: dagli Stati Uniti ogni pagina sarebbe molto più lenta.
+- **Chiavi JWT**: in Supabase → Settings → JWT Keys passa alle chiavi asimmetriche: il controllo della sessione si fa senza chiamare Supabase a ogni pagina.
+- **Variabili su Vercel**: tutte quelle di `.env.example`, compresa `NEXT_PUBLIC_SITO_URL` (il tuo dominio).
+- **Errori**: finiscono in Vercel → Logs come righe JSON con `"livello":"errore"`. Per gli avvisi via email collega un servizio (es. Sentry) quando arrivano i primi utenti.
+- **Sicurezza dei contenuti (CSP)**: ogni pagina accetta solo i propri script (con nonce), Supabase e Cloudflare Turnstile. Se aggiungi un servizio esterno (analytics, mappe), aggiungilo in `proxy.ts`.
