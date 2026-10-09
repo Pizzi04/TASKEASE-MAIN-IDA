@@ -20,7 +20,7 @@ const VOCI = [
 export default function Assistenza() {
   return (
     <>
-      <Testata titolo="Come funziona" indietro="/profilo" />
+      <Testata titolo="Come funziona" indietro="/" />
       {VOCI.map(([t, s]) => (
         <section key={t} className="scheda">
           <h2>{t}</h2>

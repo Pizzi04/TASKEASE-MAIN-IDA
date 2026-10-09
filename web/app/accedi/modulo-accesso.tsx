@@ -15,7 +15,7 @@ function messaggioErrore(e: { message?: string; status?: number; code?: string }
   return 'Qualcosa non ha funzionato. Riprova.'
 }
 
-export default function ModuloAccesso() {
+export default function ModuloAccesso({ dopo = '/' }: { dopo?: string }) {
   const router = useRouter()
   const [passo, setPasso] = useState<'numero' | 'codice'>('numero')
   const [numero, setNumero] = useState('')
@@ -68,7 +68,7 @@ export default function ModuloAccesso() {
       return setErrore(messaggioErrore(error))
     }
     await supabase.rpc('registra_evento', { p_nome: 'accesso_riuscito' }).then(() => {}, () => {})
-    router.replace('/')
+    router.replace(dopo)
     router.refresh()
   }
 

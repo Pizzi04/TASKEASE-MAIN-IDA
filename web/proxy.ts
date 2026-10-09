@@ -5,7 +5,13 @@ import { configSupabase } from './lib/supabase/config'
 // Rinfresca la sessione Supabase a ogni navigazione e riscrive i cookie aggiornati.
 export async function proxy(request: NextRequest) {
   const { url, chiave } = configSupabase()
-  let risposta = NextResponse.next({ request })
+  // La pagina richiesta arriva alle pagine server: se serve l'accesso, dopo si torna qui
+  const conPercorso = () => {
+    const h = new Headers(request.headers)
+    h.set('x-percorso', request.nextUrl.pathname + request.nextUrl.search)
+    return NextResponse.next({ request: { headers: h } })
+  }
+  let risposta = conPercorso()
 
   const supabase = createServerClient(url, chiave, {
     cookies: {
@@ -14,7 +20,7 @@ export async function proxy(request: NextRequest) {
       },
       setAll(daImpostare, intestazioni) {
         for (const { name, value } of daImpostare) request.cookies.set(name, value)
-        risposta = NextResponse.next({ request })
+        risposta = conPercorso()
         for (const { name, value, options } of daImpostare) risposta.cookies.set(name, value, options)
         for (const [k, v] of Object.entries(intestazioni ?? {})) risposta.headers.set(k, v)
       },

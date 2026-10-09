@@ -28,6 +28,7 @@ export default async function Profilo() {
 
       <nav className="menu" aria-label="Il tuo account">
         <Link href="/profilo/modifica">Modifica nome, zona e foto</Link>
+        <Link href="/profilo/telefono">Cambia numero di telefono</Link>
         <Link href="/profilo/preferiti">Preferiti</Link>
         <Link href="/passaporto">Il mio passaporto di quartiere</Link>
         <Link href="/notifiche">Notifiche</Link>

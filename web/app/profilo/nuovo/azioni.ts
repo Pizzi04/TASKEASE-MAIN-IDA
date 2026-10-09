@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 import type { StatoAzione } from '@/components/Modulo'
 import { registra } from '@/lib/eventi'
+import { linkInterno } from '@/lib/link'
 import { utenteCorrente } from '@/lib/supabase/server'
 import { DOCUMENTI, leggiProfilo } from '@/lib/validazione'
 
@@ -29,5 +30,5 @@ export async function creaProfilo(_prima: StatoAzione, form: FormData): Promise<
     return { errore: 'Non riesco a salvare il profilo. Riprova tra poco.' }
   }
   await registra(supabase, 'profilo_creato')
-  redirect(vuoleLavorare ? '/lavoro/diventa' : '/')
+  redirect(vuoleLavorare ? '/lavoro/diventa' : linkInterno(String(form.get('da') ?? '')))
 }

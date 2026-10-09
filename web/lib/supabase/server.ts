@@ -1,8 +1,9 @@
 import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { cache } from 'react'
+import { linkInterno } from '../link'
 import { configSupabase } from './config'
 import type { Database } from './tipi'
 
@@ -40,16 +41,22 @@ export const utenteCorrente = cache(async () => {
 })
 
 // Per le pagine dell'app: serve l'accesso e un profilo, altrimenti si va dove manca.
+// Dove tornare dopo l'accesso (solo pagine interne, mai la home)
+async function tornaA(): Promise<string> {
+  const da = linkInterno((await headers()).get('x-percorso'), '')
+  return da && da !== '/' ? `?da=${encodeURIComponent(da)}` : ''
+}
+
 export const richiediProfilo = cache(async () => {
   const { supabase, id, telefono } = await utenteCorrente()
-  if (!id) redirect('/accedi')
+  if (!id) redirect('/accedi' + (await tornaA()))
   // "sospeso" non è una colonna leggibile: lo dice la funzione e_sospeso, solo per sé stessi
   const [{ data: riga, error }, { data: sospeso }] = await Promise.all([
     supabase.from('profili').select('id, nome, zona, ruolo, in_pausa, foto, creato_il').eq('id', id).maybeSingle(),
     supabase.rpc('e_sospeso', { u: id }),
   ])
   if (error) throw new Error('Non riesco a leggere il profilo')
-  if (!riga) redirect('/profilo/nuovo')
+  if (!riga) redirect('/profilo/nuovo' + (await tornaA()))
   const profilo = { ...riga, sospeso: sospeso === true }
   return { supabase, id, telefono, profilo }
 })

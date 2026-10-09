@@ -1,14 +1,16 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { utenteCorrente } from '@/lib/supabase/server'
+import { linkInterno } from '@/lib/link'
 import ModuloAccesso from './modulo-accesso'
 
 export const metadata = { title: 'Accedi · TaskEase' }
 
-export default async function Accedi({ searchParams }: { searchParams: Promise<{ eliminato?: string }> }) {
-  const { eliminato } = await searchParams
+export default async function Accedi({ searchParams }: { searchParams: Promise<{ eliminato?: string; da?: string }> }) {
+  const { eliminato, da } = await searchParams
+  const dopo = linkInterno(da)
   const { id } = await utenteCorrente()
-  if (id) redirect('/')
+  if (id) redirect(dopo)
 
   return (
     <>
@@ -16,7 +18,7 @@ export default async function Accedi({ searchParams }: { searchParams: Promise<{
       {eliminato && <p className="conferma">Account eliminato. Grazie per essere passato da TaskEase.</p>}
       <h1>Entra con il tuo numero</h1>
       <p>Ti mandiamo un codice via SMS. Niente password da ricordare.</p>
-      <ModuloAccesso />
+      <ModuloAccesso dopo={dopo} />
       <p className="nota">
         Chi lavora nella zona di Forlì-Cesena, giudicato solo da chi l’ha davvero chiamato. Entrando accetti i{' '}
         <Link href="/legale/termini">Termini</Link> e confermi di aver letto l’<Link href="/legale/privacy">informativa privacy</Link>.

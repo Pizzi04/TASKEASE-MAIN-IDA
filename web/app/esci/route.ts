@@ -12,6 +12,7 @@ function stessoSito(request: NextRequest): boolean {
 export async function POST(request: NextRequest) {
   if (!stessoSito(request)) return NextResponse.json({ errore: 'richiesta non valida' }, { status: 403 })
   const supabase = await supabaseServer()
-  await supabase.auth.signOut()
+  // Solo questo dispositivo: uscire dal telefono non deve chiudere la sessione sul computer
+  await supabase.auth.signOut({ scope: 'local' })
   return NextResponse.redirect(new URL('/accedi', request.url), { status: 303 })
 }

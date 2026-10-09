@@ -3,9 +3,10 @@ import { Modulo } from '@/components/Modulo'
 import { DOCUMENTI, ZONE } from '@/lib/validazione'
 import { creaProfilo } from './azioni'
 
-export default function ModuloProfilo() {
+export default function ModuloProfilo({ dopo }: { dopo: string }) {
   return (
     <Modulo azione={creaProfilo} invio="Crea il profilo" inCorso="Salvo…">
+      <input type="hidden" name="da" value={dopo} />
       <fieldset>
         <legend>Cosa vuoi fare su TaskEase?</legend>
         <label className="spunta">
