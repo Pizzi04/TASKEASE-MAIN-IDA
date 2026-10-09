@@ -1,17 +1,17 @@
 {
-  "name": "app",
+  "name": "taskease-anteprima",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Anteprima di TaskEase in un unico file HTML",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node build/build.mjs && node --test --test-timeout=120000 \"tests/*.test.mjs\"",
     "build": "node build/build.mjs"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "esbuild": "^0.24.0"
+    "esbuild": "^0.24.0",
+    "playwright": "^1.56.1"
   },
   "dependencies": {
     "react": "^18.3.1",
