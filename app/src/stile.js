@@ -407,6 +407,24 @@ button:focus-visible { outline: 2.5px solid ${T.accent}; outline-offset: 2px; }
 .ent > * { position: relative; z-index: 1; }
 .ent > .ent-bar { position: absolute; z-index: 2; }
 
+/* ---------- mappa grande ---------- */
+.mappa-g { position: relative; flex: 1; min-height: 0; margin: 0 20px; border-radius: 22px; overflow: hidden; background: #10211D; border: 1px solid ${T.line}; }
+.mappa-g > svg { display: block; width: 100%; height: 100%; user-select: none; -webkit-user-select: none; }
+.mappa-g > svg:active { cursor: grabbing; }
+.mappa-g .pin { cursor: pointer; outline: none; animation: pop .4s cubic-bezier(.2,1.5,.5,1) both; transform-box: fill-box; transform-origin: center; }
+.mappa-g .pin:focus-visible circle:last-of-type { stroke: ${T.ochreLight}; stroke-width: 3; }
+.mappa-g .onda { transform-box: fill-box; transform-origin: center; animation: onda 2.6s ease-out infinite; opacity: 0; }
+.mappa-g .giro { transform-box: fill-box; transform-origin: center; animation: spin 30s linear infinite; }
+.mappa-zoom { position: absolute; right: 12px; bottom: 12px; display: flex; flex-direction: column; gap: 8px; }
+.mappa-zoom button { width: 44px; height: 44px; border-radius: 14px; border: 1px solid ${T.line}; background: ${T.paperVetro}; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); color: ${T.ink}; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.mappa-zoom button:disabled { opacity: .4; cursor: default; }
+.mappa-vuota { position: absolute; left: 16px; right: 16px; top: 50%; transform: translateY(-50%); text-align: center; font-size: 14px; color: ${T.ink2}; background: ${T.paperVetro}; padding: 14px; border-radius: 16px; }
+.mappa-scheda { margin: 10px 20px calc(14px + env(safe-area-inset-bottom, 0px)); padding: 14px; border-radius: 22px; background: ${T.card}; box-shadow: 0 -10px 30px -12px rgba(0,0,0,.6); animation: sheetup .3s cubic-bezier(.2,.8,.2,1); flex-shrink: 0; }
+.mappa-nota { margin: 10px 20px calc(14px + env(safe-area-inset-bottom, 0px)); font-size: 13.5px; color: ${T.ink2}; text-align: center; flex-shrink: 0; }
+
+/* telefoni con "Riduci trasparenza": barre piene invece che sfocate (meno lavoro per la scheda grafica) */
+@media (prefers-reduced-transparency: reduce) { .head, .dock-wrap, .book-bar, .ledger-h, .mappa-zoom button { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; background: ${T.paper} !important; } }
+
 .onb-visual { display: flex; justify-content: center; align-items: center; min-height: 230px; margin: 18px 0 8px; animation: rise .5s cubic-bezier(.2,.8,.2,1) both; }
 .onb-glyph { width: 150px; height: 150px; border-radius: 44px; background: rgba(169,118,43,.12); border: 1px solid rgba(169,118,43,.28); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 80px -10px rgba(169,118,43,.35); }
 .onb-eye { font-size: 12.5px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: ${T.ochreLight}; margin-bottom: 10px; }

@@ -308,9 +308,9 @@ function MappaZona({ nav, blocked = [], mia }) {
   const pos = (q) => [q.x / 100 * W_, q.y / 100 * H_];
   const disp = WORKERS.filter(w => w.av && !blocked.includes(w.id));
   const tutti = WORKERS.filter(w => !blocked.includes(w.id));
-  const qMia = QUARTIERI.find(q => q.n === mia) || QUARTIERI[0];
+  const qMia = QUARTIERI.find(q => q.n === mia);
   return (
-    <button type="button" className="tl map" onClick={() => nav("search")} aria-label={`Mappa della zona: ${disp.length} persone disponibili. Apri la ricerca`}>
+    <button type="button" className="tl map" onClick={() => nav("mappa")} aria-label={`Mappa della zona: ${disp.length} persone disponibili. Apri la mappa grande`}>
       <svg viewBox={`0 0 ${W_} ${H_}`} preserveAspectRatio="xMidYMid slice" aria-hidden="true">
         <g fill="none" stroke="#24403A" strokeWidth="7" strokeLinecap="round">
           <path d="M-10 150 C 40 130, 90 160, 170 110" /><path d="M70 -10 L 90 250" />
@@ -318,7 +318,7 @@ function MappaZona({ nav, blocked = [], mia }) {
         <g fill="none" stroke="#1D3631" strokeWidth="3" strokeLinecap="round">
           <path d="M-10 40 L 170 30" /><path d="M20 -10 L 35 250" /><path d="M130 -10 L 140 250" /><path d="M-10 210 L 170 220" />
         </g>
-        {(() => { const [x, y] = pos(qMia); return <><circle className="giro" cx={x} cy={y} r="30" fill="none" stroke={T.ok} strokeDasharray="3 4" /><circle className="onda" cx={x} cy={y} r="12" fill="none" stroke={T.ok} /><circle cx={x} cy={y} r="4.5" fill={T.ok} /></>; })()}
+        {qMia && (() => { const [x, y] = pos(qMia); return <><circle className="giro" cx={x} cy={y} r="30" fill="none" stroke={T.ok} strokeDasharray="3 4" /><circle className="onda" cx={x} cy={y} r="12" fill="none" stroke={T.ok} /><circle cx={x} cy={y} r="4.5" fill={T.ok} /></>; })()}
         {tutti.map((w, i) => {
           const q = QUARTIERI.find(z => z.n === w.zona); if (!q) return null;
           const [x, y] = pos(q); const dx = (i % 3 - 1) * 11, dy = (i % 2 ? 9 : -9);
@@ -327,6 +327,119 @@ function MappaZona({ nav, blocked = [], mia }) {
       </svg>
       <span className="lbl"><small>In zona ora</small><b><Conta to={disp.length} ms={700} chiave="home-zona" /> {disp.length === 1 ? "libera" : "libere"}</b></span>
     </button>
+  );
+}
+
+/* ============================== MAPPA GRANDE ============================== */
+/* Mappa schematica dei quartieri (non una cartina vera): chi lavora, dove, e chi è libero adesso.
+   Si sposta trascinando, si ingrandisce con i pulsanti, un tocco su una persona apre la sua scheda. */
+const MW = 390, MH = 560;
+function MappaGrande({ nav, blocked = [], mia }) {
+  const [filtro, setFiltro] = useState("tutti");
+  const [sel, setSel] = useState(null);
+  const [vista, setVista] = useState({ s: 1, x: 0, y: 0 });
+  const trascina = useRef(null);
+  const svgRef = useRef(null);
+  useIndietro(!!sel, () => { setSel(null); return true; });
+  const tutti = WORKERS.filter(w => !blocked.includes(w.id) && QUARTIERI.some(q => q.n === w.zona));
+  const visibili = tutti.filter(w => filtro === "tutti" ? true : filtro === "liberi" ? w.av : catHa(w, filtro));
+  const liberi = visibili.filter(w => w.av).length;
+  const qMia = QUARTIERI.find(q => q.n === mia);
+  const pos = (q) => [q.x / 100 * MW, q.y / 100 * MH];
+  // persone dello stesso quartiere disposte in cerchio attorno al centro
+  const posPersona = (w) => {
+    const q = QUARTIERI.find(z => z.n === w.zona); const [cx, cy] = pos(q);
+    const vicini = visibili.filter(v => v.zona === w.zona); const i = vicini.indexOf(w);
+    if (vicini.length < 2) return [cx, cy];
+    const a = (i / vicini.length) * Math.PI * 2 - Math.PI / 2; return [cx + Math.cos(a) * 30, cy + Math.sin(a) * 30];
+  };
+  const vbW = MW / vista.s, vbH = MH / vista.s;
+  const limita = (v) => ({ ...v, x: Math.min(Math.max(v.x, 0), MW - MW / v.s), y: Math.min(Math.max(v.y, 0), MH - MH / v.s) });
+  const zoom = (f) => setVista(v => { const s = Math.min(3, Math.max(1, v.s * f)); const cx = v.x + MW / v.s / 2, cy = v.y + MH / v.s / 2; return limita({ s, x: cx - MW / s / 2, y: cy - MH / s / 2 }); });
+  const centra = (w) => { const [x, y] = posPersona(w); setVista(v => { const s = Math.max(v.s, 1.6); return limita({ s, x: x - MW / s / 2, y: y - MH / s / 2.6 }); }); };
+  const giu = (e) => { trascina.current = { px: e.clientX, py: e.clientY, x: vista.x, y: vista.y, mosso: false }; };
+  const muovi = (e) => {
+    const t = trascina.current; if (!t || vista.s === 1) return;
+    const r = svgRef.current.getBoundingClientRect(); const dx = (e.clientX - t.px) / r.width * vbW, dy = (e.clientY - t.py) / r.height * vbH;
+    if (Math.abs(e.clientX - t.px) + Math.abs(e.clientY - t.py) > 6) t.mosso = true;
+    setVista(v => limita({ ...v, x: t.x - dx, y: t.y - dy }));
+  };
+  const su = () => { setTimeout(() => { trascina.current = null; }, 0); };
+  const scegli = (w) => { if (trascina.current?.mosso) return; setSel(w.id); centra(w); };
+  const w = sel ? WORKERS.find(x => x.id === sel) : null;
+  return (
+    <div style={{ flex: 1, minHeight: 0, background: "transparent", display: "flex", flexDirection: "column" }}>
+      <Head nav={nav} to="home" title="Mappa della zona" />
+      <div className="scorri" style={{ display: "flex", gap: 8, overflowX: "auto", padding: "4px 20px 10px", flexShrink: 0 }}>
+        {[["tutti", "Tutti"], ["liberi", "Liberi ora"], ...CATS.map(c => [c.n, c.n])].map(([k, l]) => (
+          <button type="button" key={k} className="fchip" aria-pressed={filtro === k} onClick={() => { setFiltro(k); setSel(null); setVista({ s: 1, x: 0, y: 0 }); }}>{l}</button>
+        ))}
+      </div>
+      <div style={{ padding: "0 20px 8px", fontSize: 13.5, color: T.ink2, flexShrink: 0 }}>
+        <b style={{ color: T.ink }}>{visibili.length} {visibili.length === 1 ? "persona" : "persone"}</b> · {liberi} {liberi === 1 ? "libera" : "libere"} ora <span className="ticker-tag" style={{ marginLeft: 6 }}>ESEMPI</span>
+      </div>
+      <div className="mappa-g">
+        <svg ref={svgRef} viewBox={`${vista.x} ${vista.y} ${vbW} ${vbH}`} preserveAspectRatio="xMidYMid meet" role="group" aria-label={`Mappa dei quartieri di Forlì con ${visibili.length} persone`}
+          onPointerDown={giu} onPointerMove={muovi} onPointerUp={su} onPointerLeave={su} style={{ cursor: vista.s > 1 ? "grab" : "default", touchAction: vista.s > 1 ? "none" : "pan-y" }}>
+          <rect x="-400" y="-400" width={MW + 800} height={MH + 800} fill="#10211D" />
+          {/* fiume e strade principali, solo per orientarsi */}
+          <path d="M-20 120 C 80 150, 140 90, 210 170 S 300 330, 420 300" fill="none" stroke="#173A4A" strokeWidth="16" strokeLinecap="round" />
+          <g fill="none" stroke="#21403A" strokeWidth="7" strokeLinecap="round">
+            <path d="M-20 260 C 100 240, 250 280, 420 230" /><path d="M190 -20 L 205 600" /><path d="M40 -20 C 90 200, 60 380, 120 600" />
+          </g>
+          <g fill="none" stroke="#1A332E" strokeWidth="3" strokeLinecap="round">
+            <path d="M-20 70 L 420 40" /><path d="M-20 420 L 420 450" /><path d="M320 -20 L 300 600" /><path d="M-20 520 C 150 500, 260 540, 420 510" />
+          </g>
+          {QUARTIERI.map(q => {
+            const [x, y] = pos(q); const n = visibili.filter(v => v.zona === q.n).length;
+            return <g key={q.id}>
+              <circle cx={x} cy={y} r="52" fill={n ? "rgba(36,94,83,.28)" : "rgba(36,94,83,.12)"} stroke={n ? "#2F6F62" : "#21403A"} strokeDasharray={n ? "none" : "4 5"} />
+              <text x={x} y={y + 68} textAnchor="middle" fontSize="12" fontWeight="700" fill={n ? T.ink2 : T.stone} fontFamily="'Hanken Grotesk',sans-serif">{q.n}{n ? ` · ${n}` : ""}</text>
+            </g>;
+          })}
+          {qMia && (() => { const [x, y] = pos(qMia); return <g aria-hidden="true"><circle className="giro" cx={x} cy={y} r="62" fill="none" stroke={T.ok} strokeWidth="1.5" strokeDasharray="4 5" /><text x={x} y={y - 66} textAnchor="middle" fontSize="11.5" fontWeight="700" fill={T.ok} fontFamily="'Hanken Grotesk',sans-serif">la tua zona</text></g>; })()}
+          {visibili.map((p, i) => {
+            const [x, y] = posPersona(p); const on = sel === p.id;
+            return <g key={p.id} role="button" tabIndex={0} aria-label={`${p.n}, ${p.bio}, ${p.av ? "libero ora" : "non disponibile"}, IDA ${p.ida}`} aria-pressed={on}
+              className="pin" style={{ animationDelay: `${i * .06}s` }} onClick={() => scegli(p)} onKeyDown={e => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), setSel(p.id), centra(p))}>
+              {p.av && <circle className="onda" style={{ animationDelay: `${i * .4}s` }} cx={x} cy={y} r="22" fill="none" stroke={T.ochreLight} />}
+              {on && <circle cx={x} cy={y} r="24" fill="none" stroke={T.ochreLight} strokeWidth="3" />}
+              <circle cx={x} cy={y} r="18" fill={p.av ? (catColorOf(p) || "#9CC3B8") : "#4A615B"} stroke={T.paper} strokeWidth="2.5" />
+              <text x={x} y={y + 4.5} textAnchor="middle" fontSize="12.5" fontWeight="800" fill="#0E1C19" fontFamily="'Hanken Grotesk',sans-serif">{p.ini}</text>
+            </g>;
+          })}
+        </svg>
+        {!w && <div className="mappa-zoom">
+          <button type="button" aria-label="Ingrandisci" onClick={() => zoom(1.5)} disabled={vista.s >= 3}><Icon name="plus" size={20} /></button>
+          <button type="button" aria-label="Rimpicciolisci" onClick={() => zoom(1 / 1.5)} disabled={vista.s <= 1}><span aria-hidden="true" style={{ fontSize: 22, lineHeight: 1 }}>−</span></button>
+          <button type="button" aria-label="Mostra tutta la mappa" onClick={() => { setVista({ s: 1, x: 0, y: 0 }); setSel(null); }}><Icon name="compass" size={19} /></button>
+        </div>}
+        {visibili.length === 0 && <div className="mappa-vuota">Nessuno {filtro === "liberi" ? "libero adesso" : `per ${filtro}`} sulla mappa. <button type="button" className="bt cp-link" onClick={() => setFiltro("tutti")}>Mostra tutti</button></div>}
+      </div>
+      {w ? (
+        <div className="mappa-scheda" role="dialog" aria-label={`Scheda di ${w.n}`}>
+          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            <Avatar ini={w.ini} lv={w.lv} sz={48} tint={w.av ? (catColorOf(w) || undefined) : "#4A615B"} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div className="wcard-n">{w.n}{w.av && <span className="wcard-av" aria-hidden="true" />}</div>
+              <div className="wcard-bio">{w.bio}</div>
+            </div>
+            <IdaNum w={w} />
+            <button type="button" className="head-back" aria-label="Chiudi la scheda" onClick={() => setSel(null)} style={{ width: 40, height: 40 }}><Icon name="x" size={18} /></button>
+          </div>
+          <div className="wcard-tags" style={{ marginTop: 10 }}>
+            <span><b>{String(w.d).replace(".", ",")}</b> km</span><span><b>{w.pr} €</b>/h</span><span>{w.zona}</span>
+            {w.av ? <span style={{ color: T.ok }}>libero ora</span> : <span className="no">non disponibile · risponde in {w.rsp}</span>}
+          </div>
+          <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+            <Btn kind="ghost" onClick={() => nav("worker", w)} style={{ flex: 1, borderRadius: 12, padding: "13px 10px" }}>Vedi profilo</Btn>
+            <Btn onClick={() => nav("booking", w)} style={{ flex: 1, borderRadius: 12, padding: "13px 10px" }}>Prenota {w.n.split(" ")[0]}</Btn>
+          </div>
+        </div>
+      ) : (
+        <div className="mappa-nota">Tocca una persona per vedere la sua scheda. <button type="button" className="bt cp-link" onClick={() => nav("search")}>Preferisci l'elenco?</button></div>
+      )}
+    </div>
   );
 }
 
@@ -3015,19 +3128,24 @@ const TAB_SC = ["home", "search", "post", "neighborhood", "account", "entrata"];
 /* ---- Salvataggio nel browser: ricaricando la pagina si riprende da dove si era rimasti ---- */
 const CHIAVE_SALVATAGGIO = "taskease-anteprima-v1";
 const leggiSalvato = () => {
-  try { const x = JSON.parse(localStorage.getItem(CHIAVE_SALVATAGGIO)); return x && x.v === 1 ? x : null; } catch (e) { return null; }
+  try { const x = JSON.parse(localStorage.getItem(CHIAVE_SALVATAGGIO)); return x && typeof x === "object" && !Array.isArray(x) && x.v === 1 ? x : null; } catch (e) { return null; }
 };
 const scriviSalvato = (x) => { try { localStorage.setItem(CHIAVE_SALVATAGGIO, JSON.stringify({ v: 1, ...x })); } catch (e) {} };
 const cancellaSalvato = () => { try { localStorage.removeItem(CHIAVE_SALVATAGGIO); } catch (e) {} };
 const SALVATO = typeof window !== "undefined" ? leggiSalvato() : null;
-if (SALVATO?.me) Object.assign(ME, SALVATO.me);
+if (SALVATO?.me && typeof SALVATO.me === "object") Object.assign(ME, SALVATO.me, { sk: Array.isArray(SALVATO.me.sk) ? SALVATO.me.sk : ME.sk });
 if (SALVATO?.bozzaProfilo) Object.assign(BOZZA_PROFILO, SALVATO.bozzaProfilo);
 const schermataIniziale = () => {
   if (typeof location !== "undefined" && location.hash === "#qr") return "intro-worker";
   if (SALVATO && !SALVATO.uscito && (SALVATO.profilo || SALVATO.setupDone)) return SALVATO.role === "worker" && SALVATO.setupDone ? "account" : "home";
   return "entrata";
 };
-const da = (k, base) => () => (SALVATO && SALVATO[k] !== undefined ? SALVATO[k] : (typeof base === "function" ? base() : base));
+// Riprende un valore salvato solo se è dello stesso tipo dell'originale: un salvataggio rovinato non blocca l'app
+const stessoTipo = (a, b) => Array.isArray(a) === Array.isArray(b) && (a === null || b === null || typeof a === typeof b);
+const da = (k, base) => () => {
+  const orig = typeof base === "function" ? base() : base;
+  return SALVATO && SALVATO[k] !== undefined && stessoTipo(SALVATO[k], orig) ? SALVATO[k] : orig;
+};
 
 export default function App() {
   const [sc, setSc] = useState(schermataIniziale);
@@ -3038,7 +3156,7 @@ export default function App() {
   const [saved, setSaved] = useState(da("saved", []));
   const [prenotazioni, setPrenotazioni] = useState(da("prenotazioni", []));   // quelle fatte davvero (restano dopo un ricaricamento)
   const [posts, setPosts] = useState(da("posts", () => POSTS.map((p, i) => ({ ...p, id: "demo" + i, demo: true }))));
-  const [reqs, setReqs] = useState(da("reqs", makeRequests));                   // richieste in arrivo al professionista
+  const [reqs, setReqs] = useState(() => da("reqs", makeRequests)().map(aggiornaRichiesta)); // "oggi pomeriggio" dopo le 15 diventa domani anche dopo un ricaricamento                   // richieste in arrivo al professionista
   const [avail, setAvail] = useState(da("avail", true));                         // disponibilità: resta com'era anche cambiando schermata
   const [agenda, setAgenda] = useState(da("agenda", AGENDA));
   const [notifViste, setNotifViste] = useState(da("notifViste", []));                // id delle notifiche già viste
@@ -3120,7 +3238,7 @@ export default function App() {
   useEffect(() => {
     scriviSalvato({ role, saved, prenotazioni, posts, reqs, avail, agenda, notifViste, setupDone, verified, paused, profilo, blocked, uscito, giudizi, bozze, segnalazioni, consensi, me: { ...ME }, bozzaProfilo: { ...BOZZA_PROFILO } });
   }, [k, role, saved, prenotazioni, posts, reqs, avail, agenda, notifViste, setupDone, verified, paused, profilo, blocked, uscito, giudizi, bozze, segnalazioni, consensi]);
-  useEffect(() => { if (SALVATO && (SALVATO.profilo || SALVATO.setupDone)) avviso.mostra("Ripreso da dove eri rimasto. Per ripartire da zero: Profilo → Ricomincia l'anteprima."); }, []);
+  useEffect(() => { if (SALVATO && !SALVATO.uscito && (SALVATO.profilo || SALVATO.setupDone)) avviso.mostra("Ripreso da dove eri rimasto. Per ripartire da zero: Profilo → Ricomincia l'anteprima."); }, []);
   const choose = useCallback((r) => {
     setRole(r);
     // Chi rientra dopo "Esci" con un profilo già fatto non rivede la presentazione
@@ -3243,6 +3361,7 @@ export default function App() {
             {sc === "delete" && <DeleteAccount nav={nav} role={role} setupDone={setupDone} paused={paused} entrambi={setupDone && !!profilo} attive={prossimeDi(prenotazioni)} agenda={setupDone ? agenda : []} onDeletedPro={() => { Object.assign(ME, ME_BASE, { sk: [...ME_BASE.sk] }); delete ME.zone; delete ME.nascita; delete ME.residenza; delete ME.cf; delete ME.preventivo; delete ME.bio; setSetupDone(false); setVerified(false); setPaused(false); setAvail(true); setNotifViste(v => v.filter(x => x !== "setup" && x !== "reqs")); setAgenda(AGENDA); setReqs(makeRequests()); setRole("client"); stackRef.current = []; setDt(null); setSc("account"); setK(x => x + 1); avviso.mostra("Profilo da professionista eliminato. Il tuo profilo per cercare aiuto resta."); }} onDeleted={() => resetAll("eliminato")} onPause={() => { setPaused(true); setRole("worker"); avviso.mostra("Profilo da professionista in pausa: non compari nelle ricerche. Lo riattivi da qui quando vuoi."); nav("account"); }} />}
             {sc === "eliminato" && <Eliminato onFine={() => { stackRef.current = []; setSc("entrata"); setK(x => x + 1); }} />}
             {sc === "neighborhood" && <Neighborhood nav={nav} pro={setupDone} paused={paused} posts={posts.filter(p => !blocked.some(id => wById(id)?.n === p.a))} onRemove={id => { setPosts(ps => ps.filter(p => p.id !== id)); avviso.mostra("Richiesta tolta dalla bacheca."); }} />}
+            {sc === "mappa" && <MappaGrande nav={nav} blocked={blocked} mia={profilo?.zona} />}
             {sc === "passport" && <Passport nav={nav} />}
             {sc === "rewards" && <Rewards nav={nav} profilo={profilo} />}
             {sc === "post" && <Post nav={nav} profilo={profilo} setProfilo={setProfiloIn} onPosted={onPosted} />}

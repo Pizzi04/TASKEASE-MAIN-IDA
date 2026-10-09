@@ -200,3 +200,37 @@ test("il testo resta leggibile sopra i bagliori dello sfondo (misura sui pixel)"
   assert.deepEqual(problemi, []);
   await ctx.close();
 });
+
+test("mappa grande: si apre dalla home, scheda, filtri, profilo e indietro", async () => {
+  const { p, ctx, errori } = await apri();
+  await tocca(p, "Cerco una mano"); await tocca(p, "Salta"); await tocca(p, "Guardo prima");
+  await p.locator(".tl.map").click(); await p.waitForTimeout(700);
+  assert.equal(await p.locator(".head-t").innerText(), "Mappa della zona");
+  assert.equal(await p.locator(".mappa-g .pin").count(), 6);
+  await p.getByRole("button", { name: /^Marco Rosetti/ }).click(); await p.waitForTimeout(500);
+  assert.match(await p.locator(".mappa-scheda").innerText(), /Marco Rosetti/);
+  await p.getByRole("button", { name: "Chiudi la scheda" }).click(); await p.waitForTimeout(300);
+  await p.getByRole("button", { name: "Liberi ora" }).click(); await p.waitForTimeout(300);
+  assert.equal(await p.locator(".mappa-g .pin").count(), 5, "Luca non è disponibile");
+  await p.getByRole("button", { name: "Tutti", exact: true }).click(); await p.waitForTimeout(300);
+  await p.getByRole("button", { name: /^Sofia Leoni/ }).click(); await p.waitForTimeout(400);
+  await tocca(p, "Vedi profilo");
+  assert.ok(await p.$(".ida-block"), "si apre il profilo di Sofia");
+  await p.getByRole("button", { name: "Indietro" }).first().click(); await p.waitForTimeout(500);
+  assert.ok(await p.$(".mappa-g"), "indietro torna alla mappa");
+  assert.deepEqual(errori, []);
+  await ctx.close();
+});
+
+test("un salvataggio rovinato nel browser non blocca l'app", async () => {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  await ctx.route(/^https?:\/\//, r => r.abort());
+  await ctx.addInitScript(() => localStorage.setItem("taskease-anteprima-v1", JSON.stringify({ v: 1, profilo: { nome: "Giulia", tel: "3331234567", zona: "Centro" }, prenotazioni: "rotto", posts: 42, saved: null, me: "x" })));
+  const p = await ctx.newPage(); const errori = []; p.on("pageerror", e => errori.push(e.message));
+  await p.goto(FILE); await p.waitForTimeout(800);
+  assert.deepEqual(errori, []);
+  assert.match(await testo(p), /Giulia/, "il profilo valido viene ripreso");
+  await premi(p, "Bacheca");
+  assert.match(await testo(p), /Bacheca del quartiere/, "la bacheca rovinata riparte dagli esempi");
+  await ctx.close();
+});
