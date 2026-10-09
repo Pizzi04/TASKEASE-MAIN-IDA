@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import type { StatoAzione } from '@/components/Modulo'
-import { messaggioDb } from '@/lib/errori'
+import { controlla, messaggioDb } from '@/lib/errori'
 import { registra } from '@/lib/eventi'
 import { richiediProfilo } from '@/lib/supabase/server'
 import { leggiPrenotazione } from '@/lib/validazione'
@@ -12,9 +12,9 @@ export async function preferito(form: FormData) {
   const { supabase, id } = await richiediProfilo()
   const pro = String(form.get('professionista'))
   if (form.get('azione') === 'togli') {
-    await supabase.from('preferiti').delete().eq('utente', id).eq('professionista', pro)
+    controlla(await supabase.from('preferiti').delete().eq('utente', id).eq('professionista', pro), 'preferiti')
   } else {
-    await supabase.from('preferiti').insert({ utente: id, professionista: pro })
+    controlla(await supabase.from('preferiti').insert({ utente: id, professionista: pro }), 'preferiti')
   }
   revalidatePath(`/professionisti/${pro}`)
 }
@@ -22,7 +22,7 @@ export async function preferito(form: FormData) {
 export async function blocca(form: FormData) {
   const { supabase, id } = await richiediProfilo()
   const chi = String(form.get('utente'))
-  if (chi !== id) await supabase.from('blocchi').insert({ utente: id, bloccato: chi })
+  if (chi !== id) controlla(await supabase.from('blocchi').insert({ utente: id, bloccato: chi }), 'blocco')
   redirect('/profilo/bloccati')
 }
 

@@ -1,6 +1,7 @@
 import { timingSafeEqual } from 'node:crypto'
 import { NextResponse, type NextRequest } from 'next/server'
 import webpush from 'web-push'
+import { linkInterno } from '@/lib/link'
 import { supabaseAmministrazione } from '@/lib/supabase/server'
 
 // Chiamata da Supabase (Database Webhook su INSERT in "notifiche"): manda la notifica ai telefoni dell'utente.
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
 
   webpush.setVapidDetails(process.env.VAPID_SUBJECT || 'mailto:assistenza@example.com', pubblica, privata)
   const { data: iscrizioni } = await admin.from('push_iscrizioni').select('id, endpoint, p256dh, auth').eq('utente', r.utente)
-  const messaggio = JSON.stringify({ titolo: 'TaskEase', testo: r.testo, link: r.link?.startsWith('/') ? r.link : '/notifiche' })
+  const messaggio = JSON.stringify({ titolo: 'TaskEase', testo: r.testo, link: linkInterno(r.link, '/notifiche') })
 
   let inviate = 0
   const scadute: number[] = []

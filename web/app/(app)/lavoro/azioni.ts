@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import type { StatoAzione } from '@/components/Modulo'
-import { messaggioDb } from '@/lib/errori'
+import { controlla, messaggioDb } from '@/lib/errori'
 import { registra } from '@/lib/eventi'
 import { richiediProfilo } from '@/lib/supabase/server'
 import { VERSIONE_DOCUMENTI, leggiDatiFiscali, leggiScheda } from '@/lib/validazione'
@@ -66,7 +66,7 @@ export async function modificaScheda(_p: StatoAzione, form: FormData): Promise<S
 
 export async function cambiaDisponibilita(form: FormData) {
   const { supabase, id } = await richiediProfilo()
-  await supabase.from('professionisti').update({ disponibile: form.get('disponibile') === 'si' }).eq('id', id)
+  controlla(await supabase.from('professionisti').update({ disponibile: form.get('disponibile') === 'si' }).eq('id', id), 'disponibilità')
   revalidatePath('/lavoro')
   revalidatePath('/')
 }

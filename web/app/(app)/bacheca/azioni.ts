@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import type { StatoAzione } from '@/components/Modulo'
-import { messaggioDb } from '@/lib/errori'
+import { controlla, messaggioDb } from '@/lib/errori'
 import { registra } from '@/lib/eventi'
 import { estensione, fotoValida } from '@/lib/foto'
 import { richiediProfilo } from '@/lib/supabase/server'
@@ -17,7 +17,7 @@ export async function pubblica(_p: StatoAzione, form: FormData): Promise<StatoAz
 
   const file = form.get('foto')
   const foto = file instanceof File && file.size > 0 ? file : null
-  const erroreFoto = fotoValida(foto)
+  const erroreFoto = await fotoValida(foto)
   if (erroreFoto) return { errore: erroreFoto }
 
   let percorso: string | null = null
@@ -45,7 +45,7 @@ export async function cambiaStatoPost(form: FormData) {
   const { supabase, id } = await richiediProfilo()
   const post = Number(form.get('post'))
   const stato = form.get('stato') === 'aperta' ? 'aperta' : 'chiusa'
-  await supabase.from('bacheca').update({ stato }).eq('id', post).eq('autore', id)
+  controlla(await supabase.from('bacheca').update({ stato }).eq('id', post).eq('autore', id), 'richiesta')
   revalidatePath(`/bacheca/${post}`)
   revalidatePath('/bacheca')
 }
@@ -66,6 +66,6 @@ export async function proponi(_p: StatoAzione, form: FormData): Promise<StatoAzi
 export async function ritira(form: FormData) {
   const { supabase, id } = await richiediProfilo()
   const post = Number(form.get('post'))
-  await supabase.from('proposte').delete().eq('post', post).eq('professionista', id)
+  controlla(await supabase.from('proposte').delete().eq('post', post).eq('professionista', id), 'proposta')
   revalidatePath(`/bacheca/${post}`)
 }

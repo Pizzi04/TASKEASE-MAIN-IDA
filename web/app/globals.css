@@ -982,3 +982,8 @@ summary {
     filter: brightness(1.1);
   }
 }
+
+.captcha {
+  margin-top: 16px;
+  min-height: 65px;
+}

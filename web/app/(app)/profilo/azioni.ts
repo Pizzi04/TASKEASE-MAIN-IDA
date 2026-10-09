@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import type { StatoAzione } from '@/components/Modulo'
-import { messaggioDb } from '@/lib/errori'
+import { controlla, messaggioDb } from '@/lib/errori'
 import { estensione, fotoValida } from '@/lib/foto'
 import { richiediProfilo, supabaseAmministrazione } from '@/lib/supabase/server'
 import { MOTIVI_USCITA, leggiModificaProfilo } from '@/lib/validazione'
@@ -15,7 +15,7 @@ export async function modificaProfilo(_p: StatoAzione, form: FormData): Promise<
 
   const file = form.get('foto')
   const foto = file instanceof File && file.size > 0 ? file : null
-  const erroreFoto = fotoValida(foto)
+  const erroreFoto = await fotoValida(foto)
   if (erroreFoto) return { errore: erroreFoto }
 
   let percorso = profilo.foto
@@ -35,13 +35,13 @@ export async function modificaProfilo(_p: StatoAzione, form: FormData): Promise<
 
 export async function cambiaPausa(form: FormData) {
   const { supabase, id } = await richiediProfilo()
-  await supabase.from('profili').update({ in_pausa: form.get('pausa') === 'si' }).eq('id', id)
+  controlla(await supabase.from('profili').update({ in_pausa: form.get('pausa') === 'si' }).eq('id', id), 'pausa')
   revalidatePath('/', 'layout')
 }
 
 export async function sblocca(form: FormData) {
   const { supabase, id } = await richiediProfilo()
-  await supabase.from('blocchi').delete().eq('utente', id).eq('bloccato', String(form.get('utente')))
+  controlla(await supabase.from('blocchi').delete().eq('utente', id).eq('bloccato', String(form.get('utente'))), 'sblocco')
   revalidatePath('/profilo/bloccati')
 }
 

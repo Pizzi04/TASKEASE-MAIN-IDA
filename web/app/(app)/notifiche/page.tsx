@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache'
 import { NotifichePush } from '@/components/AppInstallabile'
 import { Testata } from '@/components/Testata'
 import { quandoFa } from '@/lib/date'
+import { linkInterno } from '@/lib/link'
 import { richiediProfilo } from '@/lib/supabase/server'
 
 export const metadata = { title: 'Notifiche · TaskEase' }
@@ -39,7 +40,7 @@ export default async function Notifiche() {
       <ul className="lista-notifiche">
         {(data ?? []).map((n) => (
           <li key={n.id} className={n.letta ? '' : 'nuova'}>
-            <Link href={n.link.startsWith('/') ? n.link : '/'}>
+            <Link href={linkInterno(n.link)}>
               <span>{n.testo}</span>
               <small>
                 {quandoFa(n.creato_il)}

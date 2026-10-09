@@ -11,3 +11,10 @@ export function messaggioDb(e: ErroreDb, generico = 'Qualcosa non ha funzionato.
   if (e.code === 'P0001') return 'Questa azione ora non è possibile.'
   return generico
 }
+
+// Per le azioni senza modulo (interruttori, preferiti, blocchi): se il database rifiuta,
+// si lancia un errore e l'utente vede la pagina "Non è andata" con "Riprova", invece di niente.
+export function controlla<T extends { error: ErroreDb }>(risposta: T, cosa: string): T {
+  if (risposta.error && risposta.error.code !== '23505') throw new Error(`${cosa}: ${messaggioDb(risposta.error)}`)
+  return risposta
+}

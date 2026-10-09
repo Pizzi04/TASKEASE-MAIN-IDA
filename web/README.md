@@ -50,6 +50,7 @@ npm run build                # controllo completo prima di pubblicare
 6. **SMS veri** — account Twilio (SID, token, mittente) in Supabase → Phone provider.
 7. **Regola doppia** — applica a mano `supabase/migrations/18_audit_f3_regola_doppia_profili.sql` (Supabase → SQL Editor): cancella un doppione, non cambia i permessi.
 8. **Manutenzione notturna** — su Vercel imposta `CRON_SECRET`; `vercel.json` chiama `/api/manutenzione` ogni notte (tempi di conservazione dell'informativa, foto di post rimossi, account inattivi).
+9. **Protezione SMS (obbligatoria prima del lancio)** — Cloudflare → Turnstile → nuovo sito: chiave *site* in `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, chiave *secret* in Supabase → Authentication → Attack Protection → CAPTCHA (Turnstile). In Twilio → Messaging → Geo Permissions lascia solo l'Italia. In Supabase → Authentication → Rate Limits abbassa gli SMS all'ora (per esempio 30).
 
 ## Regole aggiunte dopo l'audit
 

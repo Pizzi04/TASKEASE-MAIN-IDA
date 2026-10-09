@@ -194,3 +194,25 @@ describe('numeri del pannello', () => {
     expect(leggiNumeri(null).eventi).toEqual({})
   })
 })
+
+describe('foto e collegamenti', () => {
+  it('riconosce il tipo vero dai primi byte', async () => {
+    const { tipoDaiByte, fotoValida } = await import('../lib/foto')
+    expect(tipoDaiByte(new Uint8Array([0xff, 0xd8, 0xff, 0xe0]))).toBe('image/jpeg')
+    expect(tipoDaiByte(new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a]))).toBe('image/png')
+    expect(tipoDaiByte(new TextEncoder().encode('RIFF\0\0\0\0WEBPVP8 '))).toBe('image/webp')
+    expect(tipoDaiByte(new TextEncoder().encode('<html><script>'))).toBeNull()
+    const finta = new File(['<html>ciao</html>'], 'x.jpg', { type: 'image/jpeg' })
+    expect(await fotoValida(finta)).toMatch(/non sembra/)
+    const vera = new File([new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3])], 'x.jpg', { type: 'image/jpeg' })
+    expect(await fotoValida(vera)).toBeNull()
+  })
+  it('accetta solo collegamenti interni', async () => {
+    const { linkInterno } = await import('../lib/link')
+    expect(linkInterno('/prenotazioni/3')).toBe('/prenotazioni/3')
+    expect(linkInterno('//evil.example')).toBe('/')
+    expect(linkInterno('/\\evil.example')).toBe('/')
+    expect(linkInterno('https://evil.example')).toBe('/')
+    expect(linkInterno(null, '/notifiche')).toBe('/notifiche')
+  })
+})

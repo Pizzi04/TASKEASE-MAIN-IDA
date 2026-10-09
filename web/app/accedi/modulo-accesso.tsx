@@ -1,12 +1,14 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
+import { CHIAVE_CAPTCHA, Captcha } from '@/components/Captcha'
 import { supabaseBrowser } from '@/lib/supabase/browser'
 import { codiceOtpValido, mostraTelefono, normalizzaTelefono } from '@/lib/validazione'
 
 function messaggioErrore(e: { message?: string; status?: number; code?: string } | null): string {
   if (!e) return 'Qualcosa non ha funzionato. Riprova.'
+  if (e.code === 'captcha_failed' || /captcha/i.test(e.message ?? '')) return 'Il controllo di sicurezza non è andato: riprova.'
   if (e.status === 429 || e.code === 'over_sms_send_rate_limit') return 'Troppi tentativi. Aspetta un minuto e riprova.'
   if (e.code === 'otp_expired' || /expired|invalid/i.test(e.message ?? '')) return 'Codice sbagliato o scaduto.'
   if (e.code === 'phone_provider_disabled' || /provider/i.test(e.message ?? '')) return 'L’accesso via SMS non è ancora attivo. Riprova più tardi.'
@@ -21,6 +23,9 @@ export default function ModuloAccesso() {
   const [codice, setCodice] = useState('')
   const [errore, setErrore] = useState('')
   const [attesa, setAttesa] = useState(false)
+  const [captcha, setCaptcha] = useState('')
+  const [versioneCaptcha, setVersioneCaptcha] = useState(0)
+  const prendiCaptcha = useCallback((t: string) => setCaptcha(t), [])
 
   async function inviaCodice(e: React.FormEvent) {
     e.preventDefault()
@@ -29,11 +34,18 @@ export default function ModuloAccesso() {
       setErrore('Scrivi un cellulare italiano, per esempio 333 123 4567.')
       return
     }
+    if (CHIAVE_CAPTCHA && !captcha) {
+      setErrore('Completa il controllo di sicurezza qui sotto.')
+      return
+    }
     setErrore('')
     setAttesa(true)
     const supabase = supabaseBrowser()
-    const { error } = await supabase.auth.signInWithOtp({ phone: tel })
+    const { error } = await supabase.auth.signInWithOtp({ phone: tel, options: CHIAVE_CAPTCHA ? { captchaToken: captcha } : undefined })
     setAttesa(false)
+    // Il token vale una volta sola: se serve un altro invio, se ne chiede uno nuovo
+    setCaptcha('')
+    setVersioneCaptcha((v) => v + 1)
     supabase.rpc('registra_evento', { p_nome: 'accesso_avviato' }).then(() => {}, () => {})
     if (error) return setErrore(messaggioErrore(error))
     setTelefono(tel)
@@ -76,6 +88,7 @@ export default function ModuloAccesso() {
           aria-describedby={errore ? 'errore' : undefined}
           autoFocus
         />
+        <Captcha onToken={prendiCaptcha} versione={versioneCaptcha} />
         {errore && <p className="errore" id="errore" role="alert">{errore}</p>}
         <button className="bottone" type="submit" disabled={attesa}>
           {attesa ? 'Invio…' : 'Mandami il codice'}
