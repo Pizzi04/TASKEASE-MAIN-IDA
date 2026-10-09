@@ -3409,7 +3409,7 @@ button:focus-visible { outline: 2.5px solid ${T.accent}; outline-offset: 2px; }
 .home-body { padding: 0 0 32px; }
 .cats { display: flex; gap: 8px; overflow-x: auto; padding: 14px 20px 0; scrollbar-width: none; }
 .cats::-webkit-scrollbar { display: none; }
-.cat2 { flex-shrink: 0; min-height: 40px; padding: 0 14px; border-radius: 12px; background: ${T.card}; border: 1px solid ${T.line}; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; font-size: 14px; font-weight: 600; color: ${T.ink2}; white-space: nowrap; }
+.cat2 { flex-shrink: 0; min-height: 44px; padding: 0 14px; border-radius: 12px; background: ${T.card}; border: 1px solid ${T.line}; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; font-size: 14px; font-weight: 600; color: ${T.ink2}; white-space: nowrap; }
 .cat2:active { background: ${T.pineSoft}; }
 /* griglia a riquadri */
 .bento { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 14px 20px 0; }
@@ -3490,7 +3490,7 @@ button:focus-visible { outline: 2.5px solid ${T.accent}; outline-offset: 2px; }
 
 /* cerca: righe-riquadro con colonne ordinabili */
 .ledger-h { display: grid; grid-template-columns: minmax(0, 1fr) 52px 48px 48px; gap: 8px; padding: 0 34px; position: sticky; top: 0; background: ${T.paper}; z-index: 2; }
-.ledger-h > span, .ledger-h button { font-size: 12px; font-weight: 600; color: ${T.stone}; min-height: 40px; display: flex; align-items: center; }
+.ledger-h > span, .ledger-h button { font-size: 12px; font-weight: 600; color: ${T.stone}; min-height: 44px; display: flex; align-items: center; }
 .ledger-h button { justify-content: flex-end; background: none; border: 0; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; }
 .ledger-h button[aria-pressed="true"] { color: ${T.ochreLight}; font-weight: 800; }
 .lrow { display: grid; grid-template-columns: minmax(0, 1fr) 52px 48px 48px; gap: 8px; align-items: center; width: calc(100% - 40px); margin: 0 20px 8px; min-height: 66px; padding: 10px 14px; background: ${T.card}; border: 0; border-radius: 18px; text-align: left; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; color: ${T.ink}; }
@@ -3500,7 +3500,7 @@ button:focus-visible { outline: 2.5px solid ${T.accent}; outline-offset: 2px; }
 .lrow-s { display: block; font-size: 12.5px; color: ${T.stone}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lrow .lrow-ida { font-weight: 700; font-size: 18px !important; color: ${T.ochreLight}; }
 .lrow.off { opacity: .6; }
-.fchip { flex-shrink: 0; min-height: 40px; padding: 0 14px; border-radius: 12px; border: 1px solid ${T.line}; background: ${T.card}; font-size: 14px; font-weight: 600; color: ${T.ink2}; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; white-space: nowrap; }
+.fchip { flex-shrink: 0; min-height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid ${T.line}; background: ${T.card}; font-size: 14px; font-weight: 600; color: ${T.ink2}; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; white-space: nowrap; }
 .fchip[aria-pressed="true"] { background: ${T.ochreLight}; border-color: ${T.ochreLight}; color: #1C1408; }
 
 /* profilo di chi lavora */
@@ -3531,7 +3531,7 @@ button:focus-visible { outline: 2.5px solid ${T.accent}; outline-offset: 2px; }
 
 /* bacheca */
 .seg { display: flex; gap: 8px; margin: 0 20px; }
-.seg button { min-height: 40px; padding: 0 14px; border-radius: 12px; background: ${T.card}; border: 1px solid ${T.line}; font-size: 14px; font-weight: 600; color: ${T.ink2}; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; }
+.seg button { min-height: 44px; padding: 0 14px; border-radius: 12px; background: ${T.card}; border: 1px solid ${T.line}; font-size: 14px; font-weight: 600; color: ${T.ink2}; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; }
 .seg button[aria-pressed="true"] { background: ${T.ochreLight}; border-color: ${T.ochreLight}; color: #1C1408; }
 .post { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; padding: 16px; margin-bottom: 10px; background: ${T.card}; border-radius: 20px; animation: rise .45s cubic-bezier(.2,.8,.2,1) both; position: relative; }
 .post-t { position: absolute; top: 16px; right: 16px; font-family: 'Space Mono', monospace; font-size: 11.5px; color: ${T.stone}; }
@@ -3540,7 +3540,7 @@ button:focus-visible { outline: 2.5px solid ${T.accent}; outline-offset: 2px; }
 .post-x { font-size: 15.5px; line-height: 1.45; color: ${T.ink}; margin-top: 6px; }
 .post-by { font-size: 12.5px; color: ${T.stone}; margin-top: 6px; }
 .post-a { display: flex; align-items: center; gap: 14px; margin-top: 12px; }
-.post-a .rispondi { min-height: 40px; padding: 0 16px; border-radius: 12px; border: 0; background: ${T.ochreLight}; font-size: 14px; font-weight: 700; color: #1C1408; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; }
+.post-a .rispondi { min-height: 44px; padding: 0 16px; border-radius: 12px; border: 0; background: ${T.ochreLight}; font-size: 14px; font-weight: 700; color: #1C1408; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; }
 .post-a .n { font-size: 12.5px; font-weight: 600; color: ${T.ink2}; }
 .post-a .segn { margin-left: auto; font-size: 12.5px; color: ${T.stone}; }
 .post.mine { box-shadow: inset 0 0 0 1.5px ${T.ochre}; }
