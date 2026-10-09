@@ -1,14 +1,13 @@
 import Link from 'next/link'
+import { Icona } from './Icona'
 
-// Titolo della pagina con freccia "indietro"
+// Titolo della pagina con freccia "indietro" in un riquadro, su una barra di vetro che resta in alto
 export function Testata({ titolo, indietro, sotto }: { titolo: string; indietro?: string; sotto?: React.ReactNode }) {
   return (
-    <header className="testata">
+    <header className={indietro ? 'testata' : 'testata radice'}>
       {indietro && (
         <Link href={indietro} className="indietro" aria-label="Indietro">
-          <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <Icona nome="arrowL" lato={20} />
         </Link>
       )}
       <div>

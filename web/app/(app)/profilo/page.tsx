@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { BottoneEsci, InstallaApp, NotifichePush } from '@/components/AppInstallabile'
 import { Avatar } from '@/components/Avatar'
+import { Icona } from '@/components/Icona'
 import { Testata } from '@/components/Testata'
 import { richiediProfilo } from '@/lib/supabase/server'
 import { mostraTelefono } from '@/lib/validazione'
@@ -15,29 +16,38 @@ export default async function Profilo() {
   return (
     <>
       <Testata titolo="Profilo" />
-      <section className="scheda pro-testa">
+      <section className="profilo-testa">
         <Avatar nome={profilo.nome} foto={profilo.foto} lato={64} />
         <div>
           <b>{profilo.nome}</b>
           <p className="nota">
-            {profilo.zona} · {telefono ? mostraTelefono(telefono) : ''}
+            {profilo.zona}
+            {telefono ? ` · ${mostraTelefono(telefono)}` : ''}
           </p>
           <p className="nota">Su TaskEase da {new Date(profilo.creato_il).toLocaleDateString('it-IT', { month: 'long', year: 'numeric' })}</p>
         </div>
       </section>
 
-      <nav className="menu" aria-label="Il tuo account">
-        <Link href="/profilo/modifica">Modifica nome, zona e foto</Link>
-        <Link href="/profilo/telefono">Cambia numero di telefono</Link>
-        <Link href="/profilo/preferiti">Preferiti</Link>
-        <Link href="/passaporto">Il mio passaporto di quartiere</Link>
-        <Link href="/notifiche">Notifiche</Link>
-        <Link href="/segnalazioni">Le mie segnalazioni</Link>
-        <Link href="/profilo/bloccati">Persone bloccate</Link>
-        <a href="/profilo/dati" download>
-          Scarica i miei dati
+      <nav className="acc-list" aria-label="Le tue cose">
+        <Voce href="/prenotazioni" ic="cal" t="Prenotazioni" s="In corso e storico" />
+        <Voce href="/notifiche" ic="bell" t="Notifiche" s="Conferme, messaggi, giudizi" />
+        <Voce href="/profilo/preferiti" ic="heart" t="Preferiti" s="Chi ti è piaciuto, da richiamare" />
+        <Voce href="/passaporto" ic="pin" t="Passaporto di quartiere" s="Un timbro per ogni lavoro" />
+      </nav>
+
+      <p className="acc-sec">Account</p>
+      <nav className="acc-list" aria-label="Il tuo account">
+        <Voce href="/profilo/modifica" ic="user" t="Nome, zona e foto" />
+        <Voce href="/profilo/telefono" ic="phone" t="Numero di telefono" s={telefono ? mostraTelefono(telefono) : undefined} />
+        <Voce href="/segnalazioni" ic="flag" t="Le mie segnalazioni" />
+        <Voce href="/profilo/bloccati" ic="x" t="Persone bloccate" />
+        <a href="/profilo/dati" download className="acc-row">
+          <Icona nome="book" lato={20} />
+          <span className="acc-t">
+            Scarica i miei dati<small>Un file con tutto quello che sappiamo di te</small>
+          </span>
         </a>
-        {admin && <Link href="/admin">Pannello di amministrazione</Link>}
+        {admin && <Voce href="/admin" ic="shield" t="Pannello di amministrazione" />}
       </nav>
 
       <form action={cambiaPausa} className="scheda interruttore">
@@ -54,13 +64,14 @@ export default async function Profilo() {
       <NotifichePush />
       <InstallaApp />
 
-      <nav className="menu" aria-label="Aiuto e documenti">
-        <Link href="/assistenza">Come funziona e assistenza</Link>
-        <Link href="/legale/termini">Termini d’uso</Link>
-        <Link href="/legale/privacy">Informativa privacy</Link>
-        <Link href="/legale/giudizi">Come verifichiamo i giudizi</Link>
-        <Link href="/legale/ranking">Come ordiniamo i risultati</Link>
-        <Link href="/legale/info">Informazioni legali</Link>
+      <p className="acc-sec">Aiuto e documenti</p>
+      <nav className="acc-list" aria-label="Aiuto e documenti">
+        <Voce href="/assistenza" ic="book" t="Come funziona e assistenza" />
+        <Voce href="/legale/termini" ic="book" t="Termini d’uso" />
+        <Voce href="/legale/privacy" ic="shield" t="Informativa privacy" />
+        <Voce href="/legale/giudizi" ic="seal" t="Come verifichiamo i giudizi" />
+        <Voce href="/legale/ranking" ic="search" t="Come ordiniamo i risultati" />
+        <Voce href="/legale/info" ic="book" t="Informazioni legali" />
       </nav>
 
       <BottoneEsci />
@@ -68,5 +79,17 @@ export default async function Profilo() {
         Elimina l’account
       </Link>
     </>
+  )
+}
+
+function Voce({ href, ic, t, s }: { href: string; ic: string; t: string; s?: string }) {
+  return (
+    <Link href={href} className="acc-row">
+      <Icona nome={ic} lato={20} />
+      <span className="acc-t">
+        {t}
+        {s && <small>{s}</small>}
+      </span>
+    </Link>
   )
 }

@@ -1,24 +1,12 @@
 import Link from 'next/link'
-import { Campanella } from '@/components/Campanella'
 import { Tabs } from '@/components/Tabs'
 import { richiediProfilo } from '@/lib/supabase/server'
 
 export default async function LayoutApp({ children }: { children: React.ReactNode }) {
-  const { supabase, id, profilo } = await richiediProfilo()
-  const { count } = await supabase
-    .from('notifiche')
-    .select('id', { count: 'exact', head: true })
-    .eq('utente', id)
-    .eq('letta', false)
+  const { profilo } = await richiediProfilo()
 
   return (
     <>
-      <div className="barra-alta">
-        <Link href="/" className="marchio piccolo">
-          TaskEase
-        </Link>
-        <Campanella key={count ?? 0} utente={id} iniziali={count ?? 0} />
-      </div>
       {profilo.sospeso && (
         <p className="avviso" role="alert">
           Il tuo account è sospeso: puoi vedere i tuoi dati ma non prenotare, pubblicare o scrivere.{' '}

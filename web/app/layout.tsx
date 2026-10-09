@@ -4,11 +4,19 @@ import { connection } from 'next/server'
 import { RegistraSw } from '@/components/AppInstallabile'
 import { DESCRIZIONE, urlSito } from '@/lib/sito'
 import './globals.css'
+import './prototipo.css'
 
 const hanken = localFont({
   src: './fonts/hankengrotesk-ieVn2YZDLW.woff2',
   weight: '400 800',
   variable: '--font-testo',
+})
+const spaceMono = localFont({
+  src: [
+    { path: './fonts/spacemono-400.woff2', weight: '400' },
+    { path: './fonts/spacemono-700.woff2', weight: '700' },
+  ],
+  variable: '--font-numeri',
 })
 const fraunces = localFont({
   src: './fonts/fraunces-6NUu8FyLNQ.woff2',
@@ -38,7 +46,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
   // Ogni pagina è creata al momento: così porta il nonce della CSP (vedi proxy.ts)
   await connection()
   return (
-    <html lang="it" className={`${hanken.variable} ${fraunces.variable}`}>
+    <html lang="it" className={`${hanken.variable} ${fraunces.variable} ${spaceMono.variable}`}>
       <body>
         <RegistraSw />
         <main className="pagina">{children}</main>

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Icona } from '@/components/Icona'
 import { Testata } from '@/components/Testata'
 import { etichettaGiorno, oraBreve } from '@/lib/date'
 import { STATI } from '@/lib/stati'
@@ -19,22 +20,28 @@ type VoceLista = {
   giudizi: { punteggio: number | null } | null
 }
 
-function Voce({ b, comePro }: { b: VoceLista; comePro: boolean }) {
+function Voce({ b, comePro, indice }: { b: VoceLista; comePro: boolean; indice: number }) {
   const altro = comePro ? b.cliente?.nome : b.professionisti?.profili?.nome
   const daGiudicare = !comePro && b.stato === 'completata' && !b.giudizi
+  const viva = b.stato === 'richiesta' || b.stato === 'confermata'
   return (
-    <Link href={`/prenotazioni/${b.id}`} className="scheda link-scheda">
-      <b>
-        {etichettaGiorno(b.giorno)} alle {oraBreve(b.ora)}
-      </b>
-      <span>
-        {b.competenza} · {altro ?? '—'} · {b.zona}
+    <Link href={`/prenotazioni/${b.id}`} className={viva ? 'pren' : 'pren chiusa'} style={{ animationDelay: `${Math.min(indice, 10) * 0.04}s` }}>
+      <span className="pren-ora">
+        <b>{oraBreve(b.ora)}</b>
+        <small>{etichettaGiorno(b.giorno)}</small>
       </span>
-      <span className={b.stato === 'confermata' || b.stato === 'completata' ? 'stato ok' : 'stato'}>
-        {b.stato === 'richiesta' && b.controproposta ? 'Nuovo orario proposto' : STATI[b.stato]}
-        {daGiudicare && ' · Lascia il giudizio'}
-        {b.giudizi && ` · IDA ${b.giudizi.punteggio}`}
+      <span className="pren-b">
+        <span className="pren-t">{b.competenza}</span>
+        <span className="pren-s">
+          {altro ?? '—'} · {b.zona}
+        </span>
+        <span className={b.stato === 'confermata' || b.stato === 'completata' ? 'pren-stato ok' : b.stato === 'richiesta' ? 'pren-stato' : 'pren-stato spento'}>
+          {b.stato === 'richiesta' && b.controproposta ? 'Nuovo orario proposto' : STATI[b.stato]}
+          {daGiudicare && ' · lascia il giudizio'}
+          {b.giudizi && ` · IDA ${b.giudizi.punteggio}`}
+        </span>
       </span>
+      <Icona nome="arrowR" lato={18} />
     </Link>
   )
 }
@@ -63,7 +70,7 @@ export default async function Prenotazioni({ searchParams }: { searchParams: Pro
     <>
       <Testata titolo="Prenotazioni" />
       {scheda && (
-        <div className="ruolo" role="tablist" aria-label="Quali prenotazioni">
+        <div className="ruolo largo" role="tablist" aria-label="Quali prenotazioni">
           <Link href="/prenotazioni?vista=cliente" role="tab" aria-selected={!comePro}>
             Quelle che ho fatto
           </Link>
@@ -73,22 +80,24 @@ export default async function Prenotazioni({ searchParams }: { searchParams: Pro
         </div>
       )}
       <section aria-label="In corso">
-        <h2>In corso</h2>
+        <div className="sec-h"><h2>In corso</h2></div>
         {attive.length === 0 ? (
           <p className="vuoto">
             Niente in corso.{' '}
             {!comePro && <Link href="/cerca">Trova chi ti serve</Link>}
           </p>
         ) : (
-          attive.map((b) => <Voce key={b.id} b={b} comePro={comePro} />)
+          <div className="wlist">{attive.map((b, i) => <Voce key={b.id} b={b} comePro={comePro} indice={i} />)}</div>
         )}
       </section>
       {altre.length > 0 && (
         <section aria-label="Storico">
-          <h2>Storico</h2>
-          {altre.map((b) => (
-            <Voce key={b.id} b={b} comePro={comePro} />
-          ))}
+          <div className="sec-h"><h2>Storico</h2></div>
+          <div className="wlist">
+            {altre.map((b, i) => (
+              <Voce key={b.id} b={b} comePro={comePro} indice={i} />
+            ))}
+          </div>
         </section>
       )}
     </>

@@ -1,10 +1,12 @@
 import Link from 'next/link'
-import { COLONNE_PRO, RigaProfessionista, daRiga } from '@/components/RigaProfessionista'
-import { Testata } from '@/components/Testata'
+import { Icona } from '@/components/Icona'
+import { COLONNE_PRO, daRiga } from '@/components/RigaProfessionista'
+import { CATEGORIE } from '@/lib/categorie'
 import { registra } from '@/lib/eventi'
+import { idaVisibile } from '@/lib/ida'
 import { richiediProfilo } from '@/lib/supabase/server'
 import { COMPETENZE, ZONE } from '@/lib/validazione'
-import { ordina, type Ordine } from '@/lib/zone'
+import { distanza, ordina, type Ordine } from '@/lib/zone'
 
 export const metadata = { title: 'Cerca · TaskEase' }
 
@@ -64,79 +66,122 @@ export default async function Cerca({
     for (const [k, v] of [...p.entries()]) if (!v) p.delete(k)
     return `/cerca?${p}`
   }
+  const colonne = [
+    ['ida', 'IDA'],
+    ['prezzo', '€/h'],
+    ['vicini', 'km ≈'],
+  ] as const
 
   return (
     <>
-      <Testata titolo="Cerca" indietro="/" />
-      <form className="filtri" role="search">
-        <label htmlFor="q" className="nascosto">
-          Cosa ti serve
-        </label>
-        <input id="q" name="q" type="search" defaultValue={q} placeholder="Cosa ti serve?" />
-        <div className="filtri-riga">
-          <label>
-            <span className="nascosto">Categoria</span>
-            <select name="competenza" defaultValue={competenza}>
-              <option value="">Tutte le categorie</option>
-              {COMPETENZE.map((c) => (
-                <option key={c}>{c}</option>
-              ))}
-            </select>
+      <div className="testata cerca-testa">
+        <Link href="/" className="indietro" aria-label="Indietro">
+          <Icona nome="arrowL" lato={20} />
+        </Link>
+        <form className="campo" role="search">
+          <Icona nome="search" lato={18} />
+          <label htmlFor="q" className="nascosto">
+            Cerca un mestiere o descrivi il problema
           </label>
-          <label>
-            <span className="nascosto">Zona</span>
-            <select name="zona" defaultValue={zona}>
-              <option value="">Tutte le zone</option>
-              {ZONE.map((z) => (
-                <option key={z}>{z}</option>
-              ))}
-            </select>
-          </label>
-        </div>
-        <input type="hidden" name="ordine" value={ordine} />
-        <button className="bottone piccolo" type="submit">
-          Cerca
-        </button>
-      </form>
+          <input id="q" name="q" type="search" defaultValue={q} placeholder="Idraulico, pulizie, WiFi, montaggio…" />
+          {competenza && <input type="hidden" name="competenza" value={competenza} />}
+          {zona && <input type="hidden" name="zona" value={zona} />}
+          <input type="hidden" name="ordine" value={ordine} />
+        </form>
+      </div>
+      <h1 className="nascosto">Cerca</h1>
 
-      <div className="chips" aria-label="Ordina">
-        {(
-          [
-            ['vicini', 'Più vicini'],
-            ['prezzo', 'Prezzo'],
-            ['ida', 'IDA più alto'],
-          ] as const
-        ).map(([k, l]) => (
-          <Link key={k} href={link({ ordine: k })} className="chip" aria-current={ordine === k ? 'true' : undefined}>
-            {l}
+      <nav className="cats" aria-label="Mestieri">
+        <Link href={link({ competenza: '' })} className="cat2" aria-current={!competenza ? 'true' : undefined}>
+          Tutti
+        </Link>
+        {CATEGORIE.map((c) => (
+          <Link key={c.n} href={link({ competenza: competenza === c.n ? '' : c.n })} className="cat2" aria-current={competenza === c.n ? 'true' : undefined}>
+            <Icona nome={c.ic} lato={18} colore={competenza === c.n ? '#1C1408' : c.c} />
+            {c.n}
           </Link>
         ))}
-        <Link href={link({ tutti: ancheNonDisponibili ? '' : '1' })} className="chip" aria-current={ancheNonDisponibili ? 'true' : undefined}>
-          Anche non disponibili
+        {competenza && !CATEGORIE.some((c) => c.n === competenza) && (
+          <span className="cat2" aria-current="true">
+            {competenza}
+          </span>
+        )}
+      </nav>
+      <nav className="cats" aria-label="Zona">
+        <Link href={link({ zona: '' })} className="cat2 zona" aria-current={!zona ? 'true' : undefined}>
+          Tutte le zone
         </Link>
-      </div>
+        {ZONE.map((z) => (
+          <Link key={z} href={link({ zona: zona === z ? '' : z })} className="cat2 zona" aria-current={zona === z ? 'true' : undefined}>
+            {z}
+          </Link>
+        ))}
+      </nav>
 
       {daQ && !competenza && (
-        <p className="nota">
+        <p className="nota forse">
           Forse cerchi <Link href={link({ competenza: daQ, q: '' })}>{daQ}</Link>?
         </p>
       )}
 
-      <p className="nota" aria-live="polite">
-        {lista.length === 0 ? 'Nessun risultato.' : `${lista.length} ${lista.length === 1 ? 'persona' : 'persone'}`} ·{' '}
-        <Link href="/legale/ranking">Come ordiniamo i risultati</Link>
+      <p className="cerca-meta" aria-live="polite">
+        <b>{lista.length === 0 ? 'Nessuno' : `${lista.length} ${lista.length === 1 ? 'persona' : 'persone'}`}</b> · nessuno paga per apparire ·{' '}
+        <Link href="/legale/ranking">come ordiniamo</Link> ·{' '}
+        <Link href={link({ tutti: ancheNonDisponibili ? '' : '1' })}>{ancheNonDisponibili ? 'solo disponibili' : 'anche non disponibili'}</Link>
       </p>
-      {lista.map((p) => (
-        <RigaProfessionista key={p.id} p={p} />
-      ))}
+
+      {lista.length > 0 && (
+        <>
+          <div className="ledger-h" role="group" aria-label="Ordina per">
+            <span>Persona</span>
+            {colonne.map(([k, l]) => (
+              <Link key={k} href={link({ ordine: k })} aria-current={ordine === k ? 'true' : undefined}>
+                {l}
+                {ordine === k ? (k === 'ida' ? ' ↓' : ' ↑') : ''}
+              </Link>
+            ))}
+          </div>
+          <div className="ledger">
+            {lista.map((p, i) => {
+              const ida = idaVisibile(p.ida, p.giudizi)
+              const d = distanza(profilo.zona, p.zone)
+              return (
+                <Link key={p.id} href={`/professionisti/${p.id}`} className={p.disponibile ? 'lrow' : 'lrow off'} style={{ animationDelay: `${Math.min(i, 12) * 0.04}s` }}>
+                  <span className="lrow-b">
+                    <span className="lrow-n">
+                      {p.nome}
+                      {p.disponibile && <span className="wcard-av" aria-hidden="true" />}
+                    </span>
+                    <span className="lrow-s">
+                      {!p.disponibile && <span className="spento">non disponibile · </span>}
+                      {p.competenze.slice(0, 2).join(' · ')}
+                    </span>
+                  </span>
+                  <span className="lrow-ida" aria-label={ida != null ? `IDA ${ida}` : 'IDA nuovo'}>
+                    {ida ?? <small>NUOVO</small>}
+                  </span>
+                  <span aria-label={p.su_preventivo ? 'su preventivo' : `${p.tariffa_oraria} euro l’ora`}>{p.su_preventivo ? 'prev.' : p.tariffa_oraria}</span>
+                  <span aria-label={d === 0 ? 'nella tua zona' : `circa ${km(d)} chilometri`}>{d === 0 ? 'qui' : km(d)}</span>
+                </Link>
+              )
+            })}
+          </div>
+        </>
+      )}
       {lista.length === 0 && (
-        <div className="scheda">
-          <p>Non trovi chi ti serve? Pubblica la richiesta in bacheca: chi lavora in zona ti risponde.</p>
+        <div className="vuoto-grande">
+          <b>Non è chi cerchi?</b>
+          <p>Pubblica la richiesta in bacheca: rispondono le persone che lavorano qui vicino.</p>
           <Link href="/bacheca/nuova" className="bottone">
-            Pubblica in bacheca
+            Pubblica una richiesta
           </Link>
         </div>
       )}
     </>
   )
+}
+
+// Distanza tra i centri delle zone (Forlì è larga circa 7 km): solo una stima
+function km(d: number): string {
+  return d >= 1000 ? '—' : String(Math.max(0.5, Math.round(d * 0.07 * 2) / 2)).replace('.', ',')
 }

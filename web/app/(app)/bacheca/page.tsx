@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Icona } from '@/components/Icona'
 import { Testata } from '@/components/Testata'
 import { quandoFa } from '@/lib/date'
 import { richiediProfilo } from '@/lib/supabase/server'
@@ -30,48 +31,65 @@ export default async function Bacheca({ searchParams }: { searchParams: Promise<
   return (
     <>
       <Testata titolo="Bacheca" sotto="Richieste di chi abita in zona" />
-      <Link href="/bacheca/nuova" className="bottone">
-        Pubblica una richiesta
+      <Link href="/bacheca/nuova" className="home-cta">
+        <Icona nome="plus" lato={20} />
+        <span>Pubblica una richiesta</span>
+        <Icona nome="arrowR" lato={18} />
       </Link>
 
       {(miei ?? []).length > 0 && (
         <section aria-label="Le tue richieste">
-          <h2>Le tue richieste</h2>
+          <div className="sec-h">
+            <h2>Le tue richieste</h2>
+          </div>
           {(miei ?? []).map((p) => (
-            <Link key={p.id} href={`/bacheca/${p.id}`} className="scheda link-scheda">
-              <b>{p.titolo}</b>
-              <span className={p.stato === 'aperta' ? 'stato ok' : 'stato'}>
-                {p.stato === 'aperta' ? 'Aperta' : p.stato === 'chiusa' ? 'Chiusa' : 'Rimossa dalla moderazione'} · {p.risposte}{' '}
-                {p.risposte === 1 ? 'risposta' : 'risposte'}
+            <Link key={p.id} href={`/bacheca/${p.id}`} className="post mine">
+              <span className="post-k">{p.stato === 'aperta' ? 'Aperta' : p.stato === 'chiusa' ? 'Chiusa' : 'Rimossa dalla moderazione'}</span>
+              <span className="post-t">{quandoFa(p.creato_il)}</span>
+              <span className="post-x">{p.titolo}</span>
+              <span className="post-a">
+                <span className="n">
+                  {p.risposte} {p.risposte === 1 ? 'risposta' : 'risposte'}
+                </span>
               </span>
             </Link>
           ))}
         </section>
       )}
 
-      <nav className="chips" aria-label="Zona">
-        <Link href="/bacheca" className="chip" aria-current={zona === null ? 'true' : undefined}>
+      <div className="sec-h">
+        <h2>In zona</h2>
+      </div>
+      <nav className="cats" aria-label="Zona">
+        <Link href="/bacheca" className="cat2 zona" aria-current={zona === null ? 'true' : undefined}>
           {scheda ? 'Le mie zone' : 'La mia zona'}
         </Link>
-        <Link href="/bacheca?zona=tutte" className="chip" aria-current={zona === '' ? 'true' : undefined}>
+        <Link href="/bacheca?zona=tutte" className="cat2 zona" aria-current={zona === '' ? 'true' : undefined}>
           Tutte
         </Link>
         {ZONE.map((z) => (
-          <Link key={z} href={`/bacheca?zona=${encodeURIComponent(z)}`} className="chip" aria-current={zona === z ? 'true' : undefined}>
+          <Link key={z} href={`/bacheca?zona=${encodeURIComponent(z)}`} className="cat2 zona" aria-current={zona === z ? 'true' : undefined}>
             {z}
           </Link>
         ))}
       </nav>
 
-      <section aria-label="Richieste aperte">
+      <section aria-label="Richieste aperte" className="post-lista">
         {(post ?? []).length === 0 && <p className="vuoto">Nessuna richiesta aperta qui.</p>}
-        {(post ?? []).map((p) => (
-          <Link key={p.id} href={`/bacheca/${p.id}`} className="scheda link-scheda">
-            <b>{p.titolo}</b>
-            {p.dettagli && <span className="taglia">{p.dettagli}</span>}
-            <span className="stato">
-              {p.profili?.nome.split(' ')[0]} · {p.zona} · {quandoFa(p.creato_il)}
-              {p.competenza ? ` · ${p.competenza}` : ''} · {p.risposte} {p.risposte === 1 ? 'risposta' : 'risposte'}
+        {(post ?? []).map((p, i) => (
+          <Link key={p.id} href={`/bacheca/${p.id}`} className="post" style={{ animationDelay: `${Math.min(i, 10) * 0.05}s` }}>
+            <span className="post-k">{p.competenza ?? 'Richiesta'}</span>
+            <span className="post-t">{quandoFa(p.creato_il)}</span>
+            <span className="post-x">{p.titolo}</span>
+            {p.dettagli && <span className="post-d taglia">{p.dettagli}</span>}
+            <span className="post-by">
+              {p.profili?.nome.split(' ')[0]} · {p.zona}
+            </span>
+            <span className="post-a">
+              <span className="rispondi">Rispondi</span>
+              <span className="n">
+                {p.risposte} {p.risposte === 1 ? 'risposta' : 'risposte'}
+              </span>
             </span>
           </Link>
         ))}
