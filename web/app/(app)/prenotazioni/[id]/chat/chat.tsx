@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { BottoneInvio, Esito, ProviderInvio, useAzione, type StatoAzione } from '@/components/Modulo'
+import { orarioMessaggio } from '@/lib/date'
 import { supabaseBrowser } from '@/lib/supabase/browser'
 import { inviaMessaggio } from '../../azioni'
 
@@ -71,7 +72,7 @@ export default function Chat({
           <div key={m.id} className={m.autore === io ? 'msg mio' : 'msg'}>
             <p>{m.testo}</p>
             <span className="ora">
-              {new Date(m.creato_il).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
+              {orarioMessaggio(m.creato_il)}
               {m.autore === io && m.letto_il ? ' · letto' : ''}
             </span>
             {m.autore !== io && (

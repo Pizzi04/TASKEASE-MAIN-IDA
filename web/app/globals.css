@@ -312,6 +312,8 @@ fieldset {
   border: 0;
   padding: 0;
   margin: 16px 0 0;
+  /* senza questo un fieldset si allarga quanto il contenuto e la pagina scorre di lato */
+  min-width: 0;
 }
 legend {
   font-weight: 800;
@@ -585,9 +587,6 @@ summary {
 .riga-pro-sotto {
   font-size: 14px;
   color: var(--ink2);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .badge-ok {
   font-size: 12px;
@@ -873,6 +872,27 @@ summary {
   display: flex;
   gap: 12px;
   align-items: center;
+  min-width: 0;
+}
+.scelta-foto {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+.scelta-foto label.secondario {
+  margin: 0;
+}
+.scelta-foto .nota {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.scelta-foto input:focus-visible + label {
+  outline: 2px solid var(--ochre);
+  outline-offset: 2px;
 }
 .foto-post {
   display: block;
@@ -986,4 +1006,40 @@ summary {
 .captcha {
   margin-top: 16px;
   min-height: 65px;
+}
+
+.msg .piccolo-link {
+  margin-left: 8px;
+}
+
+/* Caricamento tra una pagina e l'altra */
+.caricamento {
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+}
+.caricamento span {
+  display: block;
+  height: 72px;
+  border-radius: 18px;
+  background: var(--card);
+  border: 1px solid var(--line);
+}
+.caricamento span:first-child {
+  height: 32px;
+  width: 60%;
+  border: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .caricamento span {
+    animation: pulsa 1.2s ease-in-out infinite alternate;
+  }
+}
+@keyframes pulsa {
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 1;
+  }
 }

@@ -1,5 +1,6 @@
 import { Avatar } from '@/components/Avatar'
 import { Modulo } from '@/components/Modulo'
+import SceltaFoto from '@/components/SceltaFoto'
 import { Testata } from '@/components/Testata'
 import { richiediProfilo } from '@/lib/supabase/server'
 import { ZONE } from '@/lib/validazione'
@@ -24,7 +25,7 @@ export default async function ModificaProfilo() {
         <label htmlFor="foto">Foto</label>
         <div className="riga-foto">
           <Avatar nome={profilo.nome} foto={profilo.foto} lato={56} />
-          <input id="foto" name="foto" type="file" accept="image/jpeg,image/png,image/webp" />
+          <SceltaFoto />
         </div>
         {profilo.foto && (
           <label className="spunta">

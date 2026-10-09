@@ -58,7 +58,7 @@ export default async function SchedaProfessionista({ params }: { params: Promise
       <dl className="scheda dati">
         <div className="riga">
           <dt>Tariffa</dt>
-          <dd>{p.su_preventivo ? 'Su preventivo' : `${p.tariffa_oraria} € l’ora`}</dd>
+          <dd>{p.su_preventivo ? 'Su preventivo' : `${p.tariffa_oraria} € l’ora, prezzo finale`}</dd>
         </div>
         <div className="riga">
           <dt>Fa</dt>

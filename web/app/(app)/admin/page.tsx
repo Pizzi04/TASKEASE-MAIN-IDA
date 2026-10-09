@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Testata } from '@/components/Testata'
 import { leggiNumeri } from '@/lib/numeri'
+import { STATI } from '@/lib/stati'
 import { richiediAdmin } from '@/lib/supabase/server'
 
 export const metadata = { title: 'Amministrazione · TaskEase' }
@@ -81,7 +82,7 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
       <dl className="scheda dati">
         {Object.entries(stati).map(([k, v]) => (
           <div key={k} className="riga">
-            <dt>{k}</dt>
+            <dt>{STATI[k] ?? k}</dt>
             <dd>{v}</dd>
           </div>
         ))}

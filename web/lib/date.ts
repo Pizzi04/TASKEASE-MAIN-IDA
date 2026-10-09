@@ -43,3 +43,13 @@ export function passata(giorno: string, ora: string, adesso = new Date()): boole
   const [h, m] = ora.split(':').map(Number)
   return h * 60 + m <= minuti
 }
+
+// Ora (e giorno, se non è oggi) di un istante, sempre all'ora italiana: uguale su server e browser
+const FMT_ORA = new Intl.DateTimeFormat('it-IT', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Rome' })
+const FMT_GIORNO_ROMA = new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Europe/Rome' })
+export function orarioMessaggio(istante: string, adesso = new Date()): string {
+  const d = new Date(istante)
+  const ora = FMT_ORA.format(d)
+  const giorno = FMT_GIORNO_ROMA.format(d)
+  return giorno === adessoARoma(adesso).giorno ? ora : `${etichettaGiorno(giorno, adesso)}, ${ora}`
+}

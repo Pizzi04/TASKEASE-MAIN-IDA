@@ -63,6 +63,7 @@ export function CampiScheda({ v }: { v?: ValoriScheda }) {
 
       <label htmlFor="tariffa">Tariffa (€ l’ora)</label>
       <input id="tariffa" name="tariffa" type="number" min={5} max={200} step={1} defaultValue={v?.tariffa_oraria ?? 20} required />
+      <p className="nota">Il prezzo finale che paga il cliente: se applichi l’IVA, mettila già dentro.</p>
       <label className="spunta">
         <input type="checkbox" name="su_preventivo" value="si" defaultChecked={v?.su_preventivo} />
         <span>Preferisco fare un preventivo prima</span>

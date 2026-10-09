@@ -1,4 +1,5 @@
 import { Modulo } from '@/components/Modulo'
+import SceltaFoto from '@/components/SceltaFoto'
 import { Testata } from '@/components/Testata'
 import { richiediProfilo } from '@/lib/supabase/server'
 import { COMPETENZE, ZONE } from '@/lib/validazione'
@@ -31,7 +32,7 @@ export default async function NuovaRichiesta() {
           ))}
         </select>
         <label htmlFor="foto">Una foto aiuta (facoltativa)</label>
-        <input id="foto" name="foto" type="file" accept="image/jpeg,image/png,image/webp" />
+        <SceltaFoto />
         <p className="nota">JPG, PNG o WebP fino a 3 MB. Resta visibile 14 giorni, poi la richiesta scade.</p>
       </Modulo>
     </>
