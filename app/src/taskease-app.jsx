@@ -342,6 +342,20 @@ function Seal({ score, lv, size = 64, stamp = false, tint }) {
   );
 }
 
+/* Numero che sale da 0 al valore: solo una volta, e mai con "riduci movimento" */
+const fermo = () => typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+function Conta({ to, ms = 900 }) {
+  const [v, setV] = useState(() => (fermo() || typeof to !== "number") ? to : 0);
+  useEffect(() => {
+    if (fermo() || typeof to !== "number") { setV(to); return; }
+    let raf, t0;
+    const step = (t) => { if (t0 == null) t0 = t; const k = Math.min(1, (t - t0) / ms); setV(Math.round(to * (1 - Math.pow(1 - k, 3)))); if (k < 1) raf = requestAnimationFrame(step); };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [to, ms]);
+  return <>{v}</>;
+}
+
 function Mono({ children, size = 14, color = T.ink, w = 700 }) {
   return <span style={{ fontFamily: "'Space Mono',monospace", fontSize: size, fontWeight: w, color, whiteSpace: "nowrap" }}>{children}</span>;
 }
@@ -456,12 +470,12 @@ function Home({ nav, fermo, role, profilo, nuove, richieste = 0, blocked = [], p
           <MappaZona nav={nav} blocked={blocked} mia={zonaMia} />
           <button type="button" className="tl ida" onClick={() => nav("help")}>
             <small>Cos'è l'IDA <span className="ticker-tag" style={{ color: "rgba(246,242,234,.75)", borderColor: "rgba(246,242,234,.3)", marginLeft: 4 }}>ESEMPIO</span></small>
-            <span className="big">94</span>
+            <span className="big"><Conta to={94} /></span>
             <span className="sub">voto su 100, solo lavori veri</span>
           </button>
           <button type="button" className="tl" onClick={() => nav("neighborhood")}>
             <small>Bacheca</small>
-            <span className="big" style={{ fontSize: 30 }}>{bacheca}</span>
+            <span className="big" style={{ fontSize: 30 }}><Conta to={bacheca} ms={600} /></span>
             <span className="sub">{bacheca === 1 ? "richiesta in zona" : "richieste in zona"}</span>
           </button>
         </div>}
@@ -537,14 +551,14 @@ function MappaZona({ nav, blocked = [], mia }) {
         <g fill="none" stroke="#1D3631" strokeWidth="3" strokeLinecap="round">
           <path d="M-10 40 L 170 30" /><path d="M20 -10 L 35 250" /><path d="M130 -10 L 140 250" /><path d="M-10 210 L 170 220" />
         </g>
-        {(() => { const [x, y] = pos(qMia); return <><circle cx={x} cy={y} r="30" fill="none" stroke={T.ok} strokeDasharray="3 4" /><circle cx={x} cy={y} r="4.5" fill={T.ok} /></>; })()}
+        {(() => { const [x, y] = pos(qMia); return <><circle className="giro" cx={x} cy={y} r="30" fill="none" stroke={T.ok} strokeDasharray="3 4" /><circle className="onda" cx={x} cy={y} r="12" fill="none" stroke={T.ok} /><circle cx={x} cy={y} r="4.5" fill={T.ok} /></>; })()}
         {tutti.map((w, i) => {
           const q = QUARTIERI.find(z => z.n === w.zona); if (!q) return null;
           const [x, y] = pos(q); const dx = (i % 3 - 1) * 11, dy = (i % 2 ? 9 : -9);
-          return <circle key={w.id} cx={x + dx} cy={y + dy} r="5" fill={w.av ? T.ochreLight : "#4A615B"} stroke={T.card} strokeWidth="2" />;
+          return <g key={w.id}>{w.av && <circle className="onda" style={{ animationDelay: `${i * .45}s` }} cx={x + dx} cy={y + dy} r="9" fill="none" stroke={T.ochreLight} />}<circle className="pop" style={{ animationDelay: `${.2 + i * .08}s` }} cx={x + dx} cy={y + dy} r="5" fill={w.av ? T.ochreLight : "#4A615B"} stroke={T.card} strokeWidth="2" /></g>;
         })}
       </svg>
-      <span className="lbl"><small>In zona ora</small><b>{disp.length} {disp.length === 1 ? "libera" : "libere"}</b></span>
+      <span className="lbl"><small>In zona ora</small><b><Conta to={disp.length} ms={700} /> {disp.length === 1 ? "libera" : "libere"}</b></span>
     </button>
   );
 }
@@ -617,8 +631,8 @@ function Search({ nav, init, role, blocked = [] }) {
           <span>Persona</span>
           {COL.map(([k, l]) => <button type="button" key={k} aria-pressed={sort === k} onClick={() => setSort(k)} aria-label={`Ordina per ${k === "ida" ? "IDA più alto" : k === "price" ? "prezzo" : "distanza"}`}>{l}{sort === k ? (k === "ida" ? " ↓" : " ↑") : ""}</button>)}
         </div>}
-        {f.map(w => (
-          <button type="button" key={w.id} className={"lrow" + (w.av ? "" : " off")} onClick={() => nav("worker", q.trim() ? { ...w, q } : w)}>
+        {f.map((w, i) => (
+          <button type="button" key={w.id} className={"lrow" + (w.av ? "" : " off")} style={{ animationDelay: `${Math.min(i, 8) * .04}s` }} onClick={() => nav("worker", q.trim() ? { ...w, q } : w)}>
             <span style={{ minWidth: 0 }}>
               <span className="lrow-n">{w.n}{w.av ? <><span className="wcard-av" aria-hidden="true" /><span className="sr">, disponibile</span></> : <span className="sr">, non disponibile</span>}</span>
               <span className="lrow-s">{!w.av && <span style={{ color: T.ember }}>non disponibile · </span>}{w.bio}</span>
@@ -713,14 +727,14 @@ function Worker({ w, nav, from, saved, onSave, onBlock, bloccato, onUnblock, gia
         {/* L'IDA in chiaro: il numero, da quanti giudizi, e di cosa è fatto */}
         <section className="ida-block" aria-label="IDA">
           <div className="ida-hero">
-            {w.ida == null ? <b className="nuovo">NUOVO</b> : <b>{w.ida}</b>}
+            {w.ida == null ? <b className="nuovo">NUOVO</b> : <b><Conta to={w.ida} /></b>}
             <div>
               <strong>{w.ida == null ? "IDA in costruzione" : "IDA su 100"}</strong>
               <small>{w.self || w.ida == null ? `Compare dopo ${IDA_MIN_LAVORI} lavori giudicati.` : <>da <Mono size={13} w={400}>{w.rv}</Mono> lavori giudicati dai clienti</>}</small>
             </div>
           </div>
           <ul className="voci" aria-label="Come si forma">
-            {IDA_VOCI.map(v => <li key={v.k}>{v.l} <b>{Math.round(v.w * 100)}%</b></li>)}
+            {IDA_VOCI.map((v, i) => <li key={v.k} style={{ animationDelay: `${.35 + i * .07}s` }}>{v.l} <b>{Math.round(v.w * 100)}%</b></li>)}
           </ul>
         </section>
 
@@ -3530,6 +3544,40 @@ button:focus-visible { outline: 2.5px solid ${T.accent}; outline-offset: 2px; }
 .post-a .n { font-size: 12.5px; font-weight: 600; color: ${T.ink2}; }
 .post-a .segn { margin-left: auto; font-size: 12.5px; color: ${T.stone}; }
 .post.mine { box-shadow: inset 0 0 0 1.5px ${T.ochre}; }
+
+/* ---------- movimento: leggero, una volta sola o lento, spento con "riduci movimento" ---------- */
+.bento .tl { animation: rise .5s cubic-bezier(.2,.8,.2,1) both; }
+.bento .tl:nth-child(2) { animation-delay: .06s; } .bento .tl:nth-child(3) { animation-delay: .12s; } .bento .tl:nth-child(4) { animation-delay: .18s; } .bento .tl:nth-child(5) { animation-delay: .24s; }
+.tiles li { animation: rise .5s cubic-bezier(.2,.8,.2,1) both; } .tiles li:nth-child(2) { animation-delay: .06s; } .tiles li:nth-child(3) { animation-delay: .12s; }
+.lrow { animation: rise .45s cubic-bezier(.2,.8,.2,1) both; }
+.voci li { animation: rise .4s cubic-bezier(.2,.8,.2,1) both; }
+.trio > div, .rev { animation: rise .5s cubic-bezier(.2,.8,.2,1) both; }
+.trio > div:nth-child(2) { animation-delay: .05s; } .trio > div:nth-child(3) { animation-delay: .1s; }
+.ida-block { animation: rise .5s cubic-bezier(.2,.8,.2,1) both; }
+/* riflesso che passa sul prossimo appuntamento */
+.tl.next::after, .slot::after { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,.45) 50%, transparent 65%); transform: translateX(-100%); animation: riflesso 5s ease-in-out 1.2s infinite; pointer-events: none; }
+.slot { position: relative; overflow: hidden; }
+@keyframes riflesso { 0% { transform: translateX(-100%); } 22%, 100% { transform: translateX(100%); } }
+/* titolo con l'ocra che scorre */
+.home-h em { background-size: 200% 100%; background-image: linear-gradient(90deg, ${T.ochreLight}, #F6DDA9, ${T.ochreLight}); animation: scorre 6s ease-in-out infinite; }
+@keyframes scorre { 0%, 100% { background-position: 0% 0; } 50% { background-position: 100% 0; } }
+/* chi è disponibile "respira" */
+.wcard-av, .lrow-n .wcard-av { animation: respira 2.4s ease-in-out infinite; }
+@keyframes respira { 0%, 100% { box-shadow: 0 0 0 0 rgba(79,209,160,.55); } 60% { box-shadow: 0 0 0 6px rgba(79,209,160,0); } }
+/* mappa */
+.tl.map .giro { transform-box: fill-box; transform-origin: center; animation: spin 24s linear infinite; }
+.tl.map .onda { transform-box: fill-box; transform-origin: center; animation: onda 2.6s ease-out infinite; opacity: 0; }
+.tl.map .pop { transform-box: fill-box; transform-origin: center; animation: pop .45s cubic-bezier(.2,1.5,.5,1) both; }
+@keyframes onda { 0% { transform: scale(.4); opacity: .8; } 100% { transform: scale(1.6); opacity: 0; } }
+@keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+/* barra in basso: piccolo rimbalzo della voce attiva */
+.dock-i { transition: background .25s, color .25s; }
+.dock-i.on svg { animation: pop .4s cubic-bezier(.2,1.6,.5,1); }
+.dock-plus:active .dock-plus-i { transform: scale(.9); }
+.dock-plus-i { transition: transform .15s; }
+/* pulsante premuto */
+.tl, .wcard, .lrow, .tile, .post-a .rispondi, .fchip, .cat2, .seg button { transition: transform .15s, filter .15s, background .2s; }
+.tl:active, .wcard:active, .lrow:active, .tile:active { transform: scale(.98); }
 
 .onb-visual { display: flex; justify-content: center; align-items: center; min-height: 230px; margin: 18px 0 8px; animation: rise .5s cubic-bezier(.2,.8,.2,1) both; }
 .onb-glyph { width: 150px; height: 150px; border-radius: 44px; background: rgba(169,118,43,.12); border: 1px solid rgba(169,118,43,.28); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 80px -10px rgba(169,118,43,.35); }
