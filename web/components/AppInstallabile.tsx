@@ -63,7 +63,7 @@ function base64InUint8(b64: string) {
 }
 
 // Attiva o spegne le notifiche push su questo dispositivo
-export function NotifichePush({ utente }: { utente: string }) {
+export function NotifichePush() {
   const chiave = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
   const supportato = useBrowser(
     () => !!chiave && 'serviceWorker' in navigator && 'PushManager' in window && typeof Notification !== 'undefined',
@@ -93,10 +93,13 @@ export function NotifichePush({ utente }: { utente: string }) {
       const reg = await navigator.serviceWorker.ready
       const iscrizione = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: base64InUint8(chiave!) })
       const j = iscrizione.toJSON()
-      const { error } = await supabaseBrowser()
-        .from('push_iscrizioni')
-        .insert({ utente, endpoint: j.endpoint!, p256dh: j.keys!.p256dh, auth: j.keys!.auth })
-      if (error && error.code !== '23505') throw error
+      // Se questo telefono era iscritto con un altro account, l'iscrizione passa a chi è collegato ora
+      const { error } = await supabaseBrowser().rpc('prendi_push', {
+        p_endpoint: j.endpoint!,
+        p_p256dh: j.keys!.p256dh,
+        p_auth: j.keys!.auth,
+      })
+      if (error) throw error
       setStato('attive')
     } catch {
       setErrore('Non sono riuscito ad attivarle. Hai dato il permesso?')
@@ -125,5 +128,38 @@ export function NotifichePush({ utente }: { utente: string }) {
         {stato === 'attive' ? 'Spegni' : 'Attiva'}
       </button>
     </div>
+  )
+}
+
+// Esci: prima stacca le notifiche push di questo telefono, così non arrivano più a chi esce
+export function BottoneEsci() {
+  const [attesa, setAttesa] = useState(false)
+  return (
+    <form
+      action="/esci"
+      method="post"
+      onSubmit={async (e) => {
+        e.preventDefault()
+        const modulo = e.currentTarget
+        setAttesa(true)
+        try {
+          if ('serviceWorker' in navigator) {
+            const reg = await navigator.serviceWorker.getRegistration()
+            const s = await reg?.pushManager.getSubscription()
+            if (s) {
+              await supabaseBrowser().from('push_iscrizioni').delete().eq('endpoint', s.endpoint)
+              await s.unsubscribe()
+            }
+          }
+        } catch {
+          // anche se fallisce, si esce lo stesso
+        }
+        modulo.submit()
+      }}
+    >
+      <button className="secondario" type="submit" disabled={attesa}>
+        {attesa ? 'Esco…' : 'Esci'}
+      </button>
+    </form>
   )
 }

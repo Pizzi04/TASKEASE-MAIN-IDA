@@ -7,7 +7,7 @@ export const metadata = { title: 'Account sospesi · Amministrazione' }
 
 export default async function Sospesi() {
   const { supabase } = await richiediAdmin()
-  const { data } = await supabase.from('profili').select('id, nome, zona, aggiornato_il').eq('sospeso', true).order('aggiornato_il', { ascending: false })
+  const { data } = await supabase.rpc('account_sospesi')
   return (
     <>
       <Testata titolo="Account sospesi" indietro="/admin" />

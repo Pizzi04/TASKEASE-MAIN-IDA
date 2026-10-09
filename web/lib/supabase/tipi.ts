@@ -810,11 +810,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      account_sospesi: {
+        Args: never
+        Returns: {
+          aggiornato_il: string
+          id: string
+          nome: string
+          zona: string
+        }[]
+      }
       bloccati_tra: { Args: { a: string; b: string }; Returns: boolean }
       cambia_stato_prenotazione: {
         Args: { p_azione: string; p_id: number; p_motivo?: string }
         Returns: string
       }
+      cf_valido: { Args: { cf: string }; Returns: boolean }
+      chiudi_prenotazioni_scadute: { Args: never; Returns: undefined }
       competenze_valide: { Args: never; Returns: string[] }
       decidi_segnalazione: {
         Args: {
@@ -850,6 +861,7 @@ export type Database = {
       e_admin: { Args: never; Returns: boolean }
       e_parte: { Args: { p: number }; Returns: boolean }
       e_sospeso: { Args: { u: string }; Returns: boolean }
+      e_sospeso_interno: { Args: { u: string }; Returns: boolean }
       giudizi_di: {
         Args: { p_professionista: string }
         Returns: {
@@ -868,6 +880,7 @@ export type Database = {
         }[]
       }
       ha_contatti: { Args: { t: string }; Returns: boolean }
+      limite_superato: { Args: { messaggio: string }; Returns: undefined }
       notifica: {
         Args: { link: string; testo: string; tipo: string; u: string }
         Returns: undefined
@@ -879,6 +892,10 @@ export type Database = {
           giorno: string
           ora: string
         }[]
+      }
+      prendi_push: {
+        Args: { p_auth: string; p_endpoint: string; p_p256dh: string }
+        Returns: undefined
       }
       prenota: {
         Args: {
@@ -896,6 +913,10 @@ export type Database = {
         Returns: number
       }
       prepara_eliminazione: { Args: { p_motivo?: string }; Returns: undefined }
+      prepara_eliminazione_di: {
+        Args: { p_utente: string }
+        Returns: undefined
+      }
       primo_nome: { Args: { u: string }; Returns: string }
       profilo_visibile: { Args: { u: string }; Returns: boolean }
       proponi_orario: {

@@ -89,7 +89,7 @@ export const LEGALE: Record<string, Documento> = {
       ],
       [
         'Per quanto tempo',
-        'Finché il profilo è attivo. Messaggi e segnalazioni: 12 mesi dalla chiusura. Se un profilo resta inattivo 24 mesi ti avvisiamo e poi lo cancelliamo. Dopo la cancellazione togliamo i dati subito, tranne quelli che la legge ci obbliga a conservare (dati fiscali, fino a 10 anni); i giudizi che hai lasciato restano senza il tuo nome.',
+        'Finché il profilo è attivo. Messaggi: 12 mesi dalla chiusura della prenotazione. Segnalazioni: 12 mesi dalla decisione. Notifiche: 90 giorni dopo la lettura. Foto delle richieste in bacheca: fino alla scadenza o alla rimozione. Se un profilo resta inattivo 23 mesi ti avvisiamo, a 24 mesi lo cancelliamo. Dopo la cancellazione togliamo i dati subito, tranne quelli che la legge ci obbliga a conservare (dati fiscali, fino a 10 anni); i giudizi che hai lasciato restano senza il tuo nome.',
       ],
       [
         'Documenti d’identità',
@@ -120,7 +120,10 @@ export const LEGALE: Record<string, Documento> = {
   giudizi: {
     t: 'Come verifichiamo i giudizi',
     s: [
-      ['Chi può giudicare', 'Solo chi ha prenotato quel lavoro tramite TaskEase e dopo che chi lavora l’ha segnato come fatto: un giudizio per prenotazione.'],
+      [
+        'Chi può giudicare',
+        'Solo chi ha prenotato quel lavoro tramite TaskEase, quando il lavoro è segnato come fatto (da chi lavora, dal cliente, o in automatico 48 ore dopo l’orario). Dopo l’orario nessuno può più annullare. Un giudizio per prenotazione; se lo stesso cliente giudica più volte la stessa persona, nell’IDA conta solo il suo giudizio più recente.',
+      ],
       [
         'Come si calcola',
         `Cinque domande da 1 a 5: puntualità 20%, qualità 30%, parola mantenuta 20%, pulizia 15%, comunicazione 15%. Ogni giudizio vale da 20 a 100. L’IDA compare dopo ${IDA_MIN_LAVORI} lavori: gli ultimi 12 mesi contano per intero, da 12 a 24 mesi a metà, oltre non contano. Il calcolo lo fa il database: nessuno, nemmeno noi, scrive l’IDA a mano.`,

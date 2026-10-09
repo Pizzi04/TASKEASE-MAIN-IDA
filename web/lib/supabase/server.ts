@@ -43,13 +43,14 @@ export const utenteCorrente = cache(async () => {
 export const richiediProfilo = cache(async () => {
   const { supabase, id, telefono } = await utenteCorrente()
   if (!id) redirect('/accedi')
-  const { data: profilo, error } = await supabase
-    .from('profili')
-    .select('id, nome, zona, ruolo, in_pausa, sospeso, foto, creato_il')
-    .eq('id', id)
-    .maybeSingle()
+  // "sospeso" non è una colonna leggibile: lo dice la funzione e_sospeso, solo per sé stessi
+  const [{ data: riga, error }, { data: sospeso }] = await Promise.all([
+    supabase.from('profili').select('id, nome, zona, ruolo, in_pausa, foto, creato_il').eq('id', id).maybeSingle(),
+    supabase.rpc('e_sospeso', { u: id }),
+  ])
   if (error) throw new Error('Non riesco a leggere il profilo')
-  if (!profilo) redirect('/profilo/nuovo')
+  if (!riga) redirect('/profilo/nuovo')
+  const profilo = { ...riga, sospeso: sospeso === true }
   return { supabase, id, telefono, profilo }
 })
 

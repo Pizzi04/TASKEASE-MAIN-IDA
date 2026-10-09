@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { InstallaApp, NotifichePush } from '@/components/AppInstallabile'
+import { BottoneEsci, InstallaApp, NotifichePush } from '@/components/AppInstallabile'
 import { Avatar } from '@/components/Avatar'
 import { Testata } from '@/components/Testata'
 import { richiediProfilo } from '@/lib/supabase/server'
@@ -9,7 +9,7 @@ import { cambiaPausa } from './azioni'
 export const metadata = { title: 'Profilo · TaskEase' }
 
 export default async function Profilo() {
-  const { supabase, id, profilo, telefono } = await richiediProfilo()
+  const { supabase, profilo, telefono } = await richiediProfilo()
   const { data: admin } = await supabase.rpc('e_admin')
 
   return (
@@ -50,7 +50,7 @@ export default async function Profilo() {
         </button>
       </form>
 
-      <NotifichePush utente={id} />
+      <NotifichePush />
       <InstallaApp />
 
       <nav className="menu" aria-label="Aiuto e documenti">
@@ -62,11 +62,7 @@ export default async function Profilo() {
         <Link href="/legale/info">Informazioni legali</Link>
       </nav>
 
-      <form action="/esci" method="post">
-        <button className="secondario" type="submit">
-          Esci
-        </button>
-      </form>
+      <BottoneEsci />
       <Link href="/profilo/elimina" className="secondario pericolo-testo">
         Elimina l’account
       </Link>

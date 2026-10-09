@@ -92,7 +92,7 @@ export default async function Prenotazione({
       <p className="scheda descrizione">{b.descrizione}</p>
 
       {/* Azioni di chi lavora */}
-      {sonoPro && b.stato === 'richiesta' && !b.controproposta && (
+      {sonoPro && b.stato === 'richiesta' && !b.controproposta && !fatta && (
         <section className="azioni" aria-label="Rispondi">
           {azione('conferma', 'Conferma')}
           <details>
@@ -123,10 +123,24 @@ export default async function Prenotazione({
         </section>
       )}
       {sonoPro && b.stato === 'richiesta' && b.controproposta && <p className="avviso">Hai proposto un nuovo orario: aspetta che {primo} lo accetti.</p>}
-      {sonoPro && b.stato === 'confermata' && fatta && azione('completa', 'Lavoro fatto')}
+      {b.stato === 'richiesta' && fatta && (
+        <p className="avviso">L’orario è passato senza conferma: la richiesta verrà chiusa in automatico.</p>
+      )}
+      {b.stato === 'confermata' && fatta && (
+        <section className="azioni" aria-label="Com’è andata">
+          {azione('completa', 'Lavoro fatto')}
+          {!sonoPro && (
+            <details>
+              <summary>Non si è presentato nessuno</summary>
+              {azione('non_presentato', 'Segnala che non è venuto', 'pericolo', true)}
+            </details>
+          )}
+          <p className="nota">Se nessuno lo segna, il lavoro si considera fatto 48 ore dopo l’orario e si può lasciare il giudizio.</p>
+        </section>
+      )}
 
       {/* Azioni del cliente */}
-      {!sonoPro && b.stato === 'richiesta' && b.controproposta && (
+      {!sonoPro && b.stato === 'richiesta' && b.controproposta && !fatta && (
         <section className="azioni" aria-label="Nuovo orario">
           <p className="avviso">
             {primo} propone {etichettaGiorno(b.giorno)} alle {oraBreve(b.ora)}.
@@ -140,7 +154,7 @@ export default async function Prenotazione({
         </Link>
       )}
 
-      {attiva && (
+      {attiva && !(b.stato === 'confermata' && fatta) && (
         <details>
           <summary>Annulla la prenotazione</summary>
           {azione('annulla', 'Annulla', 'pericolo', true)}

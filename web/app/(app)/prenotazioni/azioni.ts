@@ -8,7 +8,7 @@ import { leggiVoti } from '@/lib/ida'
 import { richiediProfilo } from '@/lib/supabase/server'
 import { orarioPrenotabile } from '@/lib/validazione'
 
-const AZIONI = ['conferma', 'rifiuta', 'annulla', 'completa', 'accetta_orario'] as const
+const AZIONI = ['conferma', 'rifiuta', 'annulla', 'completa', 'accetta_orario', 'non_presentato'] as const
 
 export async function cambiaStato(_p: StatoAzione, form: FormData): Promise<StatoAzione> {
   const { supabase } = await richiediProfilo()
@@ -19,10 +19,12 @@ export async function cambiaStato(_p: StatoAzione, form: FormData): Promise<Stat
   const { error } = await supabase.rpc('cambia_stato_prenotazione', { p_id: id, p_azione: azione, p_motivo: motivo })
   if (error) {
     if (azione === 'completa' && error.code === 'P0001') return { errore: 'Puoi segnare il lavoro come fatto solo dopo l’orario previsto.' }
+    if (azione === 'annulla' && error.code === 'P0001') return { errore: 'Dopo l’orario non si può più annullare: segna com’è andata.' }
     return { errore: messaggioDb(error) }
   }
   revalidatePath(`/prenotazioni/${id}`)
   revalidatePath('/prenotazioni')
+  if (azione === 'non_presentato') return { ok: 'Segnalato: leggiamo la segnalazione e ti rispondiamo entro 48 ore.' }
   return { ok: azione === 'conferma' || azione === 'accetta_orario' ? 'Confermata.' : 'Fatto.' }
 }
 

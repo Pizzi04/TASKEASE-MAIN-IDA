@@ -48,6 +48,17 @@ npm run build                # controllo completo prima di pubblicare
 4. **Notifiche push** (dopo la pubblicazione online) — Supabase → Database → Webhooks → nuovo: tabella `notifiche`, evento *Insert*, URL `https://<tuo-dominio>/api/push`, header `x-webhook-secret` = `PUSH_WEBHOOK_SECRET`.
 5. **Dati legali** — compila `lib/legale.ts` (titolare, P.IVA, contatti): finché mancano, i documenti mostrano “Bozza”.
 6. **SMS veri** — account Twilio (SID, token, mittente) in Supabase → Phone provider.
+7. **Regola doppia** — applica a mano `supabase/migrations/18_audit_f3_regola_doppia_profili.sql` (Supabase → SQL Editor): cancella un doppione, non cambia i permessi.
+8. **Manutenzione notturna** — su Vercel imposta `CRON_SECRET`; `vercel.json` chiama `/api/manutenzione` ogni notte (tempi di conservazione dell'informativa, foto di post rimossi, account inattivi).
+
+## Regole aggiunte dopo l'audit
+
+- Dopo l'orario nessuno può annullare. Il lavoro lo segna fatto il professionista o il cliente; senza nessuno, si completa da solo dopo 48 ore. Il cliente può dire “non si è presentato” (apre una segnalazione).
+- Le richieste mai confermate si chiudono da sole quando l'orario passa (cron ogni 30 minuti).
+- Nell'IDA conta solo l'ultimo giudizio di ogni cliente per la stessa persona.
+- Limiti: 2 richieste in attesa verso la stessa persona e 5 in tutto, 5 post al giorno, 20 messaggi al minuto, 10 segnalazioni al giorno e una sola aperta per lo stesso contenuto.
+- Un account sospeso non giudica; lo stato “sospeso” degli altri non è leggibile.
+- Codice fiscale controllato anche nel database; massimo 20 foto per persona.
 
 ## Pubblicare online
 

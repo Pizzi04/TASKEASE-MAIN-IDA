@@ -27,7 +27,7 @@ export default async function Notifiche() {
   return (
     <>
       <Testata titolo="Notifiche" indietro="/" />
-      <NotifichePush utente={id} />
+      <NotifichePush />
       {nonLette > 0 && (
         <form action={segnaTutteLette}>
           <button className="secondario" type="submit">

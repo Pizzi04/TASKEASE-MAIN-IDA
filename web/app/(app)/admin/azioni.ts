@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import type { StatoAzione } from '@/components/Modulo'
 import { messaggioDb } from '@/lib/errori'
-import { richiediAdmin } from '@/lib/supabase/server'
+import { richiediAdmin, supabaseAmministrazione } from '@/lib/supabase/server'
 
 export async function decidiSegnalazione(_p: StatoAzione, form: FormData): Promise<StatoAzione> {
   const { supabase } = await richiediAdmin()
@@ -18,8 +18,23 @@ export async function decidiSegnalazione(_p: StatoAzione, form: FormData): Promi
     p_motivazione: motivazione,
   })
   if (error) return { errore: messaggioDb(error) }
+
+  // Post nascosto: anche la sua foto non deve restare raggiungibile dall'URL pubblico (DSA)
+  let avviso = ''
+  if (azione === 'contenuto_nascosto') {
+    const { data: s } = await supabase.from('segnalazioni').select('oggetto_tipo, oggetto_id').eq('id', Number(form.get('id'))).maybeSingle()
+    if (s?.oggetto_tipo === 'post') {
+      const { data: post } = await supabase.from('bacheca').select('foto').eq('id', Number(s.oggetto_id)).maybeSingle()
+      if (post?.foto) {
+        const admin = supabaseAmministrazione()
+        const tolta = admin ? await admin.storage.from('foto').remove([post.foto]) : null
+        if (!tolta || tolta.error) avviso = ' Attenzione: la foto non è stata cancellata (manca la chiave segreta): la toglie la manutenzione notturna.'
+        else if (admin) await admin.from('bacheca').update({ foto: null }).eq('id', Number(s.oggetto_id))
+      }
+    }
+  }
   revalidatePath('/admin/segnalazioni')
-  return { ok: 'Decisione registrata e comunicata.' }
+  return { ok: 'Decisione registrata e comunicata.' + avviso }
 }
 
 export async function decidiVerifica(_p: StatoAzione, form: FormData): Promise<StatoAzione> {
