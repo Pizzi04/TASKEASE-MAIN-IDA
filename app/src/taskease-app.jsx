@@ -2682,6 +2682,16 @@ const nascitaDaCf = (cf) => {
   return `${anno}-${String(mese).padStart(2, "0")}-${String(g).padStart(2, "0")}`;
 };
 
+// Codice fiscale: formato (con omocodia) + carattere di controllo finale, come da DM 23/12/1976
+const CF_DISPARI = { 0: 1, 1: 0, 2: 5, 3: 7, 4: 9, 5: 13, 6: 15, 7: 17, 8: 19, 9: 21, A: 1, B: 0, C: 5, D: 7, E: 9, F: 13, G: 15, H: 17, I: 19, J: 21, K: 2, L: 4, M: 18, N: 20, O: 11, P: 3, Q: 6, R: 8, S: 12, T: 14, U: 16, V: 10, W: 22, X: 25, Y: 24, Z: 23 };
+const cfFormatoOk = (cf) => /^[A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST][0-9LMNPQRSTUV]{2}[A-Z][0-9LMNPQRSTUV]{3}[A-Z]$/.test(cf || "");
+const cfControlloOk = (cf) => {
+  if (!cfFormatoOk(cf)) return false;
+  let tot = 0;
+  for (let i = 0; i < 15; i++) { const c = cf[i]; tot += i % 2 === 0 ? CF_DISPARI[c] : (/\d/.test(c) ? +c : c.charCodeAt(0) - 65); }
+  return String.fromCharCode(65 + (tot % 26)) === cf[15];
+};
+
 /* Codice di verifica del numero. In anteprima non parte nessun SMS: il codice è scritto sotto. */
 function OtpStep({ tel, onOk, onBack, dark }) {
   const [c, setC] = useState("");
@@ -2729,7 +2739,7 @@ function ProviderSetup({ onDone, nav, initial, edit, onSave, onLegal }) {
   const [bio, setBio] = useState(edit ? (ME.bio || "") : "");
 
   const toggle = (arr, set, v) => set(arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v]);
-  const cfOk = /^[A-Z]{6}[0-9LMNPQRSTUV]{2}[A-Z][0-9LMNPQRSTUV]{2}[A-Z][0-9LMNPQRSTUV]{3}[A-Z]$/.test(cf);
+  const cfFormato = cfFormatoOk(cf), cfOk = cfControlloOk(cf);
   const eta = etaDa(nascita);
   const impianti = skills.some(s => SKILL_IMPIANTI.includes(s));
   const totSteps = edit ? 3 : 4;
@@ -2742,7 +2752,7 @@ function ProviderSetup({ onDone, nav, initial, edit, onSave, onLegal }) {
     // passo 2: tariffa e zone
     zones.length === 0 ? "Scegli almeno una zona." : null,
     // passo 3: dati e regole
-    !telOk(tel) ? "Manca un cellulare valido." : eta == null ? "Manca la data di nascita." : eta < 18 ? "Per lavorare su TaskEase servono 18 anni." : residenza.trim().length < 6 ? "Manca l'indirizzo di residenza." : !cfOk ? "Manca il codice fiscale (16 caratteri)." : !fiscalOk ? "Manca la dichiarazione fiscale." : !termini ? "Manca l'accettazione dei Termini." : null,
+    !telOk(tel) ? "Manca un cellulare valido." : eta == null ? "Manca la data di nascita." : eta < 18 ? "Per lavorare su TaskEase servono 18 anni." : residenza.trim().length < 6 ? "Manca l'indirizzo di residenza." : !cfOk ? (cfFormato ? "Il codice fiscale non torna: controlla l'ultima lettera." : "Manca il codice fiscale (16 caratteri).") : !fiscalOk ? "Manca la dichiarazione fiscale." : !termini ? "Manca l'accettazione dei Termini." : null,
   ];
   const canNext = !manca[step];
   const dati = () => ({ cf, nome: nome.trim(), tel: tel.trim(), pr: price, sk: skills, zone: zones, tipo, piva: tipo === "piva" ? piva.replace(/\s/g, "") : "", abil: tipo === "piva" && impianti && abil, rc, foto, nascita, residenza: residenza.trim(), preventivo, bio: bio.trim() });
@@ -2899,7 +2909,7 @@ function ProviderSetup({ onDone, nav, initial, edit, onSave, onLegal }) {
               className="cp-in" style={{ fontFamily: "'Space Mono',monospace", letterSpacing: 1, borderColor: cf.length === 16 && !cfOk ? T.ember : undefined }} />
           </label>
           <div style={{ fontSize: 12.5, color: cf.length === 16 && !cfOk ? T.ember : T.stone, marginBottom: 18, lineHeight: 1.5 }}>
-            {cf.length === 16 && !cfOk ? "Il formato non torna: controlla lettere e numeri." : "Dal codice fiscale ricaviamo la data di nascita: controllala qui sotto."}
+            {cf.length === 16 && !cfFormato ? "Il formato non torna: controlla lettere e numeri." : cf.length === 16 && !cfOk ? "L'ultima lettera non corrisponde: probabilmente c'è un errore di battitura." : "Dal codice fiscale ricaviamo la data di nascita: controllala qui sotto."}
           </div>
           <label className="cp-f" style={{ marginBottom: 16 }}>
             <span className="cp-l">Data di nascita</span>
