@@ -35,6 +35,19 @@ const T = {
   accent: "#7FD1BC",      // il verde del marchio usato come testo o icona
 };
 
+/* ---- Dati legali di chi gestisce TaskEase: si compilano SOLO qui, e valgono in tutti i documenti ----
+   Finché un campo resta tra [parentesi], i documenti mostrano il segnaposto e l'avviso "Bozza". */
+const TITOLARE = {
+  nome: "[Nome e cognome o ragione sociale]",
+  piva: "[11 cifre]",
+  indirizzo: "[indirizzo]",
+  citta: "Forlì (FC)",
+  email: "[email di contatto]",
+  telefono: "[numero]",
+  whatsapp: "[numero WhatsApp]",
+};
+const titolareCompleto = Object.values(TITOLARE).every(v => !/^\[.*\]$/.test(v));
+
 const LV = {
   diamante: { l: "Maestro", c: "#7FD1BC" },
   oro: { l: "Esperto", c: "#E2B672" },
@@ -344,10 +357,14 @@ function Seal({ score, lv, size = 64, stamp = false, tint }) {
 
 /* Numero che sale da 0 al valore: solo una volta, e mai con "riduci movimento" */
 const fermo = () => typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
-function Conta({ to, ms = 900 }) {
-  const [v, setV] = useState(() => (fermo() || typeof to !== "number") ? to : 0);
+// Con "chiave" l'animazione parte solo la prima volta che quel numero si vede (es. l'IDA di una persona)
+const GIA_CONTATI = new Set();
+function Conta({ to, ms = 900, chiave }) {
+  const statico = () => fermo() || typeof to !== "number" || (chiave && GIA_CONTATI.has(chiave));
+  const [v, setV] = useState(() => statico() ? to : 0);
   useEffect(() => {
-    if (fermo() || typeof to !== "number") { setV(to); return; }
+    if (statico()) { setV(to); return; }
+    if (chiave) GIA_CONTATI.add(chiave);
     let raf, t0;
     const step = (t) => { if (t0 == null) t0 = t; const k = Math.min(1, (t - t0) / ms); setV(Math.round(to * (1 - Math.pow(1 - k, 3)))); if (k < 1) raf = requestAnimationFrame(step); };
     raf = requestAnimationFrame(step);
@@ -469,13 +486,13 @@ function Home({ nav, fermo, role, profilo, nuove, richieste = 0, blocked = [], p
           )}
           <MappaZona nav={nav} blocked={blocked} mia={zonaMia} />
           <button type="button" className="tl ida" onClick={() => nav("help")}>
-            <small>Cos'è l'IDA <span className="ticker-tag" style={{ color: "rgba(246,242,234,.75)", borderColor: "rgba(246,242,234,.3)", marginLeft: 4 }}>ESEMPIO</span></small>
-            <span className="big"><Conta to={94} /></span>
-            <span className="sub">voto su 100, solo lavori veri</span>
+            <small>Cos'è l'IDA</small>
+            <span className="big"><Conta to={5} ms={500} chiave="home-ida" /></span>
+            <span className="sub">domande dopo ogni lavoro: un voto su 100 che non si compra</span>
           </button>
           <button type="button" className="tl" onClick={() => nav("neighborhood")}>
             <small>Bacheca</small>
-            <span className="big" style={{ fontSize: 30 }}><Conta to={bacheca} ms={600} /></span>
+            <span className="big" style={{ fontSize: 30 }}><Conta to={bacheca} ms={600} chiave="home-bacheca" /></span>
             <span className="sub">{bacheca === 1 ? "richiesta in zona" : "richieste in zona"}</span>
           </button>
         </div>}
@@ -558,7 +575,7 @@ function MappaZona({ nav, blocked = [], mia }) {
           return <g key={w.id}>{w.av && <circle className="onda" style={{ animationDelay: `${i * .45}s` }} cx={x + dx} cy={y + dy} r="9" fill="none" stroke={T.ochreLight} />}<circle className="pop" style={{ animationDelay: `${.2 + i * .08}s` }} cx={x + dx} cy={y + dy} r="5" fill={w.av ? T.ochreLight : "#4A615B"} stroke={T.card} strokeWidth="2" /></g>;
         })}
       </svg>
-      <span className="lbl"><small>In zona ora</small><b><Conta to={disp.length} ms={700} /> {disp.length === 1 ? "libera" : "libere"}</b></span>
+      <span className="lbl"><small>In zona ora</small><b><Conta to={disp.length} ms={700} chiave="home-zona" /> {disp.length === 1 ? "libera" : "libere"}</b></span>
     </button>
   );
 }
@@ -727,7 +744,7 @@ function Worker({ w, nav, from, saved, onSave, onBlock, bloccato, onUnblock, gia
         {/* L'IDA in chiaro: il numero, da quanti giudizi, e di cosa è fatto */}
         <section className="ida-block" aria-label="IDA">
           <div className="ida-hero">
-            {w.ida == null ? <b className="nuovo">NUOVO</b> : <b><Conta to={w.ida} /></b>}
+            {w.ida == null ? <b className="nuovo">NUOVO</b> : <b><Conta to={w.ida} chiave={"ida-" + w.id} /></b>}
             <div>
               <strong>{w.ida == null ? "IDA in costruzione" : "IDA su 100"}</strong>
               <small>{w.self || w.ida == null ? `Compare dopo ${IDA_MIN_LAVORI} lavori giudicati.` : <>da <Mono size={13} w={400}>{w.rv}</Mono> lavori giudicati dai clienti</>}</small>
@@ -1615,7 +1632,7 @@ function WorkerView({ nav, vai, paused, reqs, esempiTutti, setReqs, agenda, setA
             </div>
             <div style={{ textAlign: "right" }}>
               <Mono size={15} color={T.accent}>~{w.pr * r.ore}€</Mono>
-              <div style={{ fontSize: 11.5, color: T.stone }}>{r.ore}h × {w.pr}€</div>
+              <div style={{ fontSize: 12, color: T.stone }}>{r.ore}h × {w.pr}€</div>
             </div>
           </div>
           <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, marginTop: 8, fontStyle: "italic" }}>«{r.det}»</div>
@@ -1707,7 +1724,7 @@ function MenuRow({ ic, l, onClick, soon }) {
     <button type="button" disabled={soon} onClick={soon ? undefined : onClick} className={soon ? "bt" : "bt tap"} style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: 14, padding: "15px 0", borderBottom: `1px solid ${T.line}`, cursor: soon ? "default" : "pointer", opacity: soon ? .8 : 1 }}>
       <Icon name={ic} size={20} color={T.ink2} />
       <span style={{ flex: 1, fontSize: 14, color: T.ink, fontWeight: 500 }}>{l}</span>
-      {soon ? <span style={{ fontSize: 11.5, fontWeight: 700, color: T.stone, background: T.line, padding: "3px 8px", borderRadius: 6, letterSpacing: .3 }}>PRESTO</span> : <Icon name="arrowR" size={18} color={T.faint} />}
+      {soon ? <span style={{ fontSize: 12, fontWeight: 700, color: T.stone, background: T.line, padding: "3px 8px", borderRadius: 6, letterSpacing: .3 }}>PRESTO</span> : <Icon name="arrowR" size={18} color={T.faint} />}
     </button>
   );
 }
@@ -1764,7 +1781,7 @@ function Dashboard({ nav }) {
         <div style={{ display: "flex", gap: 10 }}>
           {[[w.j, "lavori"], [w.rv, "giudizi"], ["—", "disdette"]].map(([v, l], i) => (
             <div key={i} style={{ flex: 1, background: T.card, borderRadius: 14, padding: "14px 8px", textAlign: "center", border: `1px solid ${T.line}` }}>
-              <Mono size={16}>{v}</Mono><div style={{ fontSize: 11.5, color: T.stone, marginTop: 3 }}>{l}</div>
+              <Mono size={16}>{v}</Mono><div style={{ fontSize: 12, color: T.stone, marginTop: 3 }}>{l}</div>
             </div>
           ))}
         </div>
@@ -1872,7 +1889,7 @@ function Passport({ nav }) {
             <div key={i} style={{ background: b.ok ? T.card : "transparent", borderRadius: 14, padding: "16px 8px", textAlign: "center", border: `1px solid ${b.ok ? T.line : "transparent"}`, opacity: b.ok ? 1 : .85 }}>
               <div style={{ display: "flex", justifyContent: "center", color: b.ok ? T.ochre : T.faint }}><Icon name={b.ic} size={24} color={b.ok ? T.ochre : T.faint} /></div>
               <div style={{ fontSize: 12, fontWeight: 600, color: b.ok ? T.ink : T.stone, marginTop: 8 }}>{b.n}</div>
-              {!b.ok && b.p && <div style={{ fontSize: 9, color: T.stone, marginTop: 2 }}>{b.p}</div>}
+              {!b.ok && b.p && <div style={{ fontSize: 12, color: T.stone, marginTop: 2 }}>{b.p}</div>}
             </div>
           ))}
         </div>
@@ -1930,7 +1947,7 @@ function Rewards({ nav, profilo }) {
           <div style={{ display: "flex", gap: 8, alignItems: "center", background: T.paper, borderRadius: 11, padding: "10px 14px", border: `1px dashed ${T.faint}` }}>
             <Mono size={15} color={T.accent}>{codice}</Mono>
             <span style={{ flex: 1 }} />
-            <span style={{ fontSize: 11.5, fontWeight: 700, color: T.stone, background: T.line, padding: "3px 8px", borderRadius: 6, letterSpacing: .3 }}>PRESTO</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: T.stone, background: T.line, padding: "3px 8px", borderRadius: 6, letterSpacing: .3 }}>PRESTO</span>
           </div>
           <div style={{ fontSize: 12.5, color: T.stone, marginTop: 10, lineHeight: 1.5 }}>Il premio è solo un riconoscimento: niente soldi, niente sconti sulle tariffe di chi lavora.</div>
         </div>
@@ -2389,7 +2406,7 @@ function ShareSeal({ nav, verified }) {
         {/* Azioni condivisione */}
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 22 }}>
           <Btn full onClick={copy}>{copied === true ? "Link copiato ✓" : copied === "ko" ? "Copia non riuscita: tieni premuto sul link" : "Copia il link (di prova)"}</Btn>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "13px 0", borderRadius: 13, border: `1.5px dashed ${T.line}`, color: T.stone, fontSize: 13.5, fontWeight: 600 }}>Invia su WhatsApp <span style={{ fontSize: 11.5, fontWeight: 700, background: T.line, padding: "3px 8px", borderRadius: 6, letterSpacing: .3 }}>AL LANCIO</span></div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "13px 0", borderRadius: 13, border: `1.5px dashed ${T.line}`, color: T.stone, fontSize: 13.5, fontWeight: 600 }}>Invia su WhatsApp <span style={{ fontSize: 12, fontWeight: 700, background: T.line, padding: "3px 8px", borderRadius: 6, letterSpacing: .3 }}>AL LANCIO</span></div>
         </div>
 
         {/* Perché conta */}
@@ -2783,7 +2800,7 @@ function ProviderSetup({ onDone, nav, initial, edit, onSave, onLegal }) {
           <div style={{ fontFamily: "'Hanken Grotesk',sans-serif", fontSize: 14, fontWeight: 700, color: T.accent, marginBottom: 10 }}>Come prendere il primo lavoro</div>
           {["Profilo verificato: i clienti si fidano di più", "Un prezzo onesto convince più di mille parole", "Un primo lavoro fatto bene lancia il tuo IDA"].map((t, i) => (
             <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 8 }}>
-              <span aria-hidden="true" style={{ flexShrink: 0, width: 20, height: 20, borderRadius: 10, border: `1.5px solid ${T.pine}`, color: T.accent, fontSize: 11.5, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{i + 1}</span>
+              <span aria-hidden="true" style={{ flexShrink: 0, width: 20, height: 20, borderRadius: 10, border: `1.5px solid ${T.pine}`, color: T.accent, fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{i + 1}</span>
               <span style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5 }}>{t}</span>
             </div>
           ))}
@@ -2979,8 +2996,8 @@ function ProviderSetup({ onDone, nav, initial, edit, onSave, onLegal }) {
 const LEGALE_VERS = "Bozza 0.1 · ottobre 2026";
 const LEGAL = {
   info: { t: "Informazioni legali", s: [
-    ["Chi gestisce TaskEase", "[Nome e cognome o ragione sociale] · P.IVA [11 cifre] · Sede: [indirizzo], Forlì (FC)."],
-    ["Contatti", "Email: [email di contatto] · Telefono/WhatsApp: [numero]. È anche il punto di contatto per utenti e autorità previsto dal Regolamento UE sui servizi digitali (DSA). Rispondiamo in italiano."],
+    ["Chi gestisce TaskEase", `${TITOLARE.nome} · P.IVA ${TITOLARE.piva} · Sede: ${TITOLARE.indirizzo}, ${TITOLARE.citta}.`],
+    ["Contatti", `Email: ${TITOLARE.email} · Telefono/WhatsApp: ${TITOLARE.telefono}. È anche il punto di contatto per utenti e autorità previsto dal Regolamento UE sui servizi digitali (DSA). Rispondiamo in italiano.`],
     ["Cosa siamo", "Una piattaforma che mette in contatto chi cerca aiuto con chi lavora nella zona di Forlì-Cesena. Non siamo parte dell'accordo tra cliente e chi lavora e non incassiamo il prezzo del lavoro."],
     ["Versione dei documenti", LEGALE_VERS + ". Le modifiche ai Termini vengono annunciate almeno 15 giorni prima; quelle alle regole dell'IDA 30 giorni prima."],
   ]},
@@ -2997,7 +3014,7 @@ const LEGAL = {
     ["Legge e foro", "Legge italiana. Per i consumatori è competente il giudice del luogo in cui risiedono."],
   ]},
   privacy: { t: "Informativa privacy", s: [
-    ["Titolare del trattamento", "[Nome e cognome o ragione sociale], [indirizzo], Forlì · [email di contatto]."],
+    ["Titolare del trattamento", `${TITOLARE.nome}, ${TITOLARE.indirizzo}, ${TITOLARE.citta} · ${TITOLARE.email}.`],
     ["Quali dati", "Chi cerca aiuto: nome, cellulare, zona; l'indirizzo solo quando prenoti. Chi lavora: in più nome e cognome, foto, competenze, tariffa, zone, data di nascita, residenza, codice fiscale, eventuale Partita IVA e le dichiarazioni su abilitazione e assicurazione. Per tutti: prenotazioni, giudizi, messaggi, annunci in bacheca (con eventuale foto), preferiti, persone bloccate, segnalazioni (con nome ed email di chi segnala) e la data in cui hai accettato i Termini."],
     ["Perché e su quale base", "Per far funzionare il servizio che chiedi (contratto). Per obblighi di legge: comunicazione fiscale delle piattaforme (DAC7) e gestione delle segnalazioni previste dal Regolamento UE sui servizi digitali. Per la sicurezza degli utenti, compresa la verifica dell'identità di chi lavora (legittimo interesse). Niente pubblicità e niente vendita di dati."],
     ["Chi li vede", "Pubblici, visibili a chiunque usi l'app: il profilo di chi lavora (nome e cognome, foto, competenze, tariffa, zone, IDA, se è privato o con P.IVA), i giudizi con nome e iniziale di chi li ha scritti, gli annunci in bacheca con nome e zona. Riservati: cellulare e indirizzo, solo a chi accetta il lavoro; dati fiscali, solo a noi e, quando dovuto, all'Agenzia delle Entrate. Fornitori tecnici (hosting e invio SMS) li trattano per nostro conto, nell'Unione europea."],
@@ -3201,13 +3218,13 @@ function Assistenza({ nav }) {
       <div style={{ padding: "4px 22px 24px" }}>
         <p style={{ fontSize: 13.5, color: T.ink2, lineHeight: 1.6, marginTop: 0 }}>Rispondiamo di persona, in italiano, di solito entro un giorno lavorativo.</p>
         <div style={{ background: T.card, border: `1px solid ${T.line}`, borderRadius: 16, padding: 16, marginBottom: 14 }}>
-          {[["message", "WhatsApp", "[numero WhatsApp]"], ["send", "Email", "[email di contatto]"]].map(([ic, l, v]) => (
+          {[["message", "WhatsApp", TITOLARE.whatsapp], ["send", "Email", TITOLARE.email]].map(([ic, l, v]) => (
             <div key={l} style={{ display: "flex", alignItems: "center", gap: 12, padding: "8px 0" }}>
               <Icon name={ic} size={19} color={T.accent} />
               <span style={{ flex: 1 }}><span style={{ display: "block", fontSize: 13, color: T.stone }}>{l}</span><span style={{ fontSize: 14, fontWeight: 600, color: T.ink }}>{v}</span></span>
             </div>
           ))}
-          <div className="cp-h" style={{ marginTop: 6 }}>Anteprima: i contatti tra [parentesi] vanno sostituiti con quelli veri. È anche il punto di contatto per autorità e utenti previsto dal DSA.</div>
+          {titolareCompleto ? <div className="cp-h" style={{ marginTop: 6 }}>È anche il punto di contatto per autorità e utenti previsto dal DSA.</div> : <div className="cp-h" style={{ marginTop: 6 }}>Anteprima: i contatti tra [parentesi] vanno sostituiti con quelli veri. È anche il punto di contatto per autorità e utenti previsto dal DSA.</div>}
         </div>
         <MenuRow ic="compass" l="Come funziona TaskEase" onClick={() => nav("help")} />
         <MenuRow ic="star" l="Consigli di sicurezza" onClick={() => nav("legal", { doc: "sicurezza" })} />
@@ -3386,7 +3403,7 @@ button:focus-visible { outline: 2.5px solid ${T.accent}; outline-offset: 2px; }
 .ent-ida { display: flex; gap: 18px; align-items: center; margin-top: 26px; padding: 16px 18px 16px 14px; border-radius: 22px; background: rgba(246,242,234,.06); border: 1px solid rgba(246,242,234,.1); }
 .ent-ida .seal-hero { flex-shrink: 0; }
 .ent-ida .seal-num { font-size: 30px; letter-spacing: -1px; }
-.ent-ida .seal-lab { font-size: 9px; letter-spacing: 2px; margin-top: 3px; }
+.ent-ida .seal-lab { font-size: 12px; letter-spacing: 2px; margin-top: 3px; }
 .ent-ida-t { font-family: 'Hanken Grotesk', sans-serif; font-weight: 700; font-size: 17px; }
 .ent-ida-s { font-size: 13px; color: rgba(246,242,234,.82); line-height: 1.5; margin-top: 4px; }
 .ent-eyebrow { font-size: 12.5px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: ${T.ochreLight}; margin: 28px 0 12px; }
@@ -3463,7 +3480,7 @@ button:focus-visible { outline: 2.5px solid ${T.accent}; outline-offset: 2px; }
 .ticker { display: flex; align-items: center; gap: 8px; margin: 16px 20px 0; font-size: 13px; color: ${T.ink2}; min-height: 18px; white-space: nowrap; overflow: hidden; }
 .ticker > span:last-child { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .scorri { scrollbar-width: none; } .scorri::-webkit-scrollbar { display: none; }
-.ticker-tag { white-space: nowrap; font-family: 'Space Mono', monospace; font-size: 10.5px; font-weight: 400; letter-spacing: 1px; color: ${T.stone}; border: 1px solid ${T.faint}; border-radius: 5px; padding: 1px 5px; flex-shrink: 0; }
+.ticker-tag { white-space: nowrap; font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 400; letter-spacing: 1px; color: ${T.stone}; border: 1px solid ${T.faint}; border-radius: 5px; padding: 1px 5px; flex-shrink: 0; }
 .sec-h { display: flex; justify-content: space-between; align-items: baseline; margin: 28px 20px 10px; }
 .sec-h h2 { font-family: 'Hanken Grotesk', sans-serif; font-size: 20px; font-weight: 800; letter-spacing: -.5px; color: ${T.ink}; margin: 0; }
 .link { background: none; border: 0; color: ${T.ochreLight}; font-weight: 700; font-size: 14px; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; }
@@ -3488,8 +3505,8 @@ button:focus-visible { outline: 2.5px solid ${T.accent}; outline-offset: 2px; }
 .wcard-r { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0; line-height: 1; text-align: right; }
 .ida-n { font-family: 'Space Mono', monospace; font-weight: 700; font-size: 24px; letter-spacing: -1px; color: ${T.ochreLight}; }
 .ida-n.top { color: ${T.ochreLight}; }
-.ida-n.nuovo { font-size: 11px; letter-spacing: 1px; color: ${T.ochreLight}; border: 1.5px solid ${T.ochre}; border-radius: 6px; padding: 3px 6px; }
-.ida-lab { font-size: 11px; font-weight: 600; color: ${T.stone}; margin-top: 3px; }
+.ida-n.nuovo { font-size: 12px; letter-spacing: 1px; color: ${T.ochreLight}; border: 1.5px solid ${T.ochre}; border-radius: 6px; padding: 3px 6px; }
+.ida-lab { font-size: 12px; font-weight: 600; color: ${T.stone}; margin-top: 3px; }
 .ida-card { display: block; width: calc(100% - 40px); margin: 22px 20px 0; padding: 18px; border: 0; border-radius: 20px; text-align: left; cursor: pointer; background: linear-gradient(150deg, #23493F, #16332D); color: rgba(246,242,234,.8); font-family: 'Hanken Grotesk', sans-serif; font-size: 14px; line-height: 1.5; }
 .ida-t { font-size: 16px; font-weight: 800; color: ${T.cream}; }
 .ida-l { display: inline-block; margin-top: 8px; font-size: 14px; font-weight: 700; color: ${T.ochreLight}; }
@@ -3510,7 +3527,7 @@ button:focus-visible { outline: 2.5px solid ${T.accent}; outline-offset: 2px; }
 .dock-wrap { background: ${T.paper}; padding: 6px 12px calc(10px + env(safe-area-inset-bottom, 0px)); flex-shrink: 0; border-top: 1px solid ${T.line}; }
 .dock { display: flex; align-items: center; justify-content: space-around; gap: 4px; }
 .dock-i, .dock-plus { flex: 1; max-width: 72px; min-height: 52px; border: 0; border-radius: 16px; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; color: ${T.stone}; }
-.dock-i span, .dock-plus > span:last-child { font-size: 11.5px; font-weight: 600; white-space: nowrap; }
+.dock-i span, .dock-plus > span:last-child { font-size: 12px; font-weight: 600; white-space: nowrap; }
 .dock-i.on { color: ${T.ink}; background: ${T.card}; }
 .dock-plus { color: ${T.ochreLight}; }
 .dock-plus-i { width: 34px; height: 26px; border-radius: 9px; background: ${T.ochreLight}; color: #1C1408; display: flex; align-items: center; justify-content: center; }
@@ -3565,7 +3582,7 @@ button:focus-visible { outline: 2.5px solid ${T.accent}; outline-offset: 2px; }
 .seg button { min-height: 44px; padding: 0 14px; border-radius: 12px; background: ${T.card}; border: 1px solid ${T.line}; font-size: 14px; font-weight: 600; color: ${T.ink2}; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; }
 .seg button[aria-pressed="true"] { background: ${T.ochreLight}; border-color: ${T.ochreLight}; color: #1C1408; }
 .post { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; padding: 16px; margin-bottom: 10px; background: ${T.card}; border-radius: 20px; animation: rise .45s cubic-bezier(.2,.8,.2,1) both; position: relative; }
-.post-t { position: absolute; top: 16px; right: 16px; font-family: 'Space Mono', monospace; font-size: 11.5px; color: ${T.stone}; }
+.post-t { position: absolute; top: 16px; right: 16px; font-family: 'Space Mono', monospace; font-size: 12px; color: ${T.stone}; }
 .post-k { font-size: 12px; font-weight: 700; color: ${T.ochreLight}; padding-right: 70px; }
 .post-k.job { color: ${T.accent}; }
 .post-x { font-size: 15.5px; line-height: 1.45; color: ${T.ink}; margin-top: 6px; }
