@@ -183,7 +183,7 @@ button:focus-visible { outline: 2.5px solid ${T.accent}; outline-offset: 2px; }
 .home { flex: 1; min-height: 0; overflow-y: auto; background: transparent; }
 .home-hero { padding: 18px 20px 0; color: ${T.ink}; }
 .home-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.home-sub { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: ${T.stone}; margin-top: 2px; }
+.home-sub { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: ${T.ink2}; margin-top: 2px; }
 .kicker { font-size: 13px; font-weight: 600; color: ${T.stone}; }
 .glass-ic { position: relative; width: 44px; height: 44px; border-radius: 14px; background: ${T.card}; border: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; color: ${T.ink}; }
 .glass-dot { position: absolute; top: 11px; right: 12px; width: 8px; height: 8px; border-radius: 50%; background: ${T.ochreLight}; box-shadow: 0 0 0 2px ${T.card}; }
@@ -368,8 +368,8 @@ button:focus-visible { outline: 2.5px solid ${T.accent}; outline-offset: 2px; }
 .tl:active, .wcard:active, .lrow:active, .tile:active { transform: scale(.98); }
 
 /* ---------- sfondo dell'app: bagliori verdi e ocra del tema, fermi mentre il contenuto scorre ---------- */
-.sfondo { isolation: isolate; }
-.sfondo::before, .sfondo::after { content: ""; position: absolute; inset: -25%; z-index: 0; pointer-events: none; }
+.sfondo { isolation: isolate; overflow: clip !important; } /* clip: il contenitore non si può far scorrere di lato */
+.sfondo::before, .sfondo::after { content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none; }
 /* colori saturi ma scuri: si vedono bene e il testo sopra resta leggibile (≥ 4,5:1) */
 .sfondo::before {
   background:
@@ -388,8 +388,8 @@ button:focus-visible { outline: 2.5px solid ${T.accent}; outline-offset: 2px; }
 @keyframes deriva { from { transform: translate(0, 0) rotate(0deg); } to { transform: translate(-4%, 3%) rotate(6deg); } }
 
 /* ---------- ingresso: bagliori verdi e ocra che si muovono piano dietro il contenuto ---------- */
-.ent { isolation: isolate; }
-.ent::before, .ent::after { content: ""; position: absolute; inset: -30%; z-index: 0; pointer-events: none; }
+.ent { isolation: isolate; overflow: clip !important; }
+.ent::before, .ent::after { content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none; }
 .ent::before {
   background:
     radial-gradient(30% 22% at 22% 20%, rgba(79,209,160,.30), transparent 70%),

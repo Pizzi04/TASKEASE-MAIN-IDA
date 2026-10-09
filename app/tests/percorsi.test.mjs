@@ -261,3 +261,17 @@ test("interruttore Cerco | Lavoro in home: cambia modalità e la ricorda", async
   assert.deepEqual([...errori, ...b.errori], []);
   await b.ctx.close();
 });
+
+test("telefono piccolo (320px): la schermata non scivola di lato aprendo mappa e prenotazione", async () => {
+  const ctx = await browser.newContext({ viewport: { width: 320, height: 640 } });
+  await ctx.route(/^https?:\/\//, r => r.abort());
+  const p = await ctx.newPage(); await p.goto(FILE); await p.waitForTimeout(400);
+  const spostati = () => p.evaluate(() => [...document.querySelectorAll("#root *")].filter(e => e.scrollLeft > 0 || (e.scrollTop > 0 && /hidden|clip/.test(getComputedStyle(e).overflowY))).map(e => e.className || e.tagName));
+  await tocca(p, "Cerco una mano"); await tocca(p, "Salta"); await tocca(p, "Guardo prima");
+  await p.locator(".tl.map").click(); await p.waitForTimeout(600);
+  await p.getByRole("button", { name: /^Marco Rosetti/ }).click(); await p.waitForTimeout(500);
+  assert.deepEqual(await spostati(), [], "mappa con scheda aperta");
+  await tocca(p, "Prenota Marco");
+  assert.deepEqual(await spostati(), [], "modulo di prenotazione");
+  await ctx.close();
+});
