@@ -379,6 +379,26 @@ button:focus-visible { outline: 2.5px solid ${T.accent}; outline-offset: 2px; }
 @keyframes bagliore-in { from { opacity: 0; transform: scale(1.08); } to { opacity: 1; transform: none; } }
 @keyframes deriva { from { transform: translate(0, 0) rotate(0deg); } to { transform: translate(-4%, 3%) rotate(6deg); } }
 
+/* ---------- ingresso: bagliori verdi e ocra che si muovono piano dietro il contenuto ---------- */
+.ent { isolation: isolate; }
+.ent::before, .ent::after { content: ""; position: absolute; inset: -30%; z-index: 0; pointer-events: none; }
+.ent::before {
+  background:
+    radial-gradient(30% 22% at 22% 20%, rgba(79,209,160,.30), transparent 70%),
+    radial-gradient(34% 26% at 80% 42%, rgba(224,182,118,.48), transparent 70%),
+    radial-gradient(30% 22% at 30% 78%, rgba(224,182,118,.32), transparent 70%);
+  animation: bagliore-in 1.6s ease both, giro-a 28s ease-in-out infinite alternate; }
+.ent::after {
+  background:
+    radial-gradient(26% 20% at 72% 16%, rgba(240,207,149,.32), transparent 70%),
+    radial-gradient(32% 24% at 18% 55%, rgba(36,120,104,.45), transparent 70%),
+    radial-gradient(28% 20% at 82% 84%, rgba(79,209,160,.18), transparent 70%);
+  animation: bagliore-in 2.2s ease both, giro-b 34s ease-in-out infinite alternate; }
+@keyframes giro-a { from { transform: translate(0, 0) rotate(0deg); } to { transform: translate(6%, -4%) rotate(10deg); } }
+@keyframes giro-b { from { transform: translate(0, 0) rotate(0deg); } to { transform: translate(-5%, 5%) rotate(-8deg); } }
+.ent > * { position: relative; z-index: 1; }
+.ent > .ent-bar { position: absolute; z-index: 2; }
+
 .onb-visual { display: flex; justify-content: center; align-items: center; min-height: 230px; margin: 18px 0 8px; animation: rise .5s cubic-bezier(.2,.8,.2,1) both; }
 .onb-glyph { width: 150px; height: 150px; border-radius: 44px; background: rgba(169,118,43,.12); border: 1px solid rgba(169,118,43,.28); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 80px -10px rgba(169,118,43,.35); }
 .onb-eye { font-size: 12.5px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: ${T.ochreLight}; margin-bottom: 10px; }
