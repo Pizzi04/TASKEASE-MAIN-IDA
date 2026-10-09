@@ -1,0 +1,132 @@
+/* Tema "notte e ocra", stessi colori dell'anteprima (app/src/tema.js). */
+:root {
+  --paper: #0e1c19;
+  --card: #182b27;
+  --ink: #f3efe6;
+  --ink2: #c4cec9;
+  --stone: #9db0a9;
+  --line: #24403a;
+  --pine: #245e53;
+  --pine-soft: #1b3a34;
+  --ochre: #e6be80;
+  --ochre-btn: #8f6320;
+  --ember: #e8896a;
+  --ember-soft: #3b2018;
+  --ok: #4fd1a0;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-testo), system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  min-height: 100dvh;
+  background-image:
+    radial-gradient(60% 40% at 0% 0%, rgba(36, 94, 83, 0.45), transparent 70%),
+    radial-gradient(50% 35% at 100% 100%, rgba(230, 190, 128, 0.14), transparent 70%);
+  background-attachment: fixed;
+}
+
+.pagina {
+  max-width: 440px;
+  margin: 0 auto;
+  padding: 32px 16px 48px;
+}
+
+.marchio {
+  font-family: var(--font-marchio), Georgia, serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--ochre);
+  margin: 0 0 4px;
+}
+
+h1 { font-size: 26px; line-height: 1.2; margin: 24px 0 8px; font-weight: 800; }
+p { margin: 0 0 12px; color: var(--ink2); }
+
+.scheda {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+label { display: block; font-weight: 700; margin: 16px 0 6px; }
+label:first-child { margin-top: 0; }
+
+input[type='tel'], input[type='text'], select {
+  width: 100%;
+  font: inherit;
+  font-size: 17px;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 14px;
+  min-height: 48px;
+}
+
+input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible {
+  outline: 2px solid var(--ochre);
+  outline-offset: 2px;
+}
+
+.codice { letter-spacing: 0.4em; text-align: center; font-variant-numeric: tabular-nums; }
+
+.spunta { display: flex; gap: 10px; align-items: flex-start; font-weight: 400; color: var(--ink2); }
+.spunta input { width: 22px; height: 22px; margin: 1px 0 0; accent-color: var(--ochre); flex: none; }
+
+a { color: var(--ochre); }
+
+.bottone {
+  display: block;
+  width: 100%;
+  margin-top: 20px;
+  min-height: 50px;
+  font: inherit;
+  font-weight: 800;
+  font-size: 17px;
+  color: #fff;
+  background: var(--ochre-btn);
+  border: 0;
+  border-radius: 14px;
+  cursor: pointer;
+}
+.bottone:disabled { opacity: 0.55; cursor: progress; }
+
+.secondario {
+  background: none;
+  border: 0;
+  color: var(--ochre);
+  font: inherit;
+  font-weight: 700;
+  padding: 12px 0 0;
+  cursor: pointer;
+}
+
+.errore {
+  background: var(--ember-soft);
+  color: var(--ember);
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin: 16px 0 0;
+}
+
+.nota { font-size: 14px; color: var(--stone); margin-top: 12px; }
+
+.riga { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+.riga:first-of-type { border-top: 0; }
+.riga span:first-child { color: var(--stone); }
+.riga span:last-child { font-weight: 700; text-align: right; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .bottone { transition: transform 0.12s ease, filter 0.12s ease; }
+  .bottone:active { transform: scale(0.98); filter: brightness(1.1); }
+}
