@@ -158,3 +158,45 @@ test("«Ricomincia l'anteprima» cancella tutto", async () => {
   assert.match(await testo(p), /Cerco una mano/, "dopo il ricaricamento si riparte dall'ingresso");
   await ctx.close();
 });
+
+// I bagliori dello sfondo non stanno nel codice dei colori ma nei pixel: qui si misura lo schermo vero,
+// dietro ogni testo appoggiato direttamente sullo sfondo, in tre momenti del loro movimento.
+test("il testo resta leggibile sopra i bagliori dello sfondo (misura sui pixel)", async () => {
+  const { PNG } = await import("pngjs");
+  const { p, ctx } = await apri();
+  await tocca(p, "Cerco una mano"); await tocca(p, "Salta"); await tocca(p, "Guardo prima");
+  const problemi = [];
+  const lum = ([r, g, b]) => { const f = x => { x /= 255; return x <= .03928 ? x / 12.92 : Math.pow((x + .055) / 1.055, 2.4); }; return .2126 * f(r) + .7152 * f(g) + .0722 * f(b); };
+  const misura = async (nome) => {
+    for (const attesa of [600, 9000, 18000]) {
+      await p.waitForTimeout(attesa === 600 ? 600 : 9000);
+      const testi = await p.evaluate(() => {
+        const out = []; const w = document.createTreeWalker(document.getElementById("root"), NodeFilter.SHOW_TEXT); const visti = new Set();
+        while (w.nextNode()) {
+          const el = w.currentNode.parentElement; if (!el || visti.has(el) || !w.currentNode.textContent.trim()) continue; visti.add(el);
+          let sopraSfondo = true;
+          for (let e = el; e && !e.classList.contains("sfondo"); e = e.parentElement) { const cs = getComputedStyle(e); const c = cs.backgroundColor.match(/[\d.]+/g); if ((c && c.length > 3 ? +c[3] : c ? 1 : 0) > 0.05 || cs.backgroundImage !== "none") { sopraSfondo = false; break; } }
+          if (!sopraSfondo) continue;
+          const r = el.getBoundingClientRect(); if (!r.width || r.top < 0 || r.bottom > innerHeight) continue;
+          const cs = getComputedStyle(el); if ((cs.webkitBackgroundClip || cs.backgroundClip) === "text") continue;
+          const c = cs.color.match(/[\d.]+/g).map(Number);
+          out.push({ t: w.currentNode.textContent.trim().slice(0, 25), c, x0: Math.max(0, r.left - 3), x1: Math.min(innerWidth - 1, r.right + 3), y: Math.round(r.top + r.height / 2), y0: Math.max(0, r.top - 2), y1: Math.min(innerHeight - 1, r.bottom + 2), xm: Math.round((r.left + r.right) / 2), grande: parseFloat(cs.fontSize) >= 24 || (parseInt(cs.fontWeight) >= 700 && parseFloat(cs.fontSize) >= 18.66) });
+        }
+        return out;
+      });
+      const img = PNG.sync.read(await p.screenshot());
+      const px = (x, y) => { const i = (Math.round(y) * img.width + Math.round(x)) * 4; return [img.data[i], img.data[i + 1], img.data[i + 2]]; };
+      for (const t of testi) {
+        const campioni = [px(t.x0, t.y), px(t.x1, t.y), px(t.xm, t.y0), px(t.xm, t.y1)];
+        const peggiore = Math.min(...campioni.map(b => (Math.max(lum(t.c), lum(b)) + .05) / (Math.min(lum(t.c), lum(b)) + .05)));
+        if (peggiore < (t.grande ? 3 : 4.5)) problemi.push(`${nome} @${attesa}ms: «${t.t}» ${peggiore.toFixed(2)}`);
+      }
+    }
+  };
+  await misura("home");
+  await premi(p, "Cerca"); await misura("cerca");
+  await premi(p, "Bacheca"); await misura("bacheca");
+  await premi(p, "Profilo"); await misura("profilo");
+  assert.deepEqual(problemi, []);
+  await ctx.close();
+});

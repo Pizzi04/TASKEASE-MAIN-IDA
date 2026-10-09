@@ -369,13 +369,21 @@ button:focus-visible { outline: 2.5px solid ${T.accent}; outline-offset: 2px; }
 
 /* ---------- sfondo dell'app: bagliori verdi e ocra del tema, fermi mentre il contenuto scorre ---------- */
 .sfondo { isolation: isolate; }
-.sfondo::before { content: ""; position: absolute; inset: -25%; z-index: 0; pointer-events: none;
+.sfondo::before, .sfondo::after { content: ""; position: absolute; inset: -25%; z-index: 0; pointer-events: none; }
+/* colori saturi ma scuri: si vedono bene e il testo sopra resta leggibile (≥ 4,5:1) */
+.sfondo::before {
   background:
-    radial-gradient(42% 32% at 18% 12%, rgba(36,94,83,.75), transparent 70%),
-    radial-gradient(40% 32% at 92% 36%, rgba(224,182,118,.26), transparent 70%),
-    radial-gradient(45% 30% at 30% 92%, rgba(79,209,160,.12), transparent 70%),
-    radial-gradient(34% 24% at 85% 86%, rgba(224,182,118,.18), transparent 70%);
-  animation: bagliore-in 1.4s ease both, deriva 36s ease-in-out 1.4s infinite alternate; }
+    radial-gradient(40% 30% at 15% 10%, rgba(10,140,100,.55), transparent 72%),
+    radial-gradient(38% 30% at 95% 40%, rgba(200,135,40,.42), transparent 72%),
+    radial-gradient(40% 28% at 20% 90%, rgba(200,135,40,.36), transparent 72%);
+  animation: bagliore-in 1.4s ease both, deriva 30s ease-in-out 1.4s infinite alternate; }
+.sfondo::after {
+  background:
+    radial-gradient(34% 26% at 85% 8%, rgba(220,170,60,.30), transparent 72%),
+    radial-gradient(36% 28% at 10% 55%, rgba(20,150,110,.38), transparent 72%),
+    radial-gradient(36% 26% at 90% 92%, rgba(10,140,100,.42), transparent 72%);
+  animation: bagliore-in 2s ease both, deriva-2 38s ease-in-out 2s infinite alternate; }
+@keyframes deriva-2 { from { transform: translate(0, 0) rotate(0deg); } to { transform: translate(5%, -4%) rotate(-7deg); } }
 @keyframes bagliore-in { from { opacity: 0; transform: scale(1.08); } to { opacity: 1; transform: none; } }
 @keyframes deriva { from { transform: translate(0, 0) rotate(0deg); } to { transform: translate(-4%, 3%) rotate(6deg); } }
 

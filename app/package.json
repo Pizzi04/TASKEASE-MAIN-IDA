@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Anteprima di TaskEase in un unico file HTML",
   "scripts": {
-    "test": "node build/build.mjs && node --test --test-timeout=120000 \"tests/*.test.mjs\"",
+    "test": "node build/build.mjs && node --test --test-timeout=300000 \"tests/*.test.mjs\"",
     "build": "node build/build.mjs"
   },
   "keywords": [],
@@ -11,7 +11,8 @@
   "license": "ISC",
   "devDependencies": {
     "esbuild": "^0.24.0",
-    "playwright": "^1.56.1"
+    "playwright": "^1.56.1",
+    "pngjs": "^7.0.0"
   },
   "dependencies": {
     "react": "^18.3.1",
