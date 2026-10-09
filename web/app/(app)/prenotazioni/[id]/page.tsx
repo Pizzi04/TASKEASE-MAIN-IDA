@@ -175,7 +175,7 @@ export default async function Prenotazione({
           </Link>
         )}
         <Link
-          href={`/segnala?tipo=problema_lavoro&oggetto=prenotazione&id=${pid}&chi=${sonoPro ? b.cliente : b.professionista}`}
+          href={`/segnala?tipo=problema_lavoro&oggetto=prenotazione&id=${pid}`}
           className="secondario"
         >
           Segnala un problema

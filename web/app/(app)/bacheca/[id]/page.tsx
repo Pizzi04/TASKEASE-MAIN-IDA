@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Modulo } from '@/components/Modulo'
@@ -48,7 +49,9 @@ export default async function Richiesta({
       {pubblicata && <p className="conferma">Pubblicata. Chi lavora in zona la vede: ti avvisiamo quando qualcuno risponde.</p>}
       {p.stato === 'rimossa' && <p className="avviso">Questa richiesta è stata rimossa dalla moderazione.</p>}
       {p.dettagli && <p className="scheda descrizione">{p.dettagli}</p>}
-      {foto && <img className="foto-post" src={foto} alt={`Foto: ${p.titolo}`} />}
+      {foto && (
+        <Image className="foto-post" src={foto} alt={`Foto: ${p.titolo}`} width={960} height={720} sizes="(max-width: 480px) 100vw, 480px" />
+      )}
       {p.competenza && <p className="nota">Categoria: {p.competenza}</p>}
 
       {mia ? (
@@ -120,7 +123,7 @@ export default async function Richiesta({
               Sai farlo? <Link href="/lavoro/diventa">Crea la tua scheda</Link> per rispondere.
             </p>
           )}
-          <Link className="piccolo-link" href={`/segnala?tipo=contenuto&oggetto=post&id=${pid}&chi=${p.autore}`}>
+          <Link className="piccolo-link" href={`/segnala?tipo=contenuto&oggetto=post&id=${pid}`}>
             Segnala questa richiesta
           </Link>
         </>

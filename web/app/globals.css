@@ -877,6 +877,7 @@ summary {
 .foto-post {
   display: block;
   width: 100%;
+  height: auto;
   border-radius: 16px;
   margin: 12px 0;
 }

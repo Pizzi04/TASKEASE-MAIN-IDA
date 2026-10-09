@@ -1,6 +1,12 @@
 import type { NextConfig } from 'next'
 
+// Foto dall'archivio Supabase: solo questo indirizzo, solo il bucket pubblico "foto"
+const supabase = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'https://example.supabase.co')
+
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [{ protocol: 'https', hostname: supabase.hostname, pathname: '/storage/v1/object/public/foto/**' }],
+  },
   experimental: {
     // Foto fino a 3 MB nelle azioni server (profilo e bacheca)
     serverActions: { bodySizeLimit: '4mb' },

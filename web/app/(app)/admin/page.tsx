@@ -1,25 +1,10 @@
 import Link from 'next/link'
 import { Testata } from '@/components/Testata'
+import { leggiNumeri } from '@/lib/numeri'
 import { richiediAdmin } from '@/lib/supabase/server'
 
 export const metadata = { title: 'Amministrazione · TaskEase' }
 
-type Numeri = {
-  dal: string
-  iscritti: number
-  iscritti_periodo: number
-  professionisti: number
-  professionisti_verificati: number
-  prenotazioni_per_stato: Record<string, number>
-  giudizi: number
-  ida_medio: number | null
-  post_aperti: number
-  segnalazioni_aperte: number
-  verifiche_in_attesa: number
-  clienti_che_tornano: number
-  eventi: Record<string, number>
-  uscite: Record<string, number>
-}
 
 const FUNNEL: [string, string][] = [
   ['apertura', 'Aperture dell’app'],
@@ -36,21 +21,23 @@ const FUNNEL: [string, string][] = [
   ['app_installata', 'App installate'],
 ]
 
-export default async function Admin({ searchParams }: { searchParams: Promise<{ giorni?: string }> }) {
-  const { supabase } = await richiediAdmin()
-  const giorni = [7, 30, 90].includes(Number((await searchParams).giorni)) ? Number((await searchParams).giorni) : 30
-  const { data } = await supabase.rpc('numeri', { p_giorni: giorni })
-  const n = data as unknown as Numeri
-  const stati = n.prenotazioni_per_stato
-  const inviate = Object.values(stati).reduce((a, b) => a + b, 0)
-  const completate = stati.completata ?? 0
-
-  const Tessera = ({ v, l }: { v: number | string | null; l: string }) => (
+function Tessera({ v, l }: { v: number | string | null; l: string }) {
+  return (
     <div className="tessera">
       <b>{v ?? '—'}</b>
       <span>{l}</span>
     </div>
   )
+}
+
+export default async function Admin({ searchParams }: { searchParams: Promise<{ giorni?: string }> }) {
+  const { supabase } = await richiediAdmin()
+  const giorni = [7, 30, 90].includes(Number((await searchParams).giorni)) ? Number((await searchParams).giorni) : 30
+  const { data } = await supabase.rpc('numeri', { p_giorni: giorni })
+  const n = leggiNumeri(data)
+  const stati = n.prenotazioni_per_stato
+  const inviate = Object.values(stati).reduce((a, b) => a + b, 0)
+  const completate = stati.completata ?? 0
 
   return (
     <>

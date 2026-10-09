@@ -17,7 +17,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
         <Link href="/" className="marchio piccolo">
           TaskEase
         </Link>
-        <Campanella utente={id} iniziali={count ?? 0} />
+        <Campanella key={count ?? 0} utente={id} iniziali={count ?? 0} />
       </div>
       {profilo.sospeso && (
         <p className="avviso" role="alert">

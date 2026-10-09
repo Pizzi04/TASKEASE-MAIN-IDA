@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import { supabaseBrowser } from '@/lib/supabase/browser'
 
 type EventoInstalla = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> }
@@ -18,14 +18,18 @@ export function RegistraSw() {
   return null
 }
 
+// Valori del browser letti senza effetti: sul server valgono il secondo argomento
+const nessunCambio = () => () => {}
+function useBrowser<T>(leggi: () => T, sulServer: T): T {
+  return useSyncExternalStore(nessunCambio, leggi, () => sulServer)
+}
+
 export function InstallaApp() {
   const [evento, setEvento] = useState<EventoInstalla | null>(null)
-  const [ios, setIos] = useState(false)
-  const [giaInstallata, setGiaInstallata] = useState(true)
+  const giaInstallata = useBrowser(() => window.matchMedia('(display-mode: standalone)').matches, true)
+  const ios = useBrowser(() => /iPad|iPhone|iPod/.test(navigator.userAgent) && !('MSStream' in window), false)
 
   useEffect(() => {
-    setGiaInstallata(window.matchMedia('(display-mode: standalone)').matches)
-    setIos(/iPad|iPhone|iPod/.test(navigator.userAgent) && !('MSStream' in window))
     const prendi = (e: Event) => {
       e.preventDefault()
       setEvento(e as EventoInstalla)
@@ -61,21 +65,26 @@ function base64InUint8(b64: string) {
 // Attiva o spegne le notifiche push su questo dispositivo
 export function NotifichePush({ utente }: { utente: string }) {
   const chiave = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+  const supportato = useBrowser(
+    () => !!chiave && 'serviceWorker' in navigator && 'PushManager' in window && typeof Notification !== 'undefined',
+    true,
+  )
+  const negato = useBrowser(() => typeof Notification !== 'undefined' && Notification.permission === 'denied', false)
   const [stato, setStato] = useState<'non-supportato' | 'spente' | 'attive' | 'bloccate' | 'attesa'>('attesa')
   const [errore, setErrore] = useState('')
 
+  // Iscrizione già presente su questo dispositivo? (lo stato si aggiorna nella callback, non nell'effetto)
   useEffect(() => {
-    if (!chiave || !('serviceWorker' in navigator) || !('PushManager' in window)) return setStato('non-supportato')
-    if (Notification.permission === 'denied') return setStato('bloccate')
+    if (!supportato || negato) return
     navigator.serviceWorker.ready
       .then((r) => r.pushManager.getSubscription())
       .then((s) => setStato(s ? 'attive' : 'spente'))
       .catch(() => setStato('non-supportato'))
-  }, [chiave])
+  }, [supportato, negato])
 
-  if (stato === 'non-supportato')
+  if (!supportato || stato === 'non-supportato')
     return <p className="nota">Le notifiche sul telefono funzionano dall’app installata (su iPhone da iOS 16.4).</p>
-  if (stato === 'bloccate') return <p className="nota">Hai bloccato le notifiche: riattivale dalle impostazioni del browser.</p>
+  if (negato || stato === 'bloccate') return <p className="nota">Hai bloccato le notifiche: riattivale dalle impostazioni del browser.</p>
 
   const attiva = async () => {
     setErrore('')

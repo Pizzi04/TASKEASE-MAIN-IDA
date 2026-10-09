@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
-import { BottoneInvio, Esito, ProviderInvio, useAzione } from '@/components/Modulo'
+import { BottoneInvio, Esito, ProviderInvio, useAzione, type StatoAzione } from '@/components/Modulo'
 import { supabaseBrowser } from '@/lib/supabase/browser'
 import { inviaMessaggio } from '../../azioni'
 
@@ -21,7 +21,21 @@ export default function Chat({
 }) {
   const [messaggi, setMessaggi] = useState(iniziali)
   const [testo, setTesto] = useState('')
-  const { stato, onSubmit, inCorso } = useAzione(inviaMessaggio)
+  // Dopo l'invio si svuota la casella e si rilegge la chat: se il tempo reale non arriva, il messaggio compare lo stesso
+  const invia = async (prima: StatoAzione, dati: FormData): Promise<StatoAzione> => {
+    const esito = await inviaMessaggio(prima, dati)
+    if (esito?.errore) return esito
+    setTesto('')
+    const { data } = await supabaseBrowser()
+      .from('messaggi')
+      .select('id, autore, testo, creato_il, letto_il')
+      .eq('prenotazione', prenotazione)
+      .order('creato_il')
+      .limit(500)
+    if (data) setMessaggi(data)
+    return esito
+  }
+  const { stato, onSubmit, inCorso } = useAzione(invia)
   const fondo = useRef<HTMLDivElement>(null)
 
   // Nuovi messaggi in tempo reale (le regole del database fanno arrivare solo quelli di questa chat)
@@ -49,19 +63,6 @@ export default function Chat({
     fondo.current?.scrollIntoView({ block: 'end' })
   }, [messaggi.length])
 
-  // Messaggio inviato: si svuota la casella e si rilegge la chat (se il tempo reale non arriva, il messaggio compare lo stesso)
-  useEffect(() => {
-    if (!stato || stato.errore) return
-    setTesto('')
-    supabaseBrowser()
-      .from('messaggi')
-      .select('id, autore, testo, creato_il, letto_il')
-      .eq('prenotazione', prenotazione)
-      .order('creato_il')
-      .limit(500)
-      .then(({ data }) => data && setMessaggi(data))
-  }, [stato, prenotazione])
-
   return (
     <>
       <div className="chat" aria-live="polite">
@@ -74,7 +75,7 @@ export default function Chat({
               {m.autore === io && m.letto_il ? ' · letto' : ''}
             </span>
             {m.autore !== io && (
-              <Link className="piccolo-link" href={`/segnala?tipo=contenuto&oggetto=messaggio&id=${m.id}&chi=${m.autore}`}>
+              <Link className="piccolo-link" href={`/segnala?tipo=contenuto&oggetto=messaggio&id=${m.id}`}>
                 Segnala
               </Link>
             )}

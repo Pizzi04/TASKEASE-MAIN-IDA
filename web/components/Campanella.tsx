@@ -4,13 +4,10 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { supabaseBrowser } from '@/lib/supabase/browser'
 
-// Notifiche non lette, aggiornate in tempo reale
+// Notifiche non lette, aggiornate in tempo reale.
+// Il layout la rimonta (key) quando il conteggio letto dal server cambia, quindi lo stato parte sempre giusto.
 export function Campanella({ utente, iniziali }: { utente: string; iniziali: number }) {
   const [nonLette, setNonLette] = useState(iniziali)
-
-  useEffect(() => {
-    setNonLette(iniziali)
-  }, [iniziali])
 
   useEffect(() => {
     const supabase = supabaseBrowser()

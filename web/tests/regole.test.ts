@@ -182,3 +182,15 @@ describe('segnalazioni', () => {
     expect(leggiSegnalazione(form({ tipo: 'problema_lavoro', motivo: 'Altro', testo: 'Non ha finito il lavoro concordato' })).ok).toBe(true)
   })
 })
+
+describe('numeri del pannello', () => {
+  it('campi mancanti o sbagliati diventano 0, null o vuoti', async () => {
+    const { leggiNumeri } = await import('../lib/numeri')
+    const n = leggiNumeri({ iscritti: 5, giudizi: 'tre', prenotazioni_per_stato: { richiesta: 2, rotto: 'x' }, ida_medio: null })
+    expect(n.iscritti).toBe(5)
+    expect(n.giudizi).toBe(0)
+    expect(n.prenotazioni_per_stato).toEqual({ richiesta: 2, rotto: 0 })
+    expect(n.ida_medio).toBeNull()
+    expect(leggiNumeri(null).eventi).toEqual({})
+  })
+})

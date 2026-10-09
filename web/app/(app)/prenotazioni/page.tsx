@@ -6,6 +6,39 @@ import { richiediProfilo } from '@/lib/supabase/server'
 
 export const metadata = { title: 'Prenotazioni · TaskEase' }
 
+type VoceLista = {
+  id: number
+  giorno: string
+  ora: string
+  stato: string
+  competenza: string
+  controproposta: boolean
+  zona: string
+  cliente: { nome: string } | null
+  professionisti: { profili: { nome: string } | null } | null
+  giudizi: { punteggio: number | null } | null
+}
+
+function Voce({ b, comePro }: { b: VoceLista; comePro: boolean }) {
+  const altro = comePro ? b.cliente?.nome : b.professionisti?.profili?.nome
+  const daGiudicare = !comePro && b.stato === 'completata' && !b.giudizi
+  return (
+    <Link href={`/prenotazioni/${b.id}`} className="scheda link-scheda">
+      <b>
+        {etichettaGiorno(b.giorno)} alle {oraBreve(b.ora)}
+      </b>
+      <span>
+        {b.competenza} · {altro ?? '—'} · {b.zona}
+      </span>
+      <span className={b.stato === 'confermata' || b.stato === 'completata' ? 'stato ok' : 'stato'}>
+        {b.stato === 'richiesta' && b.controproposta ? 'Nuovo orario proposto' : STATI[b.stato]}
+        {daGiudicare && ' · Lascia il giudizio'}
+        {b.giudizi && ` · IDA ${b.giudizi.punteggio}`}
+      </span>
+    </Link>
+  )
+}
+
 export default async function Prenotazioni({ searchParams }: { searchParams: Promise<{ vista?: string }> }) {
   const { supabase, id, profilo } = await richiediProfilo()
   const { vista } = await searchParams
@@ -25,26 +58,6 @@ export default async function Prenotazioni({ searchParams }: { searchParams: Pro
   const lista = data ?? []
   const attive = lista.filter((b) => b.stato === 'richiesta' || b.stato === 'confermata').reverse()
   const altre = lista.filter((b) => b.stato !== 'richiesta' && b.stato !== 'confermata')
-
-  const Voce = ({ b }: { b: (typeof lista)[number] }) => {
-    const altro = comePro ? b.cliente?.nome : b.professionisti?.profili?.nome
-    const daGiudicare = !comePro && b.stato === 'completata' && !b.giudizi
-    return (
-      <Link href={`/prenotazioni/${b.id}`} className="scheda link-scheda">
-        <b>
-          {etichettaGiorno(b.giorno)} alle {oraBreve(b.ora)}
-        </b>
-        <span>
-          {b.competenza} · {altro ?? '—'} · {b.zona}
-        </span>
-        <span className={b.stato === 'confermata' || b.stato === 'completata' ? 'stato ok' : 'stato'}>
-          {b.stato === 'richiesta' && b.controproposta ? 'Nuovo orario proposto' : STATI[b.stato]}
-          {daGiudicare && ' · Lascia il giudizio'}
-          {b.giudizi && ` · IDA ${b.giudizi.punteggio}`}
-        </span>
-      </Link>
-    )
-  }
 
   return (
     <>
@@ -67,14 +80,14 @@ export default async function Prenotazioni({ searchParams }: { searchParams: Pro
             {!comePro && <Link href="/cerca">Trova chi ti serve</Link>}
           </p>
         ) : (
-          attive.map((b) => <Voce key={b.id} b={b} />)
+          attive.map((b) => <Voce key={b.id} b={b} comePro={comePro} />)
         )}
       </section>
       {altre.length > 0 && (
         <section aria-label="Storico">
           <h2>Storico</h2>
           {altre.map((b) => (
-            <Voce key={b.id} b={b} />
+            <Voce key={b.id} b={b} comePro={comePro} />
           ))}
         </section>
       )}

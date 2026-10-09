@@ -105,7 +105,7 @@ export default async function SchedaProfessionista({ params }: { params: Promise
               {pref ? '♥ Nei preferiti' : '♡ Aggiungi ai preferiti'}
             </button>
           </form>
-          <Link className="secondario" href={`/segnala?tipo=contenuto&oggetto=profilo&id=${pro}&chi=${pro}`}>
+          <Link className="secondario" href={`/segnala?tipo=contenuto&oggetto=profilo&id=${pro}`}>
             Segnala il profilo
           </Link>
           {!bloccato && (
