@@ -6,7 +6,7 @@ import type { StatoAzione } from '@/components/Modulo'
 import { controlla, messaggioDb } from '@/lib/errori'
 import { registra } from '@/lib/eventi'
 import { richiediProfilo } from '@/lib/supabase/server'
-import { VERSIONE_DOCUMENTI, leggiDatiFiscali, leggiScheda } from '@/lib/validazione'
+import { VERSIONE_DOCUMENTI, leggiDatiFiscali, leggiScheda, pulisci } from '@/lib/validazione'
 
 export async function diventaProfessionista(_p: StatoAzione, form: FormData): Promise<StatoAzione> {
   const { supabase, profilo } = await richiediProfilo()
@@ -74,7 +74,7 @@ export async function cambiaDisponibilita(form: FormData) {
 export async function chiediVerifica(_p: StatoAzione, form: FormData): Promise<StatoAzione> {
   const { supabase, id } = await richiediProfilo()
   const preferenza = form.get('preferenza') === 'di persona' ? 'di persona' : 'videochiamata'
-  const disponibilita = String(form.get('disponibilita') ?? '').trim().slice(0, 200)
+  const disponibilita = pulisci(form.get('disponibilita')).slice(0, 200)
   if (disponibilita.length < 3) return { errore: 'Scrivi quando sei disponibile (es. “sera dopo le 18”).' }
   const { error } = await supabase.from('verifiche').insert({ professionista: id, preferenza, disponibilita })
   if (error) return { errore: error.code === '23505' ? 'Hai già una richiesta in attesa.' : messaggioDb(error) }
@@ -84,7 +84,7 @@ export async function chiediVerifica(_p: StatoAzione, form: FormData): Promise<S
 
 export async function aggiornaResidenza(_p: StatoAzione, form: FormData): Promise<StatoAzione> {
   const { supabase, id } = await richiediProfilo()
-  const residenza = String(form.get('residenza') ?? '').trim().replace(/\s+/g, ' ')
+  const residenza = pulisci(form.get('residenza')).replace(/\s+/g, ' ')
   if (residenza.length < 6 || residenza.length > 200) return { errore: 'Scrivi l’indirizzo di residenza completo.' }
   const { error } = await supabase.from('dati_fiscali').update({ residenza }).eq('id', id)
   if (error) return { errore: messaggioDb(error) }

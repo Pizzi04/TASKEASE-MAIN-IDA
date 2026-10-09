@@ -9,7 +9,8 @@ export type Azione = (prima: StatoAzione, form: FormData) => Promise<StatoAzione
 const Inviando = createContext<boolean | null>(null)
 
 // Invia il modulo all'azione server SENZA svuotare i campi (React lo farebbe con <form action>):
-// se c'è un errore, quello che hai scritto resta.
+// se c'è un errore, quello che hai scritto resta. `azione` va comunque messa su <form action>: finché il JavaScript
+// non è pronto (rete lenta) il modulo viene inviato al server in POST, invece di finire nell'indirizzo della pagina.
 export function useAzione(azione: Azione) {
   const [stato, invia, inCorso] = useActionState(azione, null)
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -18,7 +19,7 @@ export function useAzione(azione: Azione) {
     const dati = new FormData(e.currentTarget, submitter)
     startTransition(() => invia(dati))
   }
-  return { stato, onSubmit, inCorso }
+  return { stato, onSubmit, inCorso, azione: invia }
 }
 
 export function Esito({ stato }: { stato: StatoAzione }) {
@@ -53,10 +54,10 @@ export function Modulo({
   inCorso?: string
   tipo?: 'bottone' | 'pericolo' | 'secondario'
 }) {
-  const { stato, onSubmit, inCorso: pending } = useAzione(azione)
+  const { stato, onSubmit, inCorso: pending, azione: invia } = useAzione(azione)
   return (
     <Inviando.Provider value={pending}>
-      <form className={className} onSubmit={onSubmit} noValidate>
+      <form className={className} action={invia} onSubmit={onSubmit} noValidate>
         {children}
         <Esito stato={stato} />
         <BottoneInvio testo={invio} inCorso={inCorso} tipo={tipo} />

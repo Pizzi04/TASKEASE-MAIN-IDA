@@ -8,6 +8,7 @@ export function messaggioDb(e: ErroreDb, generico = 'Qualcosa non ha funzionato.
   if (e.code === '23514') return 'Alcuni dati non vanno bene: controlla i campi.'
   if (e.code === 'P0002') return 'Non trovato: forse è stato cancellato.'
   if (e.code === 'P0003') return 'Hai fatto troppe richieste di seguito. Aspetta un po’ e riprova.'
+  if (e.code === 'TE409') return 'Quell’orario si accavalla con un lavoro già confermato: scegline un altro.'
   if (e.code === 'P0001') return 'Questa azione ora non è possibile.'
   return generico
 }

@@ -47,7 +47,11 @@ export const DOCUMENTI = [
 
 export type Esito<T> = { ok: true; dati: T } | { ok: false; errore: string }
 
-const testo = (v: unknown) => (typeof v === 'string' ? v.trim() : '')
+// Caratteri invisibili e di inversione del testo (es. U+202E): servono solo a ingannare ("Carla" che appare "alraC").
+// Lo ZWJ (U+200D) resta: unisce le emoji composte.
+const INVISIBILI = /[​‎‏‪-‮⁠⁦-⁩﻿]/g
+export const pulisci = (v: unknown) => (typeof v === 'string' ? v.replace(INVISIBILI, '').trim() : '')
+const testo = pulisci
 const spazi = (v: string) => v.replace(/\s+/g, ' ')
 
 // ---------- Telefono e codice ----------
@@ -79,7 +83,7 @@ export function codiceOtpValido(t: string): boolean {
 
 export function nomeValido(t: string): boolean {
   const n = t.trim()
-  return n.length >= 2 && n.length <= 60
+  return n.length >= 2 && n.length <= 60 && (n.match(/\p{L}/gu)?.length ?? 0) >= 2
 }
 
 export function zonaValida(t: string): t is Zona {

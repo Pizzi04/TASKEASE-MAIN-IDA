@@ -49,7 +49,7 @@ export default function CambiaTelefono() {
   if (fatto) return <p className="conferma">Fatto: ora accedi con {mostraTelefono(nuovo)}.</p>
 
   return nuovo ? (
-    <form className="scheda" onSubmit={conferma} noValidate>
+    <form className="scheda" method="post" onSubmit={conferma} noValidate>
       <label htmlFor="codice">Codice ricevuto al {mostraTelefono(nuovo)}</label>
       <input
         id="codice"
@@ -71,7 +71,7 @@ export default function CambiaTelefono() {
       </button>
     </form>
   ) : (
-    <form className="scheda" onSubmit={invia} noValidate>
+    <form className="scheda" method="post" onSubmit={invia} noValidate>
       <label htmlFor="numero">Nuovo cellulare</label>
       <input id="numero" type="tel" inputMode="tel" autoComplete="tel" placeholder="333 123 4567" value={numero} onChange={(e) => setNumero(e.target.value)} />
       {errore && <p className="errore" role="alert">{errore}</p>}

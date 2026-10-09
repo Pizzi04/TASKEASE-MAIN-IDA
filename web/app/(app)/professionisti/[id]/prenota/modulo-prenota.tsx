@@ -20,7 +20,7 @@ export default function ModuloPrenota(props: {
   descrizione: string
   competenzaIniziale: string
 }) {
-  const { stato, onSubmit, inCorso } = useAzione(prenota)
+  const { stato, onSubmit, inCorso, azione } = useAzione(prenota)
   const primoConOrari = Math.max(0, props.giorni.findIndex((g) => g.orari.some((o) => o.libero)))
   const [giorno, setGiorno] = useState(primoConOrari)
   const [ora, setOra] = useState<string | null>(null)
@@ -30,7 +30,7 @@ export default function ModuloPrenota(props: {
 
   return (
     <ProviderInvio inCorso={inCorso}>
-    <form className="scheda" onSubmit={onSubmit} noValidate>
+    <form className="scheda" action={azione} onSubmit={onSubmit} noValidate>
       <input type="hidden" name="professionista" value={props.professionista} />
       {props.post && <input type="hidden" name="post" value={props.post} />}
       <input type="hidden" name="giorno" value={g?.iso ?? ''} />

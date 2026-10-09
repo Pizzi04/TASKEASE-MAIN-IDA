@@ -74,7 +74,7 @@ export default function ModuloAccesso({ dopo = '/' }: { dopo?: string }) {
 
   if (passo === 'numero') {
     return (
-      <form className="scheda" onSubmit={inviaCodice} noValidate>
+      <form className="scheda" method="post" onSubmit={inviaCodice} noValidate>
         <label htmlFor="numero">Cellulare</label>
         <input
           id="numero"
@@ -98,7 +98,7 @@ export default function ModuloAccesso({ dopo = '/' }: { dopo?: string }) {
   }
 
   return (
-    <form className="scheda" onSubmit={verifica} noValidate>
+    <form className="scheda" method="post" onSubmit={verifica} noValidate>
       <label htmlFor="codice">Codice ricevuto al {mostraTelefono(telefono)}</label>
       <input
         id="codice"

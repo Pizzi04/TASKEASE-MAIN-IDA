@@ -29,6 +29,8 @@
 html,
 body {
   margin: 0;
+  /* Parole lunghissime senza spazi (nomi, link, testi incollati) vanno a capo invece di allargare la pagina */
+  overflow-wrap: anywhere;
 }
 
 body {

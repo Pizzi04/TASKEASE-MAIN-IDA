@@ -88,7 +88,7 @@ export default function Chat({
         <p className="avviso">La prenotazione è chiusa: non si può più scrivere.</p>
       ) : (
         <ProviderInvio inCorso={inCorso}>
-          <form className="scrivi" onSubmit={onSubmit}>
+          <form className="scrivi" method="post" onSubmit={onSubmit}>
             <input type="hidden" name="prenotazione" value={prenotazione} />
             <label htmlFor="testo" className="nascosto">
               Messaggio

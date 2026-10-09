@@ -6,7 +6,7 @@ import type { StatoAzione } from '@/components/Modulo'
 import { messaggioDb } from '@/lib/errori'
 import { leggiVoti } from '@/lib/ida'
 import { richiediProfilo } from '@/lib/supabase/server'
-import { orarioPrenotabile } from '@/lib/validazione'
+import { orarioPrenotabile, pulisci } from '@/lib/validazione'
 
 const AZIONI = ['conferma', 'rifiuta', 'annulla', 'completa', 'accetta_orario', 'non_presentato'] as const
 
@@ -15,7 +15,7 @@ export async function cambiaStato(_p: StatoAzione, form: FormData): Promise<Stat
   const id = Number(form.get('id'))
   const azione = String(form.get('azione'))
   if (!(AZIONI as readonly string[]).includes(azione)) return { errore: 'Azione non valida.' }
-  const motivo = String(form.get('motivo') ?? '').trim().slice(0, 300) || undefined
+  const motivo = pulisci(form.get('motivo')).slice(0, 300) || undefined
   const { error } = await supabase.rpc('cambia_stato_prenotazione', { p_id: id, p_azione: azione, p_motivo: motivo })
   if (error) {
     if (azione === 'completa' && error.code === 'P0001') return { errore: 'Puoi segnare il lavoro come fatto solo dopo l’orario previsto.' }
@@ -45,7 +45,7 @@ export async function lasciaGiudizio(_p: StatoAzione, form: FormData): Promise<S
   const prenotazione = Number(form.get('prenotazione'))
   const voti = leggiVoti(form)
   if (!voti) return { errore: 'Rispondi a tutte e cinque le domande.' }
-  const commento = String(form.get('commento') ?? '').trim()
+  const commento = pulisci(form.get('commento'))
   if (commento.length > 500) return { errore: 'Il commento è troppo lungo (massimo 500 caratteri).' }
 
   const { data: b } = await supabase.from('prenotazioni').select('professionista, stato').eq('id', prenotazione).eq('cliente', id).maybeSingle()
@@ -61,7 +61,7 @@ export async function lasciaGiudizio(_p: StatoAzione, form: FormData): Promise<S
 export async function inviaMessaggio(_p: StatoAzione, form: FormData): Promise<StatoAzione> {
   const { supabase, id } = await richiediProfilo()
   const prenotazione = Number(form.get('prenotazione'))
-  const testo = String(form.get('testo') ?? '').trim()
+  const testo = pulisci(form.get('testo'))
   if (!testo) return null
   if (testo.length > 1000) return { errore: 'Messaggio troppo lungo (massimo 1000 caratteri).' }
   const { error } = await supabase.from('messaggi').insert({ prenotazione, autore: id, testo })

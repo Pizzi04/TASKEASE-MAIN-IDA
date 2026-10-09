@@ -60,6 +60,9 @@ npm run build                # controllo completo prima di pubblicare
 - Limiti: 2 richieste in attesa verso la stessa persona e 5 in tutto, 5 post al giorno, 20 messaggi al minuto, 10 segnalazioni al giorno e una sola aperta per lo stesso contenuto.
 - Un account sospeso non giudica; lo stato “sospeso” degli altri non è leggibile.
 - Codice fiscale controllato anche nel database; massimo 20 foto per persona.
+- Due lavori confermati dello stesso professionista non si accavallano (si conta la durata, non solo l'ora d'inizio).
+- Nei nomi niente caratteri invisibili o di inversione del testo (U+202E e simili).
+- I moduli funzionano anche se il JavaScript non è ancora arrivato (rete lenta): vengono inviati al server, mai nell'indirizzo della pagina.
 
 ## Pubblicare online
 

@@ -6,7 +6,7 @@ import type { StatoAzione } from '@/components/Modulo'
 import { controlla, messaggioDb } from '@/lib/errori'
 import { registra } from '@/lib/eventi'
 import { richiediProfilo } from '@/lib/supabase/server'
-import { leggiPrenotazione } from '@/lib/validazione'
+import { leggiPrenotazione, pulisci } from '@/lib/validazione'
 
 export async function preferito(form: FormData) {
   const { supabase, id } = await richiediProfilo()
@@ -28,7 +28,7 @@ export async function blocca(form: FormData) {
 
 export async function rispondiGiudizio(_p: StatoAzione, form: FormData): Promise<StatoAzione> {
   const { supabase } = await richiediProfilo()
-  const testo = String(form.get('risposta') ?? '').trim()
+  const testo = pulisci(form.get('risposta'))
   if (testo.length < 2) return { errore: 'Scrivi la tua risposta.' }
   if (testo.length > 500) return { errore: 'Massimo 500 caratteri.' }
   const { error } = await supabase.rpc('rispondi_giudizio', { p_prenotazione: Number(form.get('prenotazione')), p_testo: testo })
@@ -67,7 +67,20 @@ export async function prenota(_p: StatoAzione, form: FormData): Promise<StatoAzi
     p_post: post,
   })
   if (error) {
-    if (error.code === '23505') return { errore: 'Quell’orario è stato appena preso: scegline un altro.' }
+    if (error.code === '23505') {
+      // Doppio invio (tasto indietro, due schede): se l'orario l'ho già preso io, porto alla prenotazione esistente
+      const { data: mia } = await supabase
+        .from('prenotazioni')
+        .select('id')
+        .eq('cliente', id)
+        .eq('professionista', pro)
+        .eq('giorno', d.giorno)
+        .eq('ora', d.ora)
+        .in('stato', ['richiesta', 'confermata'])
+        .maybeSingle()
+      if (mia) redirect(`/prenotazioni/${mia.id}`)
+      return { errore: 'Quell’orario è stato appena preso: scegline un altro.' }
+    }
     if (error.code === '42501') return { errore: 'Non puoi prenotare questa persona.' }
     return { errore: messaggioDb(error) }
   }

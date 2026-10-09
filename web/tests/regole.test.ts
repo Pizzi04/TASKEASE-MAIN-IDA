@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { etichettaGiorno, passata, prossimiGiorni } from '../lib/date'
+import { etichettaGiorno, orarioMessaggio, passata, prossimiGiorni } from '../lib/date'
+import { iniziali } from '../components/Avatar'
+import { messaggioDb } from '../lib/errori'
 import { idaVisibile, leggiVoti, livelloDi, punteggioDa } from '../lib/ida'
 import {
   adessoARoma,
@@ -14,7 +16,9 @@ import {
   leggiScheda,
   leggiSegnalazione,
   orarioPrenotabile,
+  nomeValido,
   partitaIvaValida,
+  pulisci,
 } from '../lib/validazione'
 import { distanza, ordina } from '../lib/zone'
 
@@ -214,5 +218,36 @@ describe('foto e collegamenti', () => {
     expect(linkInterno('/\\evil.example')).toBe('/')
     expect(linkInterno('https://evil.example')).toBe('/')
     expect(linkInterno(null, '/notifiche')).toBe('/notifiche')
+  })
+})
+
+describe('messaggi e orari', () => {
+  it('lavoro sovrapposto: frase chiara', () => {
+    expect(messaggioDb({ code: 'TE409' })).toMatch(/accavalla/)
+    expect(messaggioDb({ code: 'XXXXX' })).toMatch(/Riprova/)
+  })
+  it('orario dei messaggi sempre all’ora italiana', () => {
+    const adesso = new Date('2026-10-09T10:00:00Z')
+    expect(orarioMessaggio('2026-10-09T08:05:00Z', adesso)).toBe('10:05')
+    expect(orarioMessaggio('2026-10-08T21:30:00Z', adesso)).toBe('Ieri, 23:30')
+    expect(orarioMessaggio('2026-10-08T22:30:00Z', adesso)).toBe('00:30')
+  })
+})
+
+describe('testi ingannevoli', () => {
+  it('toglie i caratteri di inversione e invisibili, tiene le emoji composte', () => {
+    expect(pulisci('‮Carla‬')).toBe('Carla')
+    expect(pulisci(' a​b ')).toBe('ab')
+    expect(pulisci('👩🏽‍🔧')).toBe('👩🏽‍🔧')
+    expect(pulisci(42)).toBe('')
+  })
+  it('un nome deve avere almeno due lettere', () => {
+    expect(nomeValido('😀😀')).toBe(false)
+    expect(nomeValido('Lù')).toBe(true)
+  })
+  it('iniziali senza mezze emoji', () => {
+    expect(iniziali('<img src=x> Carla 😀👩🏽‍🔧')).toBe('IC')
+    expect(iniziali('😀')).toBe('?')
+    expect(iniziali('anna d’amico')).toBe('AD')
   })
 })

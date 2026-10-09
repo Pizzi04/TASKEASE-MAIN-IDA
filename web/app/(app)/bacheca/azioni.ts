@@ -7,7 +7,7 @@ import { controlla, messaggioDb } from '@/lib/errori'
 import { registra } from '@/lib/eventi'
 import { estensione, fotoValida } from '@/lib/foto'
 import { richiediProfilo } from '@/lib/supabase/server'
-import { haTelefonoOEmail, leggiPost } from '@/lib/validazione'
+import { haTelefonoOEmail, leggiPost, pulisci } from '@/lib/validazione'
 
 export async function pubblica(_p: StatoAzione, form: FormData): Promise<StatoAzione> {
   const { supabase, id, profilo } = await richiediProfilo()
@@ -53,7 +53,7 @@ export async function cambiaStatoPost(form: FormData) {
 export async function proponi(_p: StatoAzione, form: FormData): Promise<StatoAzione> {
   const { supabase, id } = await richiediProfilo()
   const post = Number(form.get('post'))
-  const messaggio = String(form.get('messaggio') ?? '').trim().replace(/\s+/g, ' ')
+  const messaggio = pulisci(form.get('messaggio')).replace(/\s+/g, ' ')
   if (messaggio.length < 5 || messaggio.length > 300) return { errore: 'Scrivi una proposta da 5 a 300 caratteri.' }
   if (haTelefonoOEmail(messaggio)) return { errore: 'Non scrivere telefono o email: se ti sceglie, vi scrivete in chat.' }
   const { error } = await supabase.from('proposte').insert({ post, professionista: id, messaggio })
