@@ -27,6 +27,8 @@ const T = {
   ochreSoft: "#F1E7D2",
   ember: "#B04A26",
   emberSoft: "#F7E6DD",
+  rule: "#DCD4C5",        // filetti tra le righe
+  ok: "#2E7D5B",          // disponibile, confermato
 };
 
 const LV = {
@@ -351,33 +353,40 @@ function Btn({ children, onClick, kind = "primary", full, style, ariaLabel }) {
   return <button type="button" className="btn" aria-label={ariaLabel} aria-disabled={style && style.opacity < 1 ? true : undefined} onClick={onClick} style={{ ...base, ...kinds[kind], ...style }}>{children}</button>;
 }
 
+/* Monogramma come un timbro quadrato: inchiostro sulla carta, niente cerchio colorato */
 function Avatar({ ini, sz = 46, lv, onDark }) {
-  const c = lv ? LV[lv].c : T.pine;
   return (
-    <span aria-hidden="true" style={{ width: sz, height: sz, borderRadius: "50%", background: onDark ? T.paper : c + "14", border: `1.5px solid ${c}33`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-      <span style={{ fontFamily: "'Fraunces',serif", fontSize: sz * .36, fontWeight: 600, color: c }}>{ini}</span>
+    <span aria-hidden="true" style={{ width: sz, height: sz, borderRadius: Math.round(sz * .14), background: onDark ? T.paper : T.card, border: `1.5px solid ${T.ink}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <span style={{ fontFamily: "'Fraunces',serif", fontSize: sz * .36, fontWeight: 600, color: T.ink, letterSpacing: -.3 }}>{ini}</span>
     </span>
   );
 }
 
-/* ---------- WORKER ROW — scheda moderna: niente bordi, ombra morbida, informazioni in pillole ---------- */
+/* Il numero IDA in chiaro, come in un registro: niente sigillo decorativo nelle liste */
+function IdaNum({ w }) {
+  if (w.ida == null) return <span className="wcard-r"><span className="ida-n nuovo">NUOVO</span><span className="ida-lab">IDA</span></span>;
+  return <span className="wcard-r" role="img" aria-label={`IDA ${w.ida} su 100, ${LV[w.lv].l}`}><span aria-hidden="true" className={"ida-n" + (w.ida >= 95 ? " top" : "")}>{w.ida}</span><span aria-hidden="true" className="ida-lab">IDA</span></span>;
+}
+
+/* ---------- WORKER ROW — una riga su filetto: chi è, cosa dice un cliente, i numeri ---------- */
 function WRow({ w, onClick, i = 0 }) {
   const lv = LV[w.lv];
+  const voce = (REVIEWS_BY[w.id] || [])[0];
   return (
-    <button type="button" className="wcard" onClick={onClick} style={{ animationDelay: `${i * .06}s` }}>
-      <Avatar ini={w.ini} lv={w.lv} sz={52} />
+    <button type="button" className="wcard" onClick={onClick} style={{ animationDelay: `${i * .05}s` }}>
+      <Avatar ini={w.ini} lv={w.lv} sz={44} />
       <span className="wcard-b">
         <span className="wcard-n">{w.n}{w.av && <><span className="wcard-av" aria-hidden="true" /><span className="sr">, disponibile</span></>}</span>
         <span className="wcard-bio">{w.bio}</span>
-        <span className="wcard-tags">
-          <span className="tag" style={{ color: lv.c, background: lv.c + "14" }}>{lv.l}</span>
-          <span className="tag">{w.tipo === "piva" ? "P.IVA" : "Privato"}</span>
-          <span className="tag">{w.av ? `${w.d} km` : "Non disponibile"}</span>
-        </span>
+        {voce && <span className="wcard-q">«{voce.t.match(/^[^.!?]*[.!?]?/)[0]}» <span>— {voce.a}</span></span>}
       </span>
-      <span className="wcard-r">
-        <Seal score={w.ida} lv={w.lv} size={44} />
-        <Mono size={15} color={T.ink}>{w.pr}€<span style={{ fontSize: 11.5, color: T.stone, fontWeight: 400 }}>/h</span></Mono>
+      <IdaNum w={w} />
+      <span className="wcard-tags">
+        <span><b>{String(w.d).replace(".", ",")}</b> km</span>
+        <span><b>{w.pr} €</b>/h</span>
+        {w.ida != null && <span>{lv.l}</span>}
+        <span>{w.tipo === "piva" ? "P.IVA" : "Privato"}</span>
+        {!w.av && <span className="no">non disponibile</span>}
       </span>
     </button>
   );
@@ -397,23 +406,24 @@ function Home({ nav, fermo, role, profilo, nuove, richieste = 0, blocked = [], p
   const nomiBloccati = blocked.map(id => wById(id)?.n.split(" ")[0]).filter(Boolean);
   const live = LIVE.filter(t => !nomiBloccati.some(n => t.startsWith(n + " ")));
   const tiles = isW
-    ? [{ ic: "user", l: "Profilo", s: "Agenda e richieste", to: "account", c: "#5B4B8A", bg: "#E8E4F1" }, { ic: "grid", l: "Bacheca", s: "Chi cerca in zona", to: "neighborhood", c: "#2E6E6A", bg: "#DBEAE7" }, { ic: "seal", l: "Sigillo", s: "Da condividere", to: "share", c: "#B5612F", bg: "#F3E3D9" }]
-    : [{ ic: "star", l: "Vantaggi", s: "Il tuo livello", to: "rewards", c: "#A9762B", bg: "#F1E7D2" }, { ic: "grid", l: "Bacheca", s: "Chiedi alla zona", to: "neighborhood", c: "#2E6E6A", bg: "#DBEAE7" }, { ic: "pin", l: "Passaporto", s: "I tuoi timbri", to: "passport", c: "#B5612F", bg: "#F3E3D9" }];
+    ? [{ l: "Profilo", s: "agenda e richieste", to: "account" }, { l: "Bacheca", s: "chi cerca in zona", to: "neighborhood" }, { l: "Sigillo", s: "da condividere", to: "share" }]
+    : [{ l: "Il tuo livello", s: "vantaggi", to: "rewards" }, { l: "Bacheca", s: "chiedi alla zona", to: "neighborhood" }, { l: "Passaporto", s: "i tuoi timbri", to: "passport" }];
+  const oggi = new Date().toLocaleDateString("it-IT", { weekday: "short", day: "numeric", month: "short" });
+  const zonaMia = isW ? ME.zona : profilo?.zona;
   return (
     <div className="home">
       <header className="home-hero">
         <div className="home-top">
           <div>
-            <div className="ent-mark" style={{ fontSize: 17 }}>TaskEase</div>
+            <div className="ent-mark" style={{ fontSize: 19 }}>TaskEase</div>
             <div className="home-sub"><span className="ent-dot" />Anteprima · profili di esempio</div>
           </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            <button type="button" className="glass-ic" onClick={() => nav("notifications")} aria-label={nuove ? "Notifiche, ce ne sono di nuove" : "Notifiche"}>
-              <Icon name="bell" size={19} color={T.paper} />{nuove && <span className="glass-dot" />}
-            </button>
-          </div>
+          <button type="button" className="glass-ic" onClick={() => nav("notifications")} aria-label={nuove ? "Notifiche, ce ne sono di nuove" : "Notifiche"}>
+            <Icon name="bell" size={20} />{nuove && <span className="glass-dot" />}
+          </button>
         </div>
-        <h1 className="home-h rise a-capo">{isW ? <>{greet().slice(0, -1)}, {ME.n.split(" ")[0]}.<br /><em>Chi aiutiamo oggi?</em></> : <>{profilo ? `${greet().slice(0, -1)}, ${profilo.nome.split(" ")[0]}.` : greet()}<br /><em>Chi ti serve oggi?</em></>}</h1>
+        <p className="kicker">{oggi}{zonaMia ? ` · ${zonaMia}, Forlì` : " · Forlì"}</p>
+        <h1 className="home-h a-capo">{isW ? <>{greet().slice(0, -1)}, {ME.n.split(" ")[0]}.<br /><em>Chi aiutiamo oggi?</em></> : <>{profilo ? `${greet().slice(0, -1)}, ${profilo.nome.split(" ")[0]}.` : greet()}<br />Cosa c'è da <em>sistemare</em>?</>}</h1>
         {isW ? (
           <button type="button" className="home-cta" onClick={() => nav("account")}>
             <Icon name="bolt" size={20} color="#fff" />
@@ -421,26 +431,25 @@ function Home({ nav, fermo, role, profilo, nuove, richieste = 0, blocked = [], p
             <Icon name="arrowR" size={18} color="#fff" />
           </button>
         ) : (
-          <button type="button" className="home-search" onClick={() => nav("search")}>
-            <Icon name="search" size={20} color="rgba(246,242,234,.7)" />
-            <span>Cosa ti serve? Anche solo una mano</span>
+          <button type="button" className="home-search" onClick={() => nav("search")} aria-label="Cerca: cosa ti serve? Anche solo una mano">
+            <Icon name="search" size={20} color={T.ink} />
+            <span>«perde il lavandino»…</span>
           </button>
         )}
       </header>
 
       <div className="home-body">
-        {!isW && <div className="cats" role="list" aria-label="Categorie">
-          {CATS.map((c, i) => (
-            <span role="listitem" key={c.n} style={{ display: "contents" }}><button type="button" className="cat2" onClick={() => nav("search", { cat: c.n })} style={{ animationDelay: `${i * .04}s` }}>
-              <span className="cat2-i" style={{ background: c.bg }}><Icon name={c.ic} size={22} color={c.c} /></span>
-              <span className="cat2-l">{c.n}</span>
-            </button></span>
-          ))}
-        </div>}
+        {!isW && <nav className="cats" aria-label="Mestieri">
+          {CATS.map(c => {
+            return <button type="button" key={c.n} className="cat2" onClick={() => nav("search", { cat: c.n })}>{c.n}</button>;
+          })}
+        </nav>}
+
+        {!isW && <MappaZona nav={nav} blocked={blocked} mia={zonaMia} />}
 
         {!isW && prossima && (
           <button type="button" className="next-card" onClick={() => nav("account")}>
-            <Icon name="cal" size={20} color={T.pine} />
+            <Icon name="cal" size={20} color={T.ink} />
             <span style={{ flex: 1 }}><span className="next-t">Il tuo prossimo appuntamento</span><span className="next-s">{wById(prossima.wid)?.n} · {giornoDi(prossima)} alle {prossima.time}{prossima.stato === "in attesa" ? " · in attesa di conferma" : ""}</span></span>
             <Icon name="arrowR" size={18} color={T.stone} />
           </button>
@@ -457,15 +466,15 @@ function Home({ nav, fermo, role, profilo, nuove, richieste = 0, blocked = [], p
               <button type="button" className="link" onClick={() => nav("account", { vai: "richieste" })}>Vedi tutte</button>
             </div>
             <div className="wlist">
-              {reqsHome.length === 0 && <div style={{ background: T.card, borderRadius: 18, padding: 18, fontSize: 14, color: T.stone, textAlign: "center" }}>{fermo === "pausa" ? "Profilo in pausa: non ti arrivano richieste. Lo riattivi da Profilo." : fermo === "off" ? "Non sei disponibile: non ti arrivano richieste. Accendi «Disponibile» in Profilo." : "Nessuna richiesta per ora. Ti avvisiamo quando ne arriva una."}</div>}
+              {reqsHome.length === 0 && <div style={{ padding: "16px 0", fontSize: 14, color: T.stone, borderBottom: `1px solid ${T.rule}` }}>{fermo === "pausa" ? "Profilo in pausa: non ti arrivano richieste. Lo riattivi da Profilo." : fermo === "off" ? "Non sei disponibile: non ti arrivano richieste. Accendi «Disponibile» in Profilo." : "Nessuna richiesta per ora. Ti avvisiamo quando ne arriva una."}</div>}
               {reqsHome.slice(0, 2).map(r => (
-                <button type="button" key={r.id} className="wcard" onClick={() => nav("account", { vai: "richiesta-" + r.id })}>
+                <button type="button" key={r.id} className="wcard solo" onClick={() => nav("account", { vai: "richiesta-" + r.id })}>
                   <span className="wcard-b">
                     <span className="wcard-n">{r.task}</span>
                     <span className="wcard-bio">{r.c} · {r.zona} · {r.when}, {r.time}</span>
-                    <span className="wcard-tags"><span className="tag">ESEMPIO</span><span className="tag">~{r.ore}h · ~{ME.pr * r.ore}€</span></span>
                   </span>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: T.pine }}>Vedi</span>
+                  <span className="wcard-r"><span className="ida-n" style={{ fontSize: 20 }}>~{ME.pr * r.ore} €</span><span className="ida-lab" style={{ letterSpacing: .3 }}>{r.ore} h × {ME.pr} €</span></span>
+                  <span className="wcard-tags"><span className="ticker-tag">ESEMPIO</span><span style={{ color: T.pine, fontFamily: "'Hanken Grotesk',sans-serif", fontWeight: 700, fontSize: 14 }}>Vedi la richiesta</span></span>
                 </button>
               ))}
             </div>
@@ -481,25 +490,51 @@ function Home({ nav, fermo, role, profilo, nuove, richieste = 0, blocked = [], p
         )}
 
         <button type="button" className="ida-card" onClick={() => nav("help")}>
-          {isW ? <Seal score={ME.ida} lv={ME.lv} size={58} tint={T.ochreLight} /> : <Seal score={94} lv={lvKeyOf(94, 10)} size={58} tint={T.ochreLight} />}
-          <span>
-            <span className="ida-t">{isW ? "Il tuo IDA" : <>Cos'è l'IDA <span className="ticker-tag" style={{ marginLeft: 6, verticalAlign: "middle" }}>ESEMPIO</span></>}</span>
-            <span className="ida-s">Un voto su 100 fatto solo di lavori veri: 5 domande dopo ogni lavoro, regole pubbliche.</span>
-            <span className="ida-l">Come si calcola →</span>
-          </span>
+          <span className="ida-t">{isW ? "Il tuo IDA" : "Cos'è quel numero?"}</span>{" "}
+          {isW ? `Ancora nuovo: compare dopo ${IDA_MIN_LAVORI} lavori giudicati.` : "È l'IDA: un voto su 100 fatto solo di lavori veri, 5 domande dopo ogni lavoro, regole pubbliche."}
+          <br /><span className="ida-l">Come si calcola</span>
         </button>
 
-        <div className="tiles">
+        <ul className="tiles">
           {tiles.map(x => (
-            <button type="button" key={x.l} className="tile" onClick={() => nav(x.to)}>
-              <span className="tile-i" style={{ background: x.bg }}><Icon name={x.ic} size={19} color={x.c} /></span>
+            <li key={x.l}><button type="button" className="tile" onClick={() => nav(x.to)}>
               <span className="tile-l">{x.l}</span>
-              <span className="tile-s">{x.s}</span>
-            </button>
+              <span className="tile-s">· {x.s}</span>
+              <Icon name="arrowR" size={18} color={T.ink2} />
+            </button></li>
           ))}
-        </div>
+        </ul>
       </div>
     </div>
+  );
+}
+
+/* Mappa schematica dei quartieri: un punto per chi è disponibile, il tuo quartiere cerchiato */
+function MappaZona({ nav, blocked = [], mia }) {
+  const W_ = 350, H_ = 128;
+  const pos = (q) => [q.x / 100 * W_, q.y / 100 * H_];
+  const disp = WORKERS.filter(w => w.av && !blocked.includes(w.id));
+  const tutti = WORKERS.filter(w => !blocked.includes(w.id));
+  const qMia = QUARTIERI.find(q => q.n === mia) || QUARTIERI[0];
+  return (
+    <button type="button" className="zona" onClick={() => nav("search")} aria-label={`Mappa della zona: ${disp.length} persone disponibili. Apri la ricerca`}>
+      <svg viewBox={`0 0 ${W_} ${H_}`} preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <g fill="none" stroke="#D3CABA" strokeWidth="9" strokeLinecap="round">
+          <path d="M-10 84 C 70 74, 130 90, 190 66 S 300 38, 370 48" />
+          <path d="M150 -10 L 175 140" />
+        </g>
+        <g fill="none" stroke="#E2DACB" strokeWidth="4" strokeLinecap="round">
+          <path d="M-10 26 L 370 18" /><path d="M60 -10 L 80 140" /><path d="M-10 118 L 370 124" /><path d="M290 -10 L 305 140" />
+        </g>
+        {(() => { const [x, y] = pos(qMia); return <><circle cx={x} cy={y} r="30" fill="none" stroke={T.pine} strokeDasharray="3 4" /><circle cx={x} cy={y} r="5" fill={T.pine} /></>; })()}
+        {tutti.map((w, i) => {
+          const q = QUARTIERI.find(z => z.n === w.zona); if (!q) return null;
+          const [x, y] = pos(q); const dx = (i % 3 - 1) * 12, dy = (i % 2 ? 9 : -9);
+          return <circle key={w.id} cx={x + dx} cy={y + dy} r="5.5" fill={w.av ? T.ochre : "#B9B1A3"} stroke={T.paper} strokeWidth="2" />;
+        })}
+      </svg>
+      <span className="zona-l"><b>{disp.length}</b> disponibili · <b>{new Set(disp.map(w => w.zona)).size}</b> quartieri</span>
+    </button>
   );
 }
 
@@ -524,24 +559,21 @@ const matchTesto = (w, q) => {
   const hay = parole.join(" ");
   return tk.some(t => parole.some(p => p.startsWith(t.length <= 4 ? t : t.slice(0, Math.max(4, t.length - 2)))) || sinonimiDi(t).some(s => hay.includes(s.hay)));
 };
+const CAT_KEYS = {
+  "Idraulica": ["idraul", "scarico", "caldaie", "tubo"],
+  "Riparazioni": ["riparazion", "tuttofare"],
+  "Pulizie": ["pulizia", "pulizie", "stiratura"],
+  "Montaggio": ["montaggio", "mobili", "cucine", "mensole"],
+  "Tecnologia": ["pc", "wifi", "stampant", "rete", "tecnico"],
+  "Giardino": ["giardin", "potatura", "siepi", "prato"],
+};
+const catHa = (w, cat) => { const hay = (w.sk.join(" ") + " " + w.bio).toLowerCase(); return (CAT_KEYS[cat] || []).some(k => hay.includes(k)); };
 function Search({ nav, init, role, blocked = [] }) {
   const [q, setQ] = useState(init?.q || "");
   const [sort, setSort] = useState(init?.sort || "dist");
   const [cat, setCat] = useState(init?.cat || null);
   useEffect(() => { nav.save?.({ cat, q, sort }); }, [cat, q, sort]);
-  const catMatch = (w) => {
-    if (!cat) return true;
-    const hay = (w.sk.join(" ") + " " + w.bio).toLowerCase();
-    const map = {
-      "Idraulica": ["idraul", "scarico", "caldaie", "tubo"],
-      "Riparazioni": ["riparazion", "tuttofare"],
-      "Pulizie": ["pulizia", "pulizie", "stiratura"],
-      "Montaggio": ["montaggio", "mobili", "cucine", "mensole"],
-      "Tecnologia": ["pc", "wifi", "stampant", "rete", "tecnico"],
-      "Giardino": ["giardin", "potatura", "siepi", "prato"],
-    };
-    return (map[cat] || []).some(k => hay.includes(k));
-  };
+  const catMatch = (w) => !cat || catHa(w, cat);
   const forse = [...new Set(tokensDi(q).flatMap(t => sinonimiDi(t).map(s => s.cat)))];
   const nascosti = WORKERS.filter(w => blocked.includes(w.id) && (!q || matchTesto(w, q)) && catMatch(w)).length;
   const f = WORKERS
@@ -549,47 +581,62 @@ function Search({ nav, init, role, blocked = [] }) {
     .filter(w => !q || matchTesto(w, q))
     .filter(catMatch)
     .sort((a, b) => sort === "ida" ? (b.ida ?? -1) - (a.ida ?? -1) : sort === "price" ? a.pr - b.pr : a.d - b.d);
+  const COL = [["ida", "IDA"], ["price", "€/h"], ["dist", "km"]];
   return (
     <div style={{ flex: 1, minHeight: 0, background: T.paper, display: "flex", flexDirection: "column" }}>
-      <div style={{ padding: "16px 18px", borderBottom: `1px solid ${T.line}` }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+      <div style={{ padding: "16px 20px 14px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <button type="button" className="head-back" aria-label="Indietro" onClick={() => nav.back("home")}><Icon name="arrowL" size={20} /></button>
-          <div className="campo" style={{ flex: 1 }}>
-            <Icon name="search" size={18} color={T.stone} />
+          <div className="campo" style={{ flex: 1, borderRadius: 10, borderColor: T.ink }}>
+            <Icon name="search" size={18} color={T.ink2} />
             <input autoFocus aria-label="Cerca un mestiere o descrivi il problema" value={q} onChange={e => setQ(e.target.value)} placeholder="Idraulico, pulizie, WiFi, montaggio…"
               style={{ flex: 1, minWidth: 0, border: "none", background: "transparent", fontSize: 16, color: T.ink, fontFamily: "'Hanken Grotesk',sans-serif", padding: "12px 0" }} />
+            {q && <button type="button" className="bt tap" aria-label="Cancella la ricerca" onClick={() => setQ("")} style={{ color: T.stone, display: "flex" }}><Icon name="x" size={18} /></button>}
           </div>
         </div>
-        {/* Categorie */}
-        <div className="scorri" style={{ display: "flex", gap: 7, overflowX: "auto", margin: "0 -16px 12px", padding: "0 16px 2px" }}>
+        <div className="scorri" style={{ display: "flex", gap: 8, overflowX: "auto", margin: "14px -20px 0", padding: "0 20px" }}>
           {["Idraulica", "Riparazioni", "Pulizie", "Montaggio", "Tecnologia", "Giardino"].map(c => (
-            <button type="button" className="bt" aria-pressed={cat === c} key={c} onClick={() => setCat(cat === c ? null : c)} style={{ minHeight: 40, padding: "0 14px", borderRadius: 999, fontSize: 13.5, fontWeight: 600, whiteSpace: "nowrap", transition: "all .16s", background: cat === c ? T.pine : T.card, color: cat === c ? "#fff" : T.ink2, border: `1.5px solid ${cat === c ? T.pine : T.line}` }}>{c}</button>
-          ))}
-        </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          {[["dist", "Più vicini"], ["price", "Prezzo"], ["ida", "IDA più alto"]].map(([k, l]) => (
-            <button type="button" className="bt" aria-pressed={sort === k} key={k} onClick={() => setSort(k)} style={{ minHeight: 40, padding: "0 14px", borderRadius: 999, fontSize: 13.5, fontWeight: 600, transition: "all .18s", background: sort === k ? T.pine : "transparent", color: sort === k ? "#fff" : T.ink2, border: `1px solid ${sort === k ? T.pine : T.line}` }}>{l}</button>
+            <button type="button" className="fchip" aria-pressed={cat === c} key={c} onClick={() => setCat(cat === c ? null : c)}>{c}</button>
           ))}
         </div>
       </div>
-      <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: 18 }}>
-        <div style={{ fontSize: 13, color: T.stone, marginBottom: 14 }}>{f.length} {f.length === 1 ? "persona" : "persone"}{cat && ` · ${cat}`}{q && ` per “${q}”`}<span> · nessuno paga per apparire · </span><button type="button" className="bt cp-link" style={{ fontSize: 13, fontWeight: 600 }} onClick={() => nav("legal", { doc: "ranking" })}>come ordiniamo</button><span className="ticker-tag" style={{ marginLeft: 8 }}>PROFILI DI ESEMPIO</span></div>
-        <div className="wlist" style={{ padding: 0 }}>{f.map((w, i) => <WRow key={w.id} w={w} i={i} onClick={() => nav("worker", q.trim() ? { ...w, q } : w)} />)}</div>
+      <div style={{ flex: 1, minHeight: 0, overflow: "auto", paddingBottom: 18 }}>
+        <div style={{ fontSize: 13.5, color: T.ink2, padding: "4px 20px 10px", lineHeight: 1.6 }}><b style={{ color: T.ink }}>{f.length} {f.length === 1 ? "persona" : "persone"}</b>{cat && ` · ${cat}`}{q && ` per “${q}”`} · nessuno paga per apparire · <button type="button" className="bt cp-link" style={{ fontSize: 13.5 }} onClick={() => nav("legal", { doc: "ranking" })}>come ordiniamo</button> <span className="ticker-tag">ESEMPI</span></div>
+        {f.length > 0 && <div className="ledger-h">
+          <span>Persona</span>
+          {COL.map(([k, l]) => <button type="button" key={k} aria-pressed={sort === k} onClick={() => setSort(k)} aria-label={`Ordina per ${k === "ida" ? "IDA più alto" : k === "price" ? "prezzo" : "distanza"}`}>{l}{sort === k ? (k === "ida" ? " ↓" : " ↑") : ""}</button>)}
+        </div>}
+        {f.map(w => (
+          <button type="button" key={w.id} className={"lrow" + (w.av ? "" : " off")} onClick={() => nav("worker", q.trim() ? { ...w, q } : w)}>
+            <span style={{ minWidth: 0 }}>
+              <span className="lrow-n">{w.n}{w.av ? <><span className="wcard-av" aria-hidden="true" /><span className="sr">, disponibile</span></> : <span className="sr">, non disponibile</span>}</span>
+              <span className="lrow-s">{!w.av && <span style={{ color: T.ember }}>non disponibile · </span>}{w.bio}</span>
+            </span>
+            <span className="lrow-ida" style={{ color: w.ida != null && w.ida >= 95 ? T.pine : T.ink }}>{w.ida ?? "—"}</span>
+            <span>{w.pr}</span>
+            <span>{String(w.d).replace(".", ",")}</span>
+          </button>
+        ))}
+        <div style={{ padding: "0 20px" }}>
         {nascosti > 0 && <div style={{ fontSize: 13, color: T.stone, textAlign: "center", margin: "14px 0" }}>{nascosti} {nascosti === 1 ? "persona nascosta perché l'hai bloccata" : "persone nascoste perché le hai bloccate"} · <button type="button" className="bt cp-link" onClick={() => nav("bloccati")}>Gestisci</button></div>}
         {f.length > 0 && f.length <= 1 && role !== "worker" && (
-          <div style={{ border: `1.5px dashed ${T.faint}`, borderRadius: 18, padding: 16, marginTop: 14, textAlign: "center" }}>
-            <div style={{ fontSize: 14, color: T.ink, fontWeight: 600 }}>Non è chi cerchi?</div>
-            <div style={{ fontSize: 13, color: T.stone, margin: "4px 0 12px" }}>Pubblica la richiesta in bacheca: rispondono le persone della zona.</div>
+          <div style={{ borderLeft: `3px solid ${T.ochre}`, padding: "4px 0 4px 16px", marginTop: 20 }}>
+            <div style={{ fontSize: 15, color: T.ink, fontWeight: 700 }}>Non è chi cerchi?</div>
+            <div style={{ fontSize: 14, color: T.ink2, margin: "4px 0 12px", lineHeight: 1.5 }}>Pubblica la richiesta in bacheca: rispondono le persone della zona.</div>
             <Btn kind="ghost" onClick={() => nav("post")}>Pubblica una richiesta</Btn>
           </div>
         )}
-        {f.length === 0 && <div style={{ textAlign: "center", padding: "28px 4px", color: T.stone, fontSize: 14, lineHeight: 1.6 }}>Nessuno {cat ? `per ${cat}` : q ? `per “${q}”` : "qui"} al momento.<br />
-          {role !== "worker" && <div style={{ border: `1.5px dashed ${T.faint}`, borderRadius: 18, padding: 16, margin: "14px 0", textAlign: "center" }}>
-            <div style={{ fontSize: 14, color: T.ink, fontWeight: 600 }}>Descrivilo alla zona</div>
-            <div style={{ fontSize: 13, color: T.stone, margin: "4px 0 12px" }}>Pubblica la richiesta in bacheca: rispondono le persone che lavorano qui vicino.</div>
+        {f.length === 0 && <div style={{ padding: "20px 0", color: T.ink2, fontSize: 14, lineHeight: 1.6 }}>
+          <div style={{ fontFamily: "'Fraunces',serif", fontSize: 20, fontWeight: 500, color: T.ink, letterSpacing: -.3 }}>Nessuno {cat ? `per ${cat}` : q ? `per “${q}”` : "qui"} al momento.</div>
+          {forse.length > 0 && <span style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", margin: "12px 0" }}>Forse cercavi: {forse.map(c => <Chip key={c} onClick={() => { setCat(c); setQ(""); }}>{c}</Chip>)}</span>}
+          <div>Prova un'altra parola o categoria.</div>
+          {role !== "worker" && <div style={{ borderLeft: `3px solid ${T.ochre}`, padding: "4px 0 4px 16px", margin: "20px 0" }}>
+            <div style={{ fontSize: 15, color: T.ink, fontWeight: 700 }}>Descrivilo alla zona</div>
+            <div style={{ fontSize: 14, color: T.ink2, margin: "4px 0 12px" }}>Pubblica la richiesta in bacheca: rispondono le persone che lavorano qui vicino.</div>
             <Btn full onClick={() => nav("post")}>Pubblica una richiesta</Btn>
           </div>}
-          {forse.length > 0 && <span style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 8, flexWrap: "wrap", margin: "12px 0" }}>Forse cercavi: {forse.map(c => <Chip key={c} onClick={() => { setCat(c); setQ(""); }}>{c}</Chip>)}</span>}Prova un'altra parola o categoria.</div>}
+        </div>}
+        </div>
       </div>
     </div>
   );
@@ -612,13 +659,13 @@ function Worker({ w, nav, from, saved, onSave, onBlock, bloccato, onUnblock, gia
   const isSaved = saved?.includes(w.id);
   return (
     <div style={{ flex: 1, minHeight: 0, background: T.paper, overflow: "auto" }}>
-      <div style={{ padding: "16px 18px 0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div style={{ padding: "16px 20px 0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <button type="button" className="head-back" aria-label="Indietro" onClick={() => nav.back(from || "home")}><Icon name="arrowL" size={20} /></button>
         {!w.self && <button type="button" className="bt tap" aria-label={isSaved ? "Togli dai preferiti" : "Salva tra i preferiti"} aria-pressed={!!isSaved} onClick={() => onSave?.(w.id)} style={{ cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", width: 44, height: 44, borderRadius: "50%", border: `1px solid ${isSaved ? T.ember : T.line}`, background: isSaved ? T.emberSoft : "transparent" }}>
           <Icon name="heart" size={20} color={isSaved ? T.ember : T.ink2} />
         </button>}
       </div>
-      <div style={{ padding: "12px 22px 24px" }}>
+      <div style={{ padding: "18px 20px 24px" }}>
         {w.self && <div className="esempio-top" style={{ background: T.pineSoft, borderRadius: 12, padding: "10px 12px", marginBottom: 14 }}><span className="ticker-tag">ANTEPRIMA</span><span>Così vedono il tuo profilo i clienti. Per cambiarlo: Profilo → Competenze, tariffa e zone.</span></div>}
         {giaPrenotata && (
           <button type="button" className="next-card" style={{ width: "100%", margin: "0 0 14px" }} onClick={() => nav("account", { ruolo: "client" })}>
@@ -633,48 +680,47 @@ function Worker({ w, nav, from, saved, onSave, onBlock, bloccato, onUnblock, gia
             <button type="button" className="bt tap" onClick={() => onUnblock?.(w.id)} style={{ fontWeight: 700, color: "#8a3a1f" }}>Sblocca</button>
           </div>
         )}
-        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 18 }}>
-          <Avatar ini={w.ini} lv={w.lv} sz={68} />
-          <div style={{ flex: 1 }}>
-            <h1 style={{ fontFamily: "'Fraunces',serif", fontSize: 24, fontWeight: 600, color: T.ink, letterSpacing: -.4, margin: 0 }}>{w.n}</h1>
-            <div style={{ fontSize: 13, color: T.ink2, marginTop: 3 }}>{w.bio}</div>
-            {w.self && <div style={{ fontSize: 13, color: T.ink2, marginTop: 4 }}>Lavora in: {(ME.zone || [ME.zona]).join(", ")}</div>}
-            {w.demo && <div style={{ fontSize: 12.5, color: T.stone, marginTop: 4, letterSpacing: .3 }}>Profilo di esempio · anteprima</div>}
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
-              {w.ida != null && <span style={{ fontSize: 12.5, fontWeight: 700, color: lv.c, textTransform: "uppercase", letterSpacing: .6, whiteSpace: "nowrap" }}>{lv.l}</span>}{w.av ? <span style={{ fontSize: 13, color: T.pine, fontWeight: 600 }}>{w.self ? "Disponibile" : `Primo orario proponibile: ${primaDisp()}`}</span> : <span style={{ fontSize: 13, color: T.ochreInk, fontWeight: 600 }}>{w.self ? "Ora non disponibile" : `Ora non disponibile · risponde in ${w.rsp}`}</span>}
-            </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
-              {w.ver && <span className="badge ok"><Icon name="shield" size={12} color={T.pine} />Identità verificata</span>}
-              <span className="badge">{w.tipo === "piva" ? "Professionista con P.IVA" : "Privato · prestazione occasionale"}</span>
-              {w.abil && <span className="badge ok">Impresa abilitata per impianti (dichiarato)</span>}
-              {w.rc && <span className="badge">Assicurazione RC (dichiarata)</span>}
-              {w.preventivo && <span className="badge">Lavora a preventivo</span>}
-            </div>
+        <header>
+          <p className="pro-k">{w.ida != null ? `${lv.l} · ` : ""}{w.sk[0]}{w.demo && <span className="ticker-tag" style={{ marginLeft: 8, verticalAlign: 1 }}>ESEMPIO</span>}</p>
+          <h1 className="pro-h a-capo">{w.n}</h1>
+          <div style={{ fontSize: 16, color: T.ink2, marginTop: 6, lineHeight: 1.45 }}>{w.bio}</div>
+          {w.self && <div style={{ fontSize: 14, color: T.ink2, marginTop: 4 }}>Lavora in: {(ME.zone || [ME.zona]).join(", ")}</div>}
+          <div className="facts">
+            {w.ver && <span><Icon name="shield" size={16} color={T.pine} />Identità verificata</span>}
+            {!w.self && <span><Icon name="message" size={16} color={T.pine} />Risponde in ~{w.rsp}</span>}
+            {!w.self && <span><Icon name="pin" size={16} color={T.pine} /><Mono size={13} w={400}>{String(w.d).replace(".", ",")} km</Mono> · {w.zona}</span>}
           </div>
+          <div style={{ fontSize: 13, color: T.stone, marginTop: 8, lineHeight: 1.5 }}>
+            {[w.tipo === "piva" ? "Professionista con P.IVA" : "Privato · prestazione occasionale", w.abil && "Impresa abilitata per impianti (dichiarato)", w.rc && "Assicurazione RC (dichiarata)", w.preventivo && "Lavora a preventivo"].filter(Boolean).join(" · ")}
+          </div>
+        </header>
+        <div className={"slot" + (w.av ? "" : " no")}>
+          <span>{w.self ? "Stato" : w.av ? "Primo orario proponibile" : "Ora non disponibile"}</span>
+          <b>{w.self ? (w.av ? "disponibile" : "non disponibile") : w.av ? primaDisp() : `risponde in ${w.rsp}`}</b>
         </div>
 
-        {/* Reputation panel — the seal as hero */}
-        <div style={{ background: T.card, borderRadius: 20, padding: 20, border: `1px solid ${T.line}`, display: "flex", alignItems: "center", gap: 20, marginBottom: 14 }}>
-          <Seal score={w.ida} lv={w.lv} size={84} />
-          <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: "'Fraunces',serif", fontSize: 15, fontWeight: 600, color: T.ink }}>{w.ida == null ? "IDA in costruzione" : `Affidabilità ${w.ida}/100`}</div>
-            <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, marginTop: 4 }}>{w.self ? <>Profilo nuovo: l'IDA compare dopo {IDA_MIN_LAVORI} lavori giudicati. Il tempo di risposta si vede dopo le prime richieste.</> : <>Da <Mono size={12}>{w.rv}</Mono> lavori giudicati dai clienti. Risponde in circa <strong style={{ color: T.ink }}>{w.rsp}</strong>.</>}</div>
-          </div>
-        </div>
-
-        {/* Stats */}
-        <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
-          {[[w.j, "lavori fatti"], [w.pr + "€", w.preventivo ? "all'ora, indicativo" : "all'ora"], w.self ? [String((ME.zone || [ME.zona]).length), (ME.zone || [ME.zona]).length === 1 ? "zona" : "zone"] : [w.d + " km", "da te"]].map(([v, l], i) => (
-            <div key={i} style={{ flex: 1, background: T.card, borderRadius: 14, padding: "14px 10px", textAlign: "center", border: `1px solid ${T.line}` }}>
-              <Mono size={18}>{v}</Mono>
-              <div style={{ fontSize: 12, color: T.stone, marginTop: 3 }}>{l}</div>
+        {/* L'IDA in chiaro: il numero, da quanti giudizi, e di cosa è fatto */}
+        <section className="ida-block" aria-label="IDA">
+          <div className="ida-hero">
+            {w.ida == null ? <b className="nuovo">NUOVO</b> : <b>{w.ida}</b>}
+            <div>
+              <strong>{w.ida == null ? "IDA in costruzione" : "IDA su 100"}</strong>
+              <small>{w.self || w.ida == null ? `Compare dopo ${IDA_MIN_LAVORI} lavori giudicati.` : <>da <Mono size={13} w={400}>{w.rv}</Mono> lavori giudicati dai clienti</>}</small>
             </div>
+          </div>
+          <ul className="voci" aria-label="Come si forma">
+            {IDA_VOCI.map(v => <li key={v.k}>{v.l} <b>{Math.round(v.w * 100)}%</b></li>)}
+          </ul>
+        </section>
+
+        <div className="trio">
+          {[[w.j, "lavori fatti"], [w.pr + " €", w.preventivo ? "all'ora, indicativo" : "all'ora"], w.self ? [String((ME.zone || [ME.zona]).length), (ME.zone || [ME.zona]).length === 1 ? "zona" : "zone"] : [w.tipo === "piva" ? "P.IVA" : "Privato", w.tipo === "piva" ? "con fattura" : "occasionale"]].map(([v, l], i) => (
+            <div key={i}><b>{v}</b><small>{l}</small></div>
           ))}
         </div>
 
-        {/* Skills */}
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 24 }}>
-          {w.sk.map(s => <span key={s} style={{ fontSize: 13, fontWeight: 500, padding: "7px 13px", borderRadius: 10, background: T.pineSoft, color: T.pine }}>{s}</span>)}
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", margin: "18px 0 6px" }}>
+          {w.sk.map(s => <span key={s} className="tag" style={{ border: `1px solid ${T.rule}`, borderRadius: 6, padding: "5px 9px", fontSize: 12.5 }}>{s}</span>)}
         </div>
 
         {/* Cosa dicono — recensioni leggibili PRIMA di prenotare */}
@@ -682,24 +728,20 @@ function Worker({ w, nav, from, saved, onSave, onBlock, bloccato, onUnblock, gia
           const revs = [...(mioGiudizio ? [{ a: "Tu", when: "adesso", s: mioGiudizio.voto, t: mioGiudizio.testo || "Giudizio senza commento.", mio: true }] : []), ...(REVIEWS_BY[w.id] || [])];
           return (
             <>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 12 }}>
-                <h2 style={{ fontFamily: "'Fraunces',serif", fontSize: 18, fontWeight: 600, color: T.ink, letterSpacing: -.2, margin: 0 }}>Cosa dicono</h2>
-                <span style={{ fontSize: 13, color: T.stone }}>ultimi · {w.rv} in tutto</span>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", margin: "26px 0 4px" }}>
+                <h2 style={{ fontFamily: "'Fraunces',serif", fontSize: 20, fontWeight: 600, color: T.ink, letterSpacing: -.3, margin: 0 }}>Cosa dicono</h2>
+                <span className="kicker">{w.rv} giudizi</span>
               </div>
-              <div style={{ fontSize: 12, color: T.stone, marginTop: -8, marginBottom: 10 }}>Solo giudizi di lavori conclusi su TaskEase. Nessuna recensione a pagamento.</div>
+              <div style={{ fontSize: 13, color: T.stone, marginBottom: 6 }}>Solo giudizi di lavori conclusi su TaskEase. Nessuna recensione a pagamento.</div>
               <div style={{ marginBottom: 22 }}>
                 {revs.length === 0
-                  ? <div style={{ background: T.ochreSoft, borderRadius: 14, padding: 16, fontSize: 13, color: "#7a5418", lineHeight: 1.6 }}>{w.self ? "Profilo nuovo: ancora nessun giudizio. I giudizi arrivano dai clienti dopo i primi lavori." : "Profilo nuovo: ancora nessun giudizio. Il primo lavoro con te può far partire il suo IDA."}</div>
+                  ? <div style={{ borderLeft: `3px solid ${T.ochre}`, padding: "4px 0 4px 14px", marginTop: 12, fontSize: 14, color: T.ink2, lineHeight: 1.6 }}>{w.self ? "Profilo nuovo: ancora nessun giudizio. I giudizi arrivano dai clienti dopo i primi lavori." : "Profilo nuovo: ancora nessun giudizio. Il primo lavoro con te può far partire il suo IDA."}</div>
                   : revs.map((r, i) => (
-                    <div key={r.mio ? "mio" : i} style={{ display: "flex", gap: 12, padding: "14px 0", borderBottom: i < revs.length - 1 ? `1px solid ${T.line}` : "none" }}>
-                      <Seal score={r.s} lv={lvKeyOf(r.s)} size={38} />
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
-                          <span style={{ fontSize: 13, fontWeight: 600, color: T.ink }}>{r.a}{r.mio && <span className="ticker-tag" style={{ marginLeft: 8 }}>IL TUO</span>}</span>
-                          <span style={{ fontSize: 12.5, color: T.stone }}>{r.when}</span>
-                        </div>
-                        <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.55 }}>{r.t}</div>
-                        {!r.mio && <button type="button" className="bt tap" onClick={() => nav("segnala", { tipo: `Giudizio di ${r.a} su ${w.n}`, testo: r.t, rif: `profilo/${w.id}/giudizio/${i - (mioGiudizio ? 1 : 0)}` })} aria-label={`Segnala il giudizio di ${r.a}`} style={{ fontSize: 13, color: T.stone, marginTop: 2, minHeight: 44 }}>Segnala</button>}
+                    <div key={r.mio ? "mio" : i} className="rev" style={{ padding: "14px 0 4px", borderBottom: i < revs.length - 1 ? `1px solid ${T.line}` : "none" }}>
+                      <q>{r.t}</q>
+                      <div className="rev-f">
+                        <span><b aria-label={`voto ${r.s} su 100`}>{r.s}</b>{r.a}{r.mio && <span className="ticker-tag" style={{ marginLeft: 8 }}>IL TUO</span>} · {r.when}</span>
+                        {!r.mio && <button type="button" className="bt tap" onClick={() => nav("segnala", { tipo: `Giudizio di ${r.a} su ${w.n}`, testo: r.t, rif: `profilo/${w.id}/giudizio/${i - (mioGiudizio ? 1 : 0)}` })} aria-label={`Segnala il giudizio di ${r.a}`} style={{ fontSize: 12.5, color: T.stone, minHeight: 44, textDecoration: "underline", textUnderlineOffset: 3 }}>Segnala</button>}
                       </div>
                     </div>
                   ))}
@@ -726,13 +768,13 @@ function Worker({ w, nav, from, saved, onSave, onBlock, bloccato, onUnblock, gia
         </>}
         <div style={{ textAlign: "center", marginTop: 10, fontSize: 12.5, color: T.stone, lineHeight: 1.5 }}>{w.self ? "I clienti vedono anche questa riga: l'accordo e il lavoro restano tra loro e te." : `TaskEase mette in contatto le persone. L'accordo e il lavoro restano tra te e ${w.n.split(" ")[0]}.`}</div>
         {!w.self && (
-          <div className="book-bar" style={{ display: "flex", alignItems: "center", gap: 12, margin: "8px -22px -24px" }}>
+          <div className="book-bar" style={{ display: "flex", alignItems: "center", gap: 12, margin: "8px -20px -24px" }}>
             <div style={{ flex: "0 1 auto", minWidth: 0, maxWidth: 110 }}>
               <Mono size={18} color={T.ink}>{w.pr}€/h</Mono>
               <div className="bb-sub" style={{ fontSize: 13, color: T.stone, lineHeight: 1.3 }}>{w.preventivo ? "indicativo" : "uscita e materiali a parte"}</div>
             </div>
-            <Btn onClick={() => nav("booking", w)} style={{ flex: 1, minWidth: 0, height: 52, padding: "0 12px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{giaPrenotata ? "Prenota ancora" : `Prenota ${w.n.split(" ")[0]}`}</Btn>
-            <Btn kind="ghost" ariaLabel={`Scrivi ${aD(w.n)} ${w.n.split(" ")[0]}`} onClick={() => nav("chat", w)} style={{ width: 52, height: 52, padding: 0, display: "flex", alignItems: "center", justifyContent: "center", background: T.card }}><Icon name="message" size={20} color={T.ink} /></Btn>
+            <Btn onClick={() => nav("booking", w)} style={{ flex: 1, minWidth: 0, height: 52, padding: "0 12px", borderRadius: 10, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{giaPrenotata ? "Prenota ancora" : `Prenota ${w.n.split(" ")[0]}`}</Btn>
+            <Btn kind="ghost" ariaLabel={`Scrivi ${aD(w.n)} ${w.n.split(" ")[0]}`} onClick={() => nav("chat", w)} style={{ width: 52, height: 52, padding: 0, borderRadius: 10, border: `1.5px solid ${T.ink}`, display: "flex", alignItems: "center", justifyContent: "center", background: T.card }}><Icon name="message" size={20} color={T.ink} /></Btn>
           </div>
         )}
       </div>
@@ -1694,49 +1736,42 @@ function Neighborhood({ nav, posts, onRemove, pro, paused }) {
   return (
     <div style={{ flex: 1, minHeight: 0, background: T.paper, display: "flex", flexDirection: "column" }}>
       <Head nav={nav} to="home" title="Bacheca del quartiere" root />
-      <div className="scorri" style={{ padding: "0 18px 12px", display: "flex", gap: 8, overflowX: "auto" }}>
-        {[["all", "Tutto"], ["req", "Richieste"], ["job", "Al lavoro"]].map(([k, l]) => <Chip key={k} on={tab === k} onClick={() => setTab(k)}>{l}</Chip>)}
+      <div className="seg" role="group" aria-label="Filtra la bacheca" style={{ marginTop: 4 }}>
+        {[["all", "Tutto"], ["req", "Richieste"], ["job", "Al lavoro"]].map(([k, l]) => <button type="button" key={k} aria-pressed={tab === k} onClick={() => setTab(k)}>{l}</button>)}
       </div>
-      <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "4px 18px 18px" }}>
+      <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "0 20px 18px" }}>
         {/* Niente "il migliore del mese": la piattaforma non mette in vetrina nessuno */}
-        <div style={{ fontSize: 13, color: T.stone, marginBottom: 12 }}>In ordine di tempo, i più recenti in alto. Nessuno paga per stare in cima.{f.some(p => p.demo) && <> <span className="ticker-tag">ESEMPI</span> gli annunci senza “La tua” sono finti.</>}</div>
+        <div style={{ fontSize: 13.5, color: T.ink2, margin: "12px 0", lineHeight: 1.5 }}>In ordine di tempo. Nessuno paga per stare in cima.{f.some(p => p.demo) && <> <span className="ticker-tag">ESEMPI</span> gli annunci senza «La tua» sono finti.</>}</div>
         {f.map((p, i) => (
-          <div key={p.id || i} style={{ background: T.card, borderRadius: 16, padding: 16, marginBottom: 12, border: `1px solid ${T.line}`, animation: `rise .4s ease ${i * .05}s both` }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-              {p.t === "job" ? <Avatar ini={p.ini} sz={32} /> : <div style={{ width: 32, height: 32, borderRadius: "50%", background: T.line, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Fraunces',serif", fontWeight: 600, color: T.ink2, fontSize: 14, flexShrink: 0 }}>{p.a[0]}</div>}
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: T.ink }}>{p.a}</div>
-                <div style={{ fontSize: 12.5, color: T.stone }}>{p.h} · {p.ago === "adesso" ? "adesso" : `${p.ago} fa`}</div>
-              </div>
-              
-              <span style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: .5, textTransform: "uppercase", color: p.mine ? T.pine : p.t === "job" ? T.pine : T.ochreInk }}>{p.mine ? "La tua" : p.t === "job" ? "Al lavoro" : "Cerca aiuto"}</span>
-            </div>
-            <div className={"a-capo" + (aperti.includes(p.id || i) ? "" : " tre-righe")} style={{ fontSize: 14, color: T.ink, lineHeight: 1.5 }}>{p.tx}</div>
-            {p.tx.length > 160 && <button type="button" className="bt tap" onClick={() => setAperti(a => a.includes(p.id || i) ? a.filter(x => x !== (p.id || i)) : [...a, p.id || i])} style={{ fontSize: 13, fontWeight: 700, color: T.pine }}>{aperti.includes(p.id || i) ? "Mostra meno" : "Leggi tutto"}</button>}
-            {p.foto && <div className="badge" style={{ marginTop: 8 }}><Icon name="check" size={12} color={T.pine} />Con foto (simulata)</div>}
-            {p.mine && (togli === p.id
-              ? <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${T.line}` }}>
-                  <div style={{ fontSize: 13, color: T.ink, marginBottom: 8 }}>Togliere la richiesta dalla bacheca?</div>
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <button type="button" className="bt tap" onClick={() => { onRemove?.(p.id); setTogli(null); }} style={{ flex: 1, padding: "10px 0", borderRadius: 10, background: T.ember, color: "#fff", fontWeight: 700, fontSize: 13, textAlign: "center" }}>Sì, togli</button>
-                    <button type="button" className="bt tap" onClick={() => setTogli(null)} style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: `1px solid ${T.line}`, color: T.ink, fontWeight: 600, fontSize: 13, textAlign: "center" }}>Annulla</button>
+          <article key={p.id || i} className={"post" + (p.mine ? " mine" : "")} style={{ animationDelay: `${i * .05}s` }}>
+            <div className="post-t" aria-label={p.ago === "adesso" ? "adesso" : `${p.ago} fa`}>{p.ago}</div>
+            <div style={{ minWidth: 0 }}>
+              <div className={"post-k" + (p.mine || p.t === "job" ? " job" : "")}>{p.mine ? "La tua" : p.t === "job" ? "Al lavoro" : "Cerca aiuto"} · {p.h}</div>
+              <div className={"post-x a-capo" + (aperti.includes(p.id || i) ? "" : " tre-righe")}>{p.tx}</div>
+              {p.tx.length > 160 && <button type="button" className="bt tap" onClick={() => setAperti(a => a.includes(p.id || i) ? a.filter(x => x !== (p.id || i)) : [...a, p.id || i])} style={{ fontSize: 13, fontWeight: 700, color: T.pine }}>{aperti.includes(p.id || i) ? "Mostra meno" : "Leggi tutto"}</button>}
+              <div className="post-by">{p.a}{p.foto && " · con foto (simulata)"}</div>
+              {p.mine && (togli === p.id
+                ? <div style={{ marginTop: 10 }}>
+                    <div style={{ fontSize: 13.5, color: T.ink, marginBottom: 8 }}>Togliere la richiesta dalla bacheca?</div>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button type="button" className="bt tap" onClick={() => { onRemove?.(p.id); setTogli(null); }} style={{ flex: 1, minHeight: 44, borderRadius: 8, background: T.ember, color: "#fff", fontWeight: 700, fontSize: 14, textAlign: "center" }}>Sì, togli</button>
+                      <button type="button" className="bt tap" onClick={() => setTogli(null)} style={{ flex: 1, minHeight: 44, borderRadius: 8, border: `1.5px solid ${T.rule}`, color: T.ink, fontWeight: 600, fontSize: 14, textAlign: "center" }}>Annulla</button>
+                    </div>
                   </div>
+                : <div className="post-a"><span style={{ flex: 1, fontSize: 13, color: T.ink2 }}>Ancora nessuna risposta. Ti avvisiamo appena qualcuno scrive.</span><button type="button" className="bt tap" onClick={() => setTogli(p.id)} style={{ fontSize: 13.5, fontWeight: 700, color: T.ember }}>Togli</button></div>)}
+              {!p.mine && <div className="post-a">
+                {p.t === "req" && <button type="button" className="rispondi" onClick={() => pro && !paused ? nav("chat", { n: p.a, ini: p.a[0], cliente: true, tema: p.tx }) : setServe(serve === (p.id || i) ? null : (p.id || i))}>Rispondi</button>}
+                {p.r ? <span className="n">{p.r} risposte</span> : null}
+                <button type="button" className="bt tap segn" onClick={() => nav("segnala", { tipo: `Annuncio di ${p.a}`, testo: p.tx, rif: `bacheca/${p.id || "post"}` })}>Segnala</button>
+              </div>}
+              {serve === (p.id || i) && (
+                <div role="status" style={{ marginTop: 12, borderLeft: `3px solid ${T.ochre}`, padding: "2px 0 2px 12px", fontSize: 13.5, color: T.ink2, lineHeight: 1.5 }}>
+                  {paused ? "Il tuo profilo da professionista è in pausa: riattivalo per rispondere." : "Per proporti a un lavoro serve il profilo da professionista: codice fiscale e le dichiarazioni previste dalla legge. Ci vogliono pochi minuti."}
+                  <div style={{ marginTop: 6 }}><button type="button" className="bt tap" onClick={() => paused ? nav("account", { ruolo: "worker" }) : nav("setup")} style={{ fontWeight: 700, color: T.pine, textDecoration: "underline", textUnderlineOffset: 3 }}>{paused ? "Vai al profilo" : "Crea il profilo da professionista"}</button></div>
                 </div>
-              : <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13, color: T.stone, marginTop: 10, paddingTop: 10, borderTop: `1px solid ${T.line}` }}><span style={{ flex: 1 }}>Ancora nessuna risposta. Ti avvisiamo appena qualcuno scrive.</span><button type="button" className="bt tap" onClick={() => setTogli(p.id)} style={{ fontSize: 13, fontWeight: 700, color: T.ember }}>Togli</button></div>)}
-            {!p.mine && <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12, paddingTop: 12, borderTop: `1px solid ${T.line}` }}>
-              <span style={{ fontSize: 13, color: T.stone }}>{p.r ? `${p.r} risposte` : ""}</span>
-              <span style={{ display: "flex", gap: 16 }}>
-                <button type="button" className="bt tap" onClick={() => nav("segnala", { tipo: `Annuncio di ${p.a}`, testo: p.tx, rif: `bacheca/${p.id || "post"}` })} style={{ fontSize: 13, color: T.stone }}>Segnala</button>
-                {p.t === "req" && <button type="button" className="bt tap" onClick={() => pro && !paused ? nav("chat", { n: p.a, ini: p.a[0], cliente: true, tema: p.tx }) : setServe(serve === (p.id || i) ? null : (p.id || i))} style={{ fontSize: 13, fontWeight: 700, color: T.pine }}>Rispondi</button>}
-              </span>
-            </div>}
-            {serve === (p.id || i) && (
-              <div role="status" style={{ marginTop: 10, background: T.ochreSoft, borderRadius: 12, padding: 12, fontSize: 13, color: "#7a5418", lineHeight: 1.5 }}>
-                {paused ? "Il tuo profilo da professionista è in pausa: riattivalo per rispondere." : "Per proporti a un lavoro serve il profilo da professionista: codice fiscale e le dichiarazioni previste dalla legge. Ci vogliono pochi minuti."}
-                <div style={{ marginTop: 8 }}><button type="button" className="bt tap" onClick={() => paused ? nav("account", { ruolo: "worker" }) : nav("setup")} style={{ fontWeight: 700, color: T.pine }}>{paused ? "Vai al profilo" : "Crea il profilo da professionista"}</button></div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          </article>
         ))}
       </div>
     </div>
@@ -2362,11 +2397,11 @@ function Tabs({ active, on, role }) {
         {items.map(([id, ic, l]) => {
           const on_ = active === id;
           if (id === "post") return (
-            <button type="button" key={id} className="dock-plus" onClick={() => on(id)} aria-label={l}><Icon name="plus" size={22} color="#fff" w={2.2} /></button>
+            <button type="button" key={id} className="dock-plus" onClick={() => on(id)} aria-label={l} aria-current={on_ ? "page" : undefined}><span className="dock-plus-i"><Icon name="plus" size={16} color="#fff" w={2.4} /></span><span aria-hidden="true">{l}</span></button>
           );
           return (
             <button type="button" key={id} className={`dock-i${on_ ? " on" : ""}`} onClick={() => on(id)} aria-label={l} aria-current={on_ ? "page" : undefined}>
-              <Icon name={ic} size={21} color={on_ ? T.pineDeep : "rgba(246,242,234,.72)"} w={on_ ? 2 : 1.7} />
+              <Icon name={ic} size={21} w={on_ ? 2 : 1.7} />
               <span>{l}</span>
             </button>
           );
@@ -3331,73 +3366,148 @@ button:focus-visible { outline: 2.5px solid ${T.pine}; outline-offset: 2px; }
 .ent-link { background: none; border: 0; color: rgba(246,242,234,.65); font-size: 13.5px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; padding: 6px; font-family: 'Hanken Grotesk', sans-serif; }
 .rise { animation: rise .6s cubic-bezier(.2,.8,.2,1) both; }
 
-/* ---------- Dentro l'app ---------- */
+/* ---------- Dentro l'app — "bottega": righe su filetti, numeri in mono, niente card flottanti ---------- */
 .home { flex: 1; min-height: 0; overflow-y: auto; background: ${T.paper}; }
-.home-hero { background: radial-gradient(130% 90% at 80% 0%, #1F4E46 0%, ${T.pineDeep} 60%, #0F2420 100%); color: ${T.paper}; padding: 18px 22px 46px; border-radius: 0 0 30px 30px; }
-.home-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 26px; }
-.home-sub { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: rgba(246,242,234,.8); margin-top: 2px; }
-.glass-ic { position: relative; width: 42px; height: 42px; border-radius: 14px; background: rgba(246,242,234,.08); border: 1px solid rgba(246,242,234,.14); display: flex; align-items: center; justify-content: center; cursor: pointer; }
-.glass-dot { position: absolute; top: 9px; right: 10px; width: 8px; height: 8px; border-radius: 50%; background: ${T.ochre}; box-shadow: 0 0 0 2px ${T.pineDeep}; }
-.home-h { font-family: 'Fraunces', Georgia, serif; font-weight: 600; font-size: clamp(30px, 9vw, 36px); line-height: 1.04; letter-spacing: -1px; margin: 0 0 20px; text-wrap: balance; }
-.home-h em { font-style: italic; font-weight: 500; color: ${T.ochreLight}; }
-.home-search, .home-cta { width: 100%; display: flex; align-items: center; gap: 12px; padding: 16px 18px; border-radius: 18px; font-family: 'Hanken Grotesk', sans-serif; font-size: 15px; cursor: pointer; text-align: left; }
-.home-search { background: rgba(246,242,234,.09); border: 1px solid rgba(246,242,234,.16); color: rgba(246,242,234,.72); }
-.home-cta { background: ${T.ochreBtn}; border: 0; color: #fff; font-weight: 700; box-shadow: 0 10px 28px -12px rgba(169,118,43,.8); }
+.home-hero { padding: 18px 20px 0; color: ${T.ink}; }
+.home-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+.home-sub { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: ${T.stone}; margin-top: 2px; }
+.kicker { font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: ${T.stone}; }
+.glass-ic { position: relative; width: 44px; height: 44px; border-radius: 50%; background: transparent; border: 1px solid ${T.rule}; display: flex; align-items: center; justify-content: center; cursor: pointer; color: ${T.ink}; }
+.glass-dot { position: absolute; top: 10px; right: 11px; width: 8px; height: 8px; border-radius: 50%; background: ${T.ochre}; box-shadow: 0 0 0 2px ${T.paper}; }
+.home-h { font-family: 'Fraunces', Georgia, serif; font-weight: 500; font-size: clamp(28px, 8.6vw, 34px); line-height: 1.08; letter-spacing: -1px; margin: 8px 0 22px; text-wrap: balance; }
+.home-h em { font-style: italic; font-weight: 500; color: ${T.ochreInk}; }
+.home-search, .home-cta { width: 100%; display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 16px; border-radius: 12px; font-family: 'Hanken Grotesk', sans-serif; font-size: 16px; cursor: pointer; text-align: left; }
+.home-search { background: ${T.card}; border: 1.5px solid ${T.ink}; color: ${T.stone}; box-shadow: 3px 3px 0 ${T.ink}; }
+.home-search:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 ${T.ink}; }
+.home-cta { background: ${T.ochreBtn}; border: 0; color: #fff; font-weight: 700; }
 .home-cta span { flex: 1; }
-.home-body { padding: 0 0 28px; }
-.cats { display: flex; gap: 10px; overflow-x: auto; padding: 4px 22px 16px; margin-bottom: -10px; margin-top: -30px; scrollbar-width: none; scroll-snap-type: x proximity; scroll-padding-inline: 22px; }
+.home-body { padding: 0 0 32px; }
+/* categorie come indice tipografico: parole e quanti sono, nessuna icona decorativa */
+.cats { display: flex; gap: 22px; overflow-x: auto; padding: 18px 20px 0; scrollbar-width: none; }
 .cats::-webkit-scrollbar { display: none; }
-.cat2 { flex: 0 0 88px; scroll-snap-align: start; background: ${T.card}; border: 0; border-radius: 20px; padding: 14px 6px 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 1px 2px rgba(28,27,24,.05), 0 12px 26px -16px rgba(28,27,24,.35); animation: rise .5s cubic-bezier(.2,.8,.2,1) both; transition: transform .15s; }
-.cat2:active { transform: scale(.96); }
-.cat2-i { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; }
-.cat2-l { font-size: 12.5px; font-weight: 600; color: ${T.ink}; font-family: 'Hanken Grotesk', sans-serif; }
-.ticker { display: flex; align-items: center; gap: 8px; margin: 18px 22px 22px; font-size: 13px; color: ${T.ink2}; min-height: 18px; white-space: nowrap; overflow: hidden; }
+.cat2 { flex-shrink: 0; background: none; border: 0; padding: 0; min-height: 44px; cursor: pointer; font-family: 'Fraunces', Georgia, serif; font-size: 17px; color: ${T.ink2}; white-space: nowrap; }
+.cat2 sup { font-family: 'Space Mono', monospace; font-size: 10px; color: ${T.stone}; margin-left: 2px; }
+.cat2:hover { color: ${T.ink}; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 6px; }
+/* mappa della zona: le persone disponibili sui quartieri */
+.zona { position: relative; display: block; width: calc(100% - 40px); margin: 18px 20px 0; padding: 0; border: 1px solid ${T.rule}; border-radius: 12px; overflow: hidden; background: #EFE9DD; cursor: pointer; text-align: left; }
+.zona svg { display: block; width: 100%; height: 128px; }
+.zona-l { position: absolute; left: 10px; bottom: 10px; background: ${T.card}; border: 1px solid ${T.rule}; border-radius: 6px; padding: 4px 8px; font-size: 12.5px; font-weight: 600; color: ${T.ink}; font-family: 'Hanken Grotesk', sans-serif; }
+.zona-l b { font-family: 'Space Mono', monospace; }
+.ticker { display: flex; align-items: center; gap: 8px; margin: 16px 20px 0; font-size: 13px; color: ${T.ink2}; min-height: 18px; white-space: nowrap; overflow: hidden; }
 .ticker > span:last-child { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .scorri { scrollbar-width: none; } .scorri::-webkit-scrollbar { display: none; }
-.ticker-tag { white-space: nowrap; font-size: 11.5px; font-weight: 700; letter-spacing: .7px; color: ${T.stone}; border: 1px solid ${T.line}; border-radius: 6px; padding: 2px 6px; flex-shrink: 0; }
-.sec-h { display: flex; justify-content: space-between; align-items: baseline; margin: 0 22px 12px; }
-.sec-h h2 { font-family: 'Fraunces', Georgia, serif; font-size: 22px; font-weight: 600; letter-spacing: -.4px; color: ${T.ink}; margin: 0; }
-.link { background: none; border: 0; color: ${T.pine}; font-weight: 700; font-size: 13px; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; }
+.ticker-tag { white-space: nowrap; font-family: 'Space Mono', monospace; font-size: 10.5px; font-weight: 400; letter-spacing: 1px; color: ${T.stone}; border: 1px solid ${T.rule}; border-radius: 4px; padding: 1px 5px; flex-shrink: 0; }
+.sec-h { display: flex; justify-content: space-between; align-items: baseline; margin: 30px 20px 8px; }
+.sec-h h2 { font-family: 'Fraunces', Georgia, serif; font-size: 20px; font-weight: 600; letter-spacing: -.3px; color: ${T.ink}; margin: 0; }
+.link { background: none; border: 0; color: ${T.pine}; font-weight: 700; font-size: 14px; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; text-decoration: underline; text-underline-offset: 3px; }
 .campo input:focus-visible { outline: none !important; }
-.wlist { display: flex; flex-direction: column; gap: 10px; padding: 0 16px; }
-.wcard { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; background: ${T.card}; border: 0; border-radius: 22px; padding: 14px 14px 14px 12px; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; box-shadow: 0 1px 2px rgba(28,27,24,.05), 0 14px 30px -20px rgba(28,27,24,.4); animation: rise .5s cubic-bezier(.2,.8,.2,1) both; transition: transform .15s, box-shadow .2s; }
-.wcard:hover { box-shadow: 0 1px 2px rgba(28,27,24,.05), 0 18px 34px -18px rgba(28,27,24,.45); }
-.wcard:active { transform: scale(.985); }
-.wcard-b { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-.wcard-n { display: flex; align-items: center; gap: 7px; font-family: 'Fraunces', Georgia, serif; font-size: 17px; font-weight: 600; color: ${T.ink}; letter-spacing: -.2px; }
-.wcard-av { width: 8px; height: 8px; border-radius: 50%; background: #3FA27A; box-shadow: 0 0 0 3px rgba(63,162,122,.16); }
-.wcard-bio { font-size: 13px; color: ${T.ink2}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.wcard-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
-.tag { font-size: 13px; font-weight: 600; padding: 3px 8px; border-radius: 8px; background: ${T.paper}; color: ${T.ink2}; }
-.wcard-r { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
-.ida-card { display: flex; align-items: center; gap: 16px; width: calc(100% - 32px); margin: 18px 16px 0; padding: 18px; border: 0; border-radius: 24px; text-align: left; cursor: pointer; background: radial-gradient(120% 120% at 0% 0%, #1F4E46, ${T.pineDeep}); color: ${T.paper}; font-family: 'Hanken Grotesk', sans-serif; }
-.ida-card > span { display: flex; flex-direction: column; gap: 4px; }
-.ida-t { font-family: 'Fraunces', Georgia, serif; font-size: 17px; font-weight: 600; }
-.ida-s { font-size: 13px; line-height: 1.5; color: rgba(246,242,234,.68); }
-.ida-l { font-size: 13px; font-weight: 700; color: ${T.ochreLight}; }
-.tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 14px 16px 0; }
-.tile { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; background: ${T.card}; border: 0; border-radius: 20px; padding: 14px 12px; cursor: pointer; text-align: left; font-family: 'Hanken Grotesk', sans-serif; box-shadow: 0 1px 2px rgba(28,27,24,.05), 0 12px 26px -18px rgba(28,27,24,.35); min-width: 0; }
-.tile-i { width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; }
-.tile-l { font-size: 13.5px; font-weight: 700; color: ${T.ink}; }
-.tile-s { font-size: 13px; color: ${T.stone}; line-height: 1.35; }
+/* righe persona */
+.wlist { display: flex; flex-direction: column; margin: 0 20px; border-top: 1px solid ${T.rule}; }
+.wcard { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 4px 14px; width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid ${T.rule}; padding: 16px 0; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; color: ${T.ink}; animation: fade .4s ease both; }
+.wcard:active { background: #EFE9DD; }
+.wcard.solo { grid-template-columns: minmax(0, 1fr) auto; }
+.wcard-b { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.wcard-n { display: flex; align-items: center; gap: 7px; font-family: 'Fraunces', Georgia, serif; font-size: 18px; font-weight: 600; color: ${T.ink}; letter-spacing: -.2px; line-height: 1.2; }
+.wcard-av { width: 7px; height: 7px; border-radius: 50%; background: ${T.ok}; }
+.wcard-bio { font-size: 14px; color: ${T.ink2}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wcard-q { font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 15px; line-height: 1.4; color: ${T.ink}; margin-top: 6px; }
+.wcard-q span { font-family: 'Hanken Grotesk', sans-serif; font-style: normal; font-size: 12px; color: ${T.stone}; }
+.wcard-tags { grid-column: 2 / 4; display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 6px; font-family: 'Space Mono', monospace; font-size: 12px; color: ${T.ink2}; }
+.wcard.solo .wcard-tags { grid-column: 1 / 3; }
+.wcard-tags b { color: ${T.ink}; }
+.wcard-tags .ok { color: ${T.ok}; }
+.wcard-tags .no { color: ${T.ember}; }
+.tag { font-family: 'Space Mono', monospace; font-size: 12px; color: ${T.ink2}; white-space: nowrap; }
+.wcard-r { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0; line-height: 1; text-align: right; }
+.ida-n { font-family: 'Space Mono', monospace; font-weight: 700; font-size: 26px; letter-spacing: -1px; color: ${T.ink}; }
+.ida-n.top { color: ${T.pine}; }
+.ida-n.nuovo { font-size: 12px; letter-spacing: 1px; color: ${T.ochreInk}; border: 1.5px solid ${T.ochre}; border-radius: 4px; padding: 2px 5px; }
+.ida-lab { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 1.5px; color: ${T.stone}; }
+/* nota a margine al posto della card scura */
+.ida-card { display: block; width: calc(100% - 40px); margin: 30px 20px 0; padding: 4px 0 4px 16px; border: 0; border-left: 3px solid ${T.ochre}; border-radius: 0; text-align: left; cursor: pointer; background: none; color: ${T.ink2}; font-family: 'Hanken Grotesk', sans-serif; font-size: 14px; line-height: 1.55; }
+.ida-t { font-family: 'Fraunces', Georgia, serif; font-size: 16px; font-weight: 600; color: ${T.ink}; }
+.ida-l { display: inline-block; margin-top: 6px; font-size: 14px; font-weight: 700; color: ${T.pine}; text-decoration: underline; text-underline-offset: 3px; }
+.tiles { list-style: none; margin: 30px 20px 0; padding: 0; border-top: 1px solid ${T.rule}; }
+.tile { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 0; background: none; border: 0; border-bottom: 1px solid ${T.rule}; cursor: pointer; text-align: left; font-family: 'Hanken Grotesk', sans-serif; color: ${T.ink}; }
+.tile-l { font-size: 16px; font-weight: 600; }
+.tile-s { flex: 1; font-size: 14px; color: ${T.stone}; }
 
-.head { position: sticky; top: 0; z-index: 6; display: flex; align-items: center; gap: 12px; padding: 14px 16px 12px; background: ${T.paper}; border-bottom: 1px solid ${T.line}; }
+.head { position: sticky; top: 0; z-index: 6; display: flex; align-items: center; gap: 12px; padding: 14px 20px 12px; background: ${T.paper}; border-bottom: 1px solid ${T.rule}; }
 .head-root { padding-top: 22px; }
-.head-root .head-t { font-size: 26px; }
-.head-back { width: 44px; height: 44px; border-radius: 50%; border: 0; background: ${T.card}; color: ${T.ink}; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 1px 2px rgba(28,27,24,.06), 0 6px 16px -10px rgba(28,27,24,.35); flex-shrink: 0; }
-.head-t { font-family: 'Fraunces', Georgia, serif; font-size: 21px; font-weight: 600; letter-spacing: -.4px; color: ${T.ink}; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.head-root .head-t { font-size: 28px; font-weight: 500; letter-spacing: -.8px; }
+.head-back { width: 44px; height: 44px; border-radius: 50%; border: 1px solid ${T.rule}; background: transparent; color: ${T.ink}; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+.head-t { font-family: 'Fraunces', Georgia, serif; font-size: 20px; font-weight: 600; letter-spacing: -.3px; color: ${T.ink}; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-.dock-wrap { padding: 8px 14px calc(12px + env(safe-area-inset-bottom, 0px)); background: ${T.paper}; flex-shrink: 0; }
-.dock { display: flex; align-items: center; gap: 4px; background: ${T.pineDeep}; border-radius: 24px; padding: 6px; box-shadow: 0 14px 30px -14px rgba(15,36,32,.6); }
-.dock-i { flex: 1; height: 54px; border: 0; background: transparent; border-radius: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; transition: background .2s; }
-.dock-i.on { background: ${T.paper}; }
-.dock-i span { font-size: 13px; font-weight: 600; color: rgba(246,242,234,.85); white-space: nowrap; }
-.dock-i.on span { color: ${T.pineDeep}; font-weight: 700; }
-.next-card { display: flex; align-items: center; gap: 12px; width: calc(100% - 44px); margin: 14px 22px 0; padding: 14px 16px; border-radius: 16px; border: 1.5px solid ${T.pine}; background: ${T.pineSoft}; text-align: left; cursor: pointer; font-family: inherit; }
-.next-t { display: block; font-size: 13px; font-weight: 700; color: ${T.pine}; text-transform: uppercase; letter-spacing: .5px; }
+/* barra in basso piatta, su filetto */
+.dock-wrap { background: ${T.paper}; border-top: 1px solid ${T.rule}; padding: 6px 4px calc(8px + env(safe-area-inset-bottom, 0px)); flex-shrink: 0; }
+.dock { display: flex; align-items: stretch; }
+.dock-i, .dock-plus { flex: 1; min-height: 52px; border: 0; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; position: relative; color: ${T.stone}; }
+.dock-i span, .dock-plus > span:last-child { font-size: 12px; font-weight: 600; white-space: nowrap; }
+.dock-i.on { color: ${T.ink}; }
+.dock-i.on::before { content: ""; position: absolute; top: -7px; left: 28%; right: 28%; height: 2px; background: ${T.ink}; }
+.dock-plus { color: ${T.ochreInk}; }
+.dock-plus-i { width: 32px; height: 24px; border-radius: 6px; background: ${T.ochreBtn}; display: flex; align-items: center; justify-content: center; }
+.next-card { display: flex; align-items: center; gap: 12px; width: calc(100% - 40px); margin: 18px 20px 0; padding: 14px 16px; border-radius: 12px; border: 1.5px solid ${T.ink}; background: ${T.card}; text-align: left; cursor: pointer; font-family: inherit; color: ${T.ink}; }
+.next-t { display: block; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 1px; color: ${T.ok}; text-transform: uppercase; }
 .next-s { display: block; font-size: 15px; font-weight: 600; color: ${T.ink}; margin-top: 2px; }
-.dock-plus { width: 46px; height: 46px; border-radius: 16px; border: 0; background: ${T.ochreBtn}; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; box-shadow: 0 8px 18px -8px rgba(169,118,43,.9); }
-.dock-i:focus-visible, .dock-plus:focus-visible, .wcard:focus-visible, .cat2:focus-visible, .tile:focus-visible, .head-back:focus-visible, .ida-card:focus-visible { outline: 2.5px solid ${T.ochre}; outline-offset: 2px; }
+.dock-i:focus-visible, .dock-plus:focus-visible, .wcard:focus-visible, .cat2:focus-visible, .tile:focus-visible, .head-back:focus-visible, .ida-card:focus-visible, .zona:focus-visible, .lrow:focus-visible { outline: 2.5px solid ${T.pine}; outline-offset: 2px; }
+
+/* cerca: registro ordinabile */
+.ledger-h { display: grid; grid-template-columns: minmax(0, 1fr) 56px 52px 52px; gap: 8px; padding: 0 20px; border-top: 1.5px solid ${T.ink}; border-bottom: 1px solid ${T.rule}; position: sticky; top: 0; background: ${T.paper}; z-index: 2; }
+.ledger-h > span, .ledger-h button { font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 1px; text-transform: uppercase; color: ${T.stone}; min-height: 40px; display: flex; align-items: center; }
+.ledger-h button { justify-content: flex-end; background: none; border: 0; cursor: pointer; }
+.ledger-h button[aria-pressed="true"] { color: ${T.ink}; font-weight: 700; }
+.lrow { display: grid; grid-template-columns: minmax(0, 1fr) 56px 52px 52px; gap: 8px; align-items: center; width: 100%; min-height: 64px; padding: 10px 20px; background: none; border: 0; border-bottom: 1px solid ${T.line}; text-align: left; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; color: ${T.ink}; }
+.lrow:active { background: #EFE9DD; }
+.lrow > span:not(:first-child) { text-align: right; font-family: 'Space Mono', monospace; font-size: 14px; }
+.lrow-n { display: flex; align-items: center; gap: 6px; font-family: 'Fraunces', Georgia, serif; font-size: 16px; font-weight: 600; }
+.lrow-s { display: block; font-size: 12.5px; color: ${T.ink2}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lrow .lrow-ida { font-weight: 700; font-size: 18px !important; }
+.lrow.off { opacity: .62; }
+.fchip { flex-shrink: 0; min-height: 40px; padding: 0 12px; border-radius: 6px; border: 1px solid ${T.rule}; background: ${T.card}; font-size: 14px; font-weight: 600; color: ${T.ink2}; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; white-space: nowrap; }
+.fchip[aria-pressed="true"] { background: ${T.ink}; border-color: ${T.ink}; color: ${T.paper}; }
+
+/* profilo professionista */
+.pro-k { font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: ${T.ochreInk}; }
+.pro-h { font-family: 'Fraunces', Georgia, serif; font-weight: 500; font-size: 38px; letter-spacing: -1.3px; line-height: 1.02; color: ${T.ink}; margin: 6px 0 0; }
+.facts { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 14px; font-size: 14px; color: ${T.ink2}; }
+.facts > span { display: inline-flex; align-items: center; gap: 6px; }
+.slot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 18px; padding: 12px 14px; border-radius: 10px; background: ${T.pineSoft}; font-size: 14px; color: ${T.ink}; }
+.slot b { font-family: 'Space Mono', monospace; font-size: 15px; color: ${T.pine}; white-space: nowrap; }
+.slot.no { background: ${T.ochreSoft}; } .slot.no b { color: ${T.ochreInk}; }
+.ida-block { margin-top: 28px; border-top: 1.5px solid ${T.ink}; padding-top: 16px; }
+.ida-hero { display: flex; align-items: flex-end; gap: 14px; }
+.ida-hero > b { font-family: 'Space Mono', monospace; font-size: 60px; line-height: .85; letter-spacing: -4px; color: ${T.pine}; }
+.ida-hero > b.nuovo { font-size: 20px; letter-spacing: 1px; color: ${T.ochreInk}; border: 2px solid ${T.ochre}; border-radius: 6px; padding: 6px 8px; line-height: 1; }
+.ida-hero strong { display: block; font-family: 'Fraunces', Georgia, serif; font-size: 19px; font-weight: 600; color: ${T.ink}; }
+.ida-hero small { font-size: 14px; color: ${T.ink2}; }
+.voci { list-style: none; margin: 16px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: ${T.stone}; }
+.voci b { font-family: 'Space Mono', monospace; font-weight: 400; color: ${T.ink2}; }
+.trio { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 24px; border-top: 1px solid ${T.rule}; border-bottom: 1px solid ${T.rule}; }
+.trio > div { padding: 14px 4px; text-align: center; }
+.trio > div + div { border-left: 1px solid ${T.rule}; }
+.trio b { display: block; font-family: 'Space Mono', monospace; font-size: 18px; color: ${T.ink}; white-space: nowrap; }
+.trio small { font-size: 12px; color: ${T.stone}; }
+.rev q { display: block; font-family: 'Fraunces', Georgia, serif; font-size: 18px; line-height: 1.38; letter-spacing: -.2px; color: ${T.ink}; quotes: "«" "»"; }
+.rev-f { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 6px; font-size: 12.5px; color: ${T.stone}; }
+.rev-f b { font-family: 'Space Mono', monospace; font-size: 14px; color: ${T.ink}; margin-right: 6px; }
+
+/* bacheca: righe con l'ora a margine */
+.seg { display: flex; margin: 0 20px; border-bottom: 1px solid ${T.rule}; }
+.seg button { position: relative; min-height: 44px; margin-right: 22px; background: none; border: 0; font-size: 14px; font-weight: 600; color: ${T.stone}; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; }
+.seg button[aria-pressed="true"] { color: ${T.ink}; }
+.seg button[aria-pressed="true"]::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: ${T.ink}; }
+.post { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 12px; padding: 16px 0; border-top: 1px solid ${T.rule}; animation: fade .4s ease both; }
+.post-t { font-family: 'Space Mono', monospace; font-size: 11.5px; color: ${T.stone}; padding-top: 3px; line-height: 1.3; }
+.post-k { font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 1px; text-transform: uppercase; color: ${T.ochreInk}; }
+.post-k.job { color: ${T.pine}; }
+.post-x { font-family: 'Fraunces', Georgia, serif; font-size: 17px; line-height: 1.38; letter-spacing: -.1px; color: ${T.ink}; margin-top: 3px; }
+.post-by { font-size: 12.5px; color: ${T.stone}; margin-top: 6px; }
+.post-a { display: flex; align-items: center; gap: 14px; margin-top: 8px; }
+.post-a .rispondi { min-height: 40px; padding: 0 16px; border-radius: 8px; border: 1.5px solid ${T.ink}; background: none; font-size: 14px; font-weight: 700; color: ${T.ink}; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; }
+.post-a .n { font-family: 'Space Mono', monospace; font-size: 12px; color: ${T.ink2}; }
+.post-a .segn { margin-left: auto; font-size: 12.5px; color: ${T.stone}; text-decoration: underline; text-underline-offset: 3px; }
+.post.mine { margin: 0 -20px; padding-left: 20px; padding-right: 20px; background: linear-gradient(90deg, ${T.ochreSoft}, transparent 75%); }
 
 .onb-visual { display: flex; justify-content: center; align-items: center; min-height: 230px; margin: 18px 0 8px; animation: rise .5s cubic-bezier(.2,.8,.2,1) both; }
 .onb-glyph { width: 150px; height: 150px; border-radius: 44px; background: rgba(169,118,43,.12); border: 1px solid rgba(169,118,43,.28); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 80px -10px rgba(169,118,43,.35); }
