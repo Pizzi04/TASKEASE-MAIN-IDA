@@ -178,7 +178,7 @@ function WRow({ w, onClick, i = 0 }) {
 }
 
 /* ============================== HOME — fascia scura che continua l'ingresso, poi carta ============================== */
-function Home({ nav, fermo, role, profilo, nuove, richieste = 0, blocked = [], prossima, reqsHome = [], bacheca = 0 }) {
+function Home({ nav, fermo, role, profilo, nuove, richieste = 0, blocked = [], prossima, reqsHome = [], bacheca = 0, onRuolo }) {
   const isW = role === "worker";
   const [li, setLi] = useState(0);
   const [fade, setFade] = useState(false);
@@ -200,11 +200,17 @@ function Home({ nav, fermo, role, profilo, nuove, richieste = 0, blocked = [], p
         <div className="home-top">
           <div>
             <div className="ent-mark" style={{ fontSize: 19 }}>TaskEase</div>
-            <div className="home-sub"><span className="ent-dot" />Anteprima · profili di esempio</div>
+            <div className="home-sub" style={{ whiteSpace: "nowrap" }}><span className="ent-dot" />Profili di esempio</div>
           </div>
-          <button type="button" className="glass-ic" onClick={() => nav("notifications")} aria-label={nuove ? "Notifiche, ce ne sono di nuove" : "Notifiche"}>
-            <Icon name="bell" size={20} />{nuove && <span className="glass-dot" />}
-          </button>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            {onRuolo && <div className="ruolo" role="group" aria-label="Modalità">
+              <button type="button" aria-pressed={!isW} onClick={() => isW && onRuolo("client")}>Cerco</button>
+              <button type="button" aria-pressed={isW} onClick={() => !isW && onRuolo("worker")}>Lavoro</button>
+            </div>}
+            <button type="button" className="glass-ic" onClick={() => nav("notifications")} aria-label={nuove ? "Notifiche, ce ne sono di nuove" : "Notifiche"}>
+              <Icon name="bell" size={20} />{nuove && <span className="glass-dot" />}
+            </button>
+          </div>
         </div>
         <h1 className="home-h a-capo">{isW ? <>{greet().slice(0, -1)}, {ME.n.split(" ")[0]}.<br /><em>Chi aiutiamo oggi?</em></> : <>{profilo ? `${greet().slice(0, -1)}, ${profilo.nome.split(" ")[0]}.` : greet()}<br /><em>Chi ti serve oggi?</em></>}</h1>
         {isW ? (
@@ -3264,6 +3270,12 @@ export default function App() {
   }, []);
   // "Sto lavorando" senza registrazione da professionista: prima la registrazione (CF, dichiarazione fiscale)
   const switchRole = (r) => { if (r === "worker" && !setupDone) nav("setup"); else setRole(r); };
+  // Cambio rapido dalla home: dice sempre in che modalità si è finiti
+  const cambiaRuolo = (r) => {
+    if (r === "worker" && !setupDone) { avviso.mostra("Per lavorare serve il profilo da professionista: ci vogliono pochi minuti."); nav("setup"); return; }
+    setRole(r); setK(x => x + 1);
+    avviso.mostra(r === "worker" ? (paused ? "Modalità Lavoro. Il tuo profilo è in pausa: lo riattivi da Profilo." : "Modalità Lavoro: qui vedi le richieste per te.") : "Modalità Cerco: qui trovi chi ti aiuta.");
+  };
   const onBooked = useCallback((b) => setPrenotazioni(ps => [b, ...ps]), []);
   const onPosted = useCallback((p) => setPosts(ps => [p, ...ps]), []);
   // Notifiche generate da quello che è successo davvero, non una lista finta uguale per tutti
@@ -3324,7 +3336,7 @@ export default function App() {
             {sc === "intro-worker" && <IntroWorker onWorker={() => choose("worker")} onOther={() => nav("entrata")} onLogin={() => nav("login")} />}
             {sc === "onboarding" && <Onboarding role={role} allaFine={!!dt?.fine} onDone={finishOnb} onBack={() => nav.back("entrata")} />}
             {sc === "setup" && <ProviderSetup onDone={finishSetup} onLegal={setFoglio} nav={nav} initial={profilo} edit={!!dt?.edit && setupDone} onSave={d => { Object.assign(ME, { n: d.nome, ini: iniOf(d.nome), pr: d.pr, sk: d.sk, zona: d.zone[0] || ME.zona, zone: d.zone, tipo: d.tipo, piva: d.piva, abil: d.abil, rc: d.rc, foto: d.foto, preventivo: d.preventivo, bio: d.bio }); setProfilo(p => p ? { ...p, nome: d.nome } : p); }} />}
-            {sc === "home" && <Home nav={nav} fermo={paused ? "pausa" : !avail ? "off" : null} role={role} profilo={profilo} blocked={blocked} prossima={prossimeDi(prenotazioni)[0]} nuove={nuove} richieste={avail && !paused ? reqsVis.length : 0} reqsHome={avail && !paused ? reqsVis : []} bacheca={posts.filter(p => p.t === "req" && !blocked.some(id => wById(id)?.n === p.a)).length} />}
+            {sc === "home" && <Home nav={nav} onRuolo={cambiaRuolo} fermo={paused ? "pausa" : !avail ? "off" : null} role={role} profilo={profilo} blocked={blocked} prossima={prossimeDi(prenotazioni)[0]} nuove={nuove} richieste={avail && !paused ? reqsVis.length : 0} reqsHome={avail && !paused ? reqsVis : []} bacheca={posts.filter(p => p.t === "req" && !blocked.some(id => wById(id)?.n === p.a)).length} />}
             {sc === "csetup" && <ClientSetup nav={nav} onIndietro={() => { setDt({ fine: true }); setSc("onboarding"); setK(x => x + 1); }} pro={setupDone} initial={dt?.edit ? profilo : null} back={dt?.back} fromOnb={!!dt?.onb} onDone={p => { const nuovo = !profilo; setProfiloIn(p); if (setupDone) Object.assign(ME, { n: p.nome, ini: iniOf(p.nome) }); avviso.mostra(nuovo ? `Profilo pronto, ${p.nome.split(" ")[0]}.` : "Dati salvati."); nav(dt?.back || "home"); }} />}
             {sc === "search" && <Search nav={nav} init={dt} role={role} blocked={blocked} />}
             {sc === "worker" && dt && <Worker w={dt} nav={nav} from={pv} saved={saved} giaPrenotata={prossimeDi(prenotazioni).find(b => b.wid === dt.id)} mioGiudizio={giudizi.filter(g => g.su === dt.n).slice(-1)[0]} onSave={toggleSave} bloccato={blocked.includes(dt.id)} onUnblock={id => { setBlocked(b => b.filter(x => x !== id)); avviso.mostra("Sbloccato."); }} onBlock={id => { const sue = prossimeDi(prenotazioni).filter(b => b.wid === id); const conf = sue.some(b => b.stato === "confermata"); setBlocked(b => b.includes(id) ? b : [...b, id]); if (sue.length) setPrenotazioni(ps => ps.map(p => p.wid === id && ATTIVA(p) && !passata(p) ? { ...p, stato: p.stato === "in attesa" ? "annullata" : "disdetta" } : p)); avviso.mostra(`Hai bloccato ${wById(id)?.n.split(" ")[0]}.${conf ? " L'appuntamento è disdetto e l'abbiamo avvisato." : sue.length ? " La richiesta in attesa è ritirata." : ""}`); }} />}

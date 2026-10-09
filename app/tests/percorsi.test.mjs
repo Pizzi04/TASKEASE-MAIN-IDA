@@ -234,3 +234,30 @@ test("un salvataggio rovinato nel browser non blocca l'app", async () => {
   assert.match(await testo(p), /Bacheca del quartiere/, "la bacheca rovinata riparte dagli esempi");
   await ctx.close();
 });
+
+test("interruttore Cerco | Lavoro in home: cambia modalità e la ricorda", async () => {
+  const { p, ctx, errori } = await apri();
+  // ospite: «Lavoro» porta all'iscrizione da professionista
+  await tocca(p, "Cerco una mano"); await tocca(p, "Salta"); await tocca(p, "Guardo prima");
+  await p.locator('.ruolo button', { hasText: "Lavoro" }).click(); await p.waitForTimeout(500);
+  assert.match(await testo(p), /Chi sei/, "senza profilo da professionista si apre l'iscrizione");
+  await ctx.close();
+  // professionista iscritto: passa da Lavoro a Cerco e ritorno, e dopo un ricaricamento resta l'ultima scelta
+  const b = await apri(); const q = b.p;
+  await tocca(q, "Offro una mano"); await tocca(q, "Salta");
+  await scrivi(q, "Bertozzi", "Giulia Bertozzi"); await tocca(q, "Scatta o scegli"); await tocca(q, "Da privato");
+  await premi(q, "Continua"); await tocca(q, "Pulizie"); await premi(q, "Continua"); await premi(q, "Continua");
+  await scrivi(q, "333", "3331234567"); await scrivi(q, "Via, numero", "Via Roma 10, Forlì");
+  await q.getByLabel("Codice fiscale").fill("BRTGLI90A41D704A"); await q.locator("input[type=date]").first().fill("1990-03-12");
+  await tocca(q, "Dichiaro che lavoro"); await q.locator("input[type=checkbox]").first().check({ force: true });
+  await premi(q, "Completa il profilo"); await q.getByLabel("Codice di verifica").fill("123456"); await premi(q, "Conferma il numero");
+  await tocca(q, "Vai al tuo profilo"); await premi(q, "Home");
+  assert.match(await testo(q), /Richieste per te/, "in modalità Lavoro la home mostra le richieste");
+  await q.locator('.ruolo button', { hasText: "Cerco" }).click(); await q.waitForTimeout(500);
+  assert.match(await testo(q), /Vicini a te/, "in modalità Cerco la home mostra chi lavora vicino");
+  assert.match(await testo(q), /Modalità Cerco/, "un avviso conferma il cambio");
+  await q.reload(); await q.waitForTimeout(800);
+  assert.equal(await q.locator('.ruolo button[aria-pressed="true"]').innerText(), "Cerco", "la modalità resta dopo il ricaricamento");
+  assert.deepEqual([...errori, ...b.errori], []);
+  await b.ctx.close();
+});

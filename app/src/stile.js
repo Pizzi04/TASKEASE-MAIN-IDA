@@ -425,6 +425,13 @@ button:focus-visible { outline: 2.5px solid ${T.accent}; outline-offset: 2px; }
 /* telefoni con "Riduci trasparenza": barre piene invece che sfocate (meno lavoro per la scheda grafica) */
 @media (prefers-reduced-transparency: reduce) { .head, .dock-wrap, .book-bar, .ledger-h, .mappa-zoom button { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; background: ${T.paper} !important; } }
 
+/* interruttore Cerco | Lavoro in home */
+.ruolo { display: flex; background: ${T.card}; border: 1px solid ${T.line}; border-radius: 14px; padding: 3px; }
+.ruolo button { min-height: 38px; min-width: 60px; padding: 0 10px; border: 0; border-radius: 11px; background: transparent; color: ${T.ink2}; font-family: 'Hanken Grotesk', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: background .2s, color .2s; position: relative; }
+.ruolo button::after { content: ""; position: absolute; inset: -3px 0; }
+.ruolo button[aria-pressed="true"] { background: ${T.ochreLight}; color: #1C1408; }
+.ruolo button:focus-visible { outline: 2.5px solid ${T.ochreLight}; outline-offset: 2px; }
+
 .onb-visual { display: flex; justify-content: center; align-items: center; min-height: 230px; margin: 18px 0 8px; animation: rise .5s cubic-bezier(.2,.8,.2,1) both; }
 .onb-glyph { width: 150px; height: 150px; border-radius: 44px; background: rgba(169,118,43,.12); border: 1px solid rgba(169,118,43,.28); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 80px -10px rgba(169,118,43,.35); }
 .onb-eye { font-size: 12.5px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: ${T.ochreLight}; margin-bottom: 10px; }
