@@ -61,7 +61,7 @@ export default async function Home() {
 }
 
 async function HomeCliente({ supabase, id, zona, oggi }: { supabase: Db; id: string; zona: string; oggi: string }) {
-  const [prossime, vicini, preferiti, bacheca] = await Promise.all([
+  const [prossime, vicini, preferiti, bacheca, blocchi, liberi] = await Promise.all([
     supabase
       .from('prenotazioni')
       .select('id, giorno, ora, stato, competenza, controproposta, professionisti!prenotazioni_professionista_fkey(profili!professionisti_id_fkey(nome))')
@@ -71,13 +71,24 @@ async function HomeCliente({ supabase, id, zona, oggi }: { supabase: Db; id: str
       .order('giorno')
       .order('ora')
       .limit(1),
-    supabase.from('professionisti').select(COLONNE_PRO).eq('profili.in_pausa', false).limit(200),
+    supabase.from('professionisti').select(COLONNE_PRO).eq('profili.in_pausa', false).limit(300),
     supabase.from('preferiti').select(`professionista, professionisti!preferiti_professionista_fkey(${COLONNE_PRO})`).eq('utente', id).limit(6),
-    supabase.from('bacheca').select('id', { count: 'exact', head: true }).eq('stato', 'aperta'),
+    // Stessi filtri della pagina Bacheca: la tua zona, aperte, non scadute, non tue
+    supabase
+      .from('bacheca')
+      .select('id', { count: 'exact', head: true })
+      .eq('stato', 'aperta')
+      .gt('scade_il', new Date().toISOString())
+      .eq('zona', zona)
+      .neq('autore', id),
+    supabase.from('blocchi').select('bloccato').eq('utente', id),
+    // "Vicini a te" cerca solo tra chi è libero ora, a parte: tra i primi 300 potrebbero non esserci
+    supabase.from('professionisti').select(COLONNE_PRO).eq('profili.in_pausa', false).eq('disponibile', true).limit(200),
   ])
-  const tutti = (vicini.data ?? []).map(daRiga).filter((p) => p.id !== id)
+  const bloccati = new Set((blocchi.data ?? []).map((b) => b.bloccato))
+  const tutti = (vicini.data ?? []).map(daRiga).filter((p) => p.id !== id && !bloccati.has(p.id))
   const primi = ordina(
-    tutti.filter((p) => p.disponibile),
+    (liberi.data ?? []).map(daRiga).filter((p) => p.id !== id && !bloccati.has(p.id)),
     zona,
     'vicini',
   ).slice(0, 3)
@@ -139,7 +150,7 @@ async function HomeCliente({ supabase, id, zona, oggi }: { supabase: Db; id: str
           <span className="big" style={{ fontSize: 30 }}>
             <Conta a={inBacheca} ms={600} />
           </span>
-          <span className="sub">{inBacheca === 1 ? 'richiesta aperta' : 'richieste aperte'}</span>
+          <span className="sub">{inBacheca === 1 ? 'richiesta aperta in zona' : 'richieste aperte in zona'}</span>
         </Link>
       </div>
 
@@ -202,7 +213,7 @@ async function HomeCliente({ supabase, id, zona, oggi }: { supabase: Db; id: str
 
 async function HomeLavoro({ supabase, id, oggi }: { supabase: Db; id: string; oggi: string }) {
   const [scheda, richieste, agenda] = await Promise.all([
-    supabase.from('professionisti').select('ida, giudizi, lavori, disponibile, verificato, zone, tariffa_oraria').eq('id', id).maybeSingle(),
+    supabase.from('professionisti').select('ida, giudizi, lavori, disponibile, verificato, zone, tariffa_oraria, su_preventivo').eq('id', id).maybeSingle(),
     supabase
       .from('prenotazioni')
       .select('id, giorno, ora, ore, competenza, descrizione, zona, controproposta, profili!prenotazioni_cliente_fkey(nome)')
@@ -218,7 +229,7 @@ async function HomeLavoro({ supabase, id, oggi }: { supabase: Db; id: string; og
       .gte('giorno', oggi)
       .order('giorno')
       .order('ora')
-      .limit(5),
+      .limit(4),
   ])
   const s = scheda.data
   if (!s) {
@@ -238,9 +249,15 @@ async function HomeLavoro({ supabase, id, oggi }: { supabase: Db; id: string; og
       </>
     )
   }
-  const { count: inBacheca } = await supabase.from('bacheca').select('id', { count: 'exact', head: true }).eq('stato', 'aperta').in('zona', s.zone)
+  const { count: inBacheca } = await supabase
+    .from('bacheca')
+    .select('id', { count: 'exact', head: true })
+    .eq('stato', 'aperta')
+    .gt('scade_il', new Date().toISOString())
+    .in('zona', s.zone)
+    .neq('autore', id)
   const lista = richieste.data ?? []
-  const prossimo = agenda.data?.[0]
+  const [prossimo, ...dopo] = agenda.data ?? []
   const ida = idaVisibile(s.ida, s.giudizi)
 
   return (
@@ -250,6 +267,11 @@ async function HomeLavoro({ supabase, id, oggi }: { supabase: Db; id: string; og
         <span>{lista.length ? `${lista.length} ${lista.length === 1 ? 'richiesta ti aspetta' : 'richieste ti aspettano'}` : 'Il tuo profilo e l’agenda'}</span>
         <Icona nome="arrowR" lato={18} />
       </Link>
+      <p className="home-stato">
+        <span className={s.disponibile ? 'punto-vivo' : 'punto-spento'} aria-hidden="true" />
+        {s.disponibile ? 'Sei disponibile: ti arrivano richieste.' : 'Non sei disponibile: non ti arrivano richieste.'}{' '}
+        <Link href="/lavoro">{s.disponibile ? 'Cambia' : 'Accendi'}</Link>
+      </p>
 
       <div className="bento">
         {prossimo && (
@@ -295,7 +317,9 @@ async function HomeLavoro({ supabase, id, oggi }: { supabase: Db; id: string; og
               </span>
             </span>
             <span className="wcard-r">
-              {b.ore ? (
+              {s.su_preventivo ? (
+                <span className="ida-lab">su preventivo</span>
+              ) : b.ore ? (
                 <>
                   <span className="ida-n" style={{ fontSize: 20 }}>
                     ~{b.ore * s.tariffa_oraria}€
@@ -317,6 +341,29 @@ async function HomeLavoro({ supabase, id, oggi }: { supabase: Db; id: string; og
           </Link>
         ))}
       </div>
+
+      {dopo.length > 0 && (
+        <>
+          <div className="sec-h">
+            <h2>In agenda</h2>
+            <Link href="/prenotazioni?vista=lavoro">Tutta l’agenda</Link>
+          </div>
+          <div className="wlist">
+            {dopo.map((b) => (
+              <Link key={b.id} href={`/prenotazioni/${b.id}`} className="tl next">
+                <span className="tm">{oraBreve(b.ora)}</span>
+                <div>
+                  {b.competenza} · {b.profili?.nome.split(' ')[0]}
+                  <small>
+                    {etichettaGiorno(b.giorno)} · {b.zona}
+                  </small>
+                </div>
+                <Icona nome="arrowR" lato={18} />
+              </Link>
+            ))}
+          </div>
+        </>
+      )}
 
       {!s.verificato && (
         <Link href="/lavoro/verifica" className="ida-card">

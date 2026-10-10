@@ -266,6 +266,24 @@ h2 {
     background 0.25s,
     color 0.25s;
 }
+.dock a.dock-voce {
+  position: relative;
+}
+.dock-pallino {
+  position: absolute;
+  top: 4px;
+  left: calc(50% + 6px);
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: var(--ochre);
+  color: #1c1408;
+  font-size: 10.5px;
+  font-weight: 800;
+  line-height: 17px;
+  text-align: center;
+}
 .dock a[aria-current='page'] {
   color: var(--ink);
   background: var(--card);
@@ -325,6 +343,22 @@ h2 {
   .punto-vivo {
     animation: respiro 2s infinite;
   }
+}
+.punto-spento {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ink2);
+  flex: none;
+}
+.home-stato {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 13.5px;
+  color: var(--ink2);
+  margin: -4px 2px 14px;
 }
 .home-azioni {
   display: flex;
@@ -984,7 +1018,7 @@ h2 {
 }
 .ledger-h {
   position: sticky;
-  top: 74px;
+  top: calc(60px + max(14px, env(safe-area-inset-top)));
   z-index: 2;
   padding: 0 14px;
   margin: 0 -4px;

@@ -13,7 +13,8 @@ export function MappaZona({ persone, mia }: { persone: Punto[]; mia: string }) {
     return q ? [(q.x / 100) * L, (q.y / 100) * A] : null
   }
   const sullaMappa = persone.map((p) => ({ p, xy: p.zone.map(pos).find(Boolean) ?? null })).filter((x) => x.xy)
-  const libere = persone.filter((p) => p.disponibile).length
+  // Si contano solo le persone che stanno davvero sulla mappa (chi lavora solo fuori città non ha un punto)
+  const libere = sullaMappa.filter((x) => x.p.disponibile).length
   const qMia = pos(mia)
   return (
     <Link href="/mappa" className="tl map" aria-label={`Mappa della zona: ${libere} ${libere === 1 ? 'persona disponibile' : 'persone disponibili'}. Apri la mappa grande`}>

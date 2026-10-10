@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Icona } from '@/components/Icona'
 import { iniziali } from '@/components/Avatar'
 import { coloreDi } from '@/lib/categorie'
@@ -41,8 +41,16 @@ export function MappaGrande({ persone, mia, categorie }: { persone: PersonaMappa
     const vicini = visibili.filter((v) => v.zona === p.zona)
     const i = vicini.indexOf(p)
     if (vicini.length < 2) return [cx, cy]
-    const a = (i / vicini.length) * Math.PI * 2 - Math.PI / 2
-    return [cx + Math.cos(a) * 30, cy + Math.sin(a) * 30]
+    // Anelli concentrici: ognuno ospita quanti puntini ci stanno senza sovrapporsi troppo
+    let resto = i
+    for (let r = 20; ; r += 20) {
+      const posti = Math.min(Math.floor((2 * Math.PI * r) / 32), vicini.length - (i - resto))
+      if (resto < posti) {
+        const a = (resto / posti) * Math.PI * 2 - Math.PI / 2 + r / 40
+        return [cx + Math.cos(a) * r, cy + Math.sin(a) * r]
+      }
+      resto -= posti
+    }
   }
   const vbW = MW / vista.s
   const vbH = MH / vista.s
@@ -84,6 +92,11 @@ export function MappaGrande({ persone, mia, categorie }: { persone: PersonaMappa
     centra(p)
   }
   const w = sel ? persone.find((p) => p.id === sel) : null
+  const scheda = useRef<HTMLDivElement>(null)
+  // Aprendo una scheda il fuoco ci entra, così chi usa tastiera o lettore di schermo la trova subito
+  useEffect(() => {
+    if (sel) scheda.current?.focus()
+  }, [sel])
   const qMia = QUARTIERI[mia] ? pos(mia) : null
 
   return (
@@ -231,7 +244,7 @@ export function MappaGrande({ persone, mia, categorie }: { persone: PersonaMappa
         )}
       </div>
       {w ? (
-        <div className="mappa-scheda" role="dialog" aria-label={`Scheda di ${w.nome}`}>
+        <div className="mappa-scheda" role="dialog" aria-label={`Scheda di ${w.nome}`} ref={scheda} tabIndex={-1}>
           <div className="mappa-scheda-testa">
             <span className="tessera-avatar" style={{ background: w.disponibile ? coloreDi(w.competenze) : '#4A615B' }} aria-hidden="true">
               {iniziali(w.nome)}

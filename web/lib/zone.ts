@@ -26,13 +26,15 @@ export function distanza(mia: string, zone: readonly string[]): number {
 
 export type Ordine = 'vicini' | 'prezzo' | 'ida'
 
-type Ordinabile = { zone: readonly string[]; tariffa_oraria: number; ida: number | null; giudizi: number; nome: string }
+type Ordinabile = { zone: readonly string[]; tariffa_oraria: number; su_preventivo?: boolean; ida: number | null; giudizi: number; nome: string }
 
 // Ordine di partenza: dal più vicino. Nessuno paga per comparire prima.
 // Per IDA: chi è nuovo (senza IDA) va in fondo.
 export function ordina<T extends Ordinabile>(lista: T[], mia: string, ordine: Ordine): T[] {
   const idaDi = (p: T) => (p.ida != null && p.giudizi >= 3 ? p.ida : -1)
   return [...lista].sort((a, b) => {
+    // Chi lavora su preventivo non ha un prezzo da confrontare: va in fondo
+    if (ordine === 'prezzo' && !!a.su_preventivo !== !!b.su_preventivo) return a.su_preventivo ? 1 : -1
     if (ordine === 'prezzo' && a.tariffa_oraria !== b.tariffa_oraria) return a.tariffa_oraria - b.tariffa_oraria
     if (ordine === 'ida' && idaDi(a) !== idaDi(b)) return idaDi(b) - idaDi(a)
     const d = distanza(mia, a.zone) - distanza(mia, b.zone)

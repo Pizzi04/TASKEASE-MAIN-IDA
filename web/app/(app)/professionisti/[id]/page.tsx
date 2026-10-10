@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Conta } from '@/components/Conta'
 import { Icona } from '@/components/Icona'
+import { Indietro } from '@/components/Indietro'
 import { AvatarMestiere } from '@/components/RigaProfessionista'
 import { etichettaGiorno, prossimiGiorni, quandoFa } from '@/lib/date'
 import { registra } from '@/lib/eventi'
@@ -55,9 +56,7 @@ export default async function SchedaProfessionista({ params }: { params: Promise
   return (
     <div className="pro-pagina">
       <div className="pro-barra">
-        <Link href="/cerca" className="indietro" aria-label="Indietro">
-          <Icona nome="arrowL" lato={20} />
-        </Link>
+        <Indietro ripiego="/cerca" />
         {!mia && (
           <form action={preferito}>
             <input type="hidden" name="professionista" value={pro} />
@@ -104,7 +103,7 @@ export default async function SchedaProfessionista({ params }: { params: Promise
         !mia && (
           <div className="slot no">
             <span>{bloccato ? 'Hai bloccato questa persona' : 'Ora non accetta prenotazioni'}</span>
-            <b>{bloccato ? '—' : 'in pausa'}</b>
+            <b>{bloccato ? '—' : p.profili.in_pausa ? 'in pausa' : 'non disponibile'}</b>
           </div>
         )
       )}
@@ -126,7 +125,7 @@ export default async function SchedaProfessionista({ params }: { params: Promise
         <ul className="voci-ida">
           {medie.map((v) => (
             <li key={v.k}>
-              {v.l} <b>{v.media == null ? `${Math.round(v.peso * 100)}%` : v.media.toFixed(1).replace('.', ',')}</b>
+              {v.l} <b>{v.media == null ? '—' : v.media.toFixed(1).replace('.', ',')}</b>
             </li>
           ))}
         </ul>
@@ -165,7 +164,8 @@ export default async function SchedaProfessionista({ params }: { params: Promise
         <div className="sec-h">
           <h2>Cosa dicono</h2>
           <span className="nota">
-            {lista.length} {lista.length === 1 ? 'giudizio' : 'giudizi'}
+            {p.giudizi} {p.giudizi === 1 ? 'giudizio' : 'giudizi'}
+            {p.giudizi > lista.length ? ` · qui gli ultimi ${lista.length}` : ''}
           </span>
         </div>
         <p className="nota" style={{ marginTop: -6 }}>

@@ -101,11 +101,11 @@ export default async function Cerca({
             {c.n}
           </Link>
         ))}
-        {competenza && !CATEGORIE.some((c) => c.n === competenza) && (
-          <span className="cat2" aria-current="true">
-            {competenza}
-          </span>
-        )}
+        {COMPETENZE.filter((n) => !CATEGORIE.some((c) => c.n === n)).map((n) => (
+          <Link key={n} href={link({ competenza: competenza === n ? '' : n })} className="cat2" aria-current={competenza === n ? 'true' : undefined}>
+            {n}
+          </Link>
+        ))}
       </nav>
       <nav className="cats" aria-label="Zona">
         <Link href={link({ zona: '' })} className="cat2 zona" aria-current={!zona ? 'true' : undefined}>
@@ -128,6 +128,7 @@ export default async function Cerca({
         <b>{lista.length === 0 ? 'Nessuno' : `${lista.length} ${lista.length === 1 ? 'persona' : 'persone'}`}</b> · nessuno paga per apparire ·{' '}
         <Link href="/legale/ranking">come ordiniamo</Link> ·{' '}
         <Link href={link({ tutti: ancheNonDisponibili ? '' : '1' })}>{ancheNonDisponibili ? 'solo disponibili' : 'anche non disponibili'}</Link>
+        {lista.some((p) => distanza(profilo.zona, p.zone) >= 1000) && <> · “—” = distanza non stimabile (zona fuori mappa)</>}
       </p>
 
       {lista.length > 0 && (
@@ -150,18 +151,51 @@ export default async function Cerca({
                   <span className="lrow-b">
                     <span className="lrow-n">
                       {p.nome}
-                      {p.disponibile && <span className="wcard-av" aria-hidden="true" />}
+                      {p.disponibile && (
+                        <>
+                          <span className="wcard-av" aria-hidden="true" />
+                          <span className="nascosto">, disponibile</span>
+                        </>
+                      )}
                     </span>
                     <span className="lrow-s">
                       {!p.disponibile && <span className="spento">non disponibile · </span>}
                       {p.competenze.slice(0, 2).join(' · ')}
                     </span>
                   </span>
-                  <span className="lrow-ida" aria-label={ida != null ? `IDA ${ida}` : 'IDA nuovo'}>
+                  <span className="lrow-ida">
+                    <span className="nascosto">IDA </span>
                     {ida ?? <small>NUOVO</small>}
                   </span>
-                  <span aria-label={p.su_preventivo ? 'su preventivo' : `${p.tariffa_oraria} euro l’ora`}>{p.su_preventivo ? 'prev.' : p.tariffa_oraria}</span>
-                  <span aria-label={d === 0 ? 'nella tua zona' : `circa ${km(d)} chilometri`}>{d === 0 ? 'qui' : km(d)}</span>
+                  <span>
+                    {p.su_preventivo ? (
+                      <>
+                        <span aria-hidden="true">prev.</span>
+                        <span className="nascosto">su preventivo</span>
+                      </>
+                    ) : (
+                      <>
+                        {p.tariffa_oraria}
+                        <span className="nascosto"> euro l’ora</span>
+                      </>
+                    )}
+                  </span>
+                  <span>
+                    {d === 0 ? (
+                      'qui'
+                    ) : d >= 1000 ? (
+                      <>
+                        <span aria-hidden="true">—</span>
+                        <span className="nascosto">distanza non disponibile</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="nascosto">circa </span>
+                        {km(d)}
+                        <span className="nascosto"> chilometri</span>
+                      </>
+                    )}
+                  </span>
                 </Link>
               )
             })}

@@ -68,7 +68,7 @@ export default async function Prenotazioni({ searchParams }: { searchParams: Pro
 
   return (
     <>
-      <Testata titolo="Prenotazioni" />
+      <Testata titolo="Prenotazioni" indietro="/profilo" />
       {scheda && (
         <div className="ruolo largo" role="tablist" aria-label="Quali prenotazioni">
           <Link href="/prenotazioni?vista=cliente" role="tab" aria-selected={!comePro}>

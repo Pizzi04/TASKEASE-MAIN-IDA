@@ -3,7 +3,8 @@ import { Tabs } from '@/components/Tabs'
 import { richiediProfilo } from '@/lib/supabase/server'
 
 export default async function LayoutApp({ children }: { children: React.ReactNode }) {
-  const { profilo } = await richiediProfilo()
+  const { supabase, id, profilo } = await richiediProfilo()
+  const { count: nonLette } = await supabase.from('notifiche').select('id', { count: 'exact', head: true }).eq('utente', id).eq('letta', false)
 
   return (
     <>
@@ -19,7 +20,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
         </p>
       )}
       <div className="contenuto">{children}</div>
-      <Tabs lavoro={profilo.ruolo === 'worker'} />
+      <Tabs key={nonLette ?? 0} lavoro={profilo.ruolo === 'worker'} utente={id} nonLette={nonLette ?? 0} />
     </>
   )
 }
