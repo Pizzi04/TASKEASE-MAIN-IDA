@@ -18,16 +18,21 @@ export async function modificaProfilo(_p: StatoAzione, form: FormData): Promise<
   const erroreFoto = await fotoValida(foto)
   if (erroreFoto) return { errore: erroreFoto }
 
-  let percorso = profilo.foto
-  if (foto) {
-    percorso = `${id}/profilo-${Date.now()}.${estensione(foto.type)}`
+  const togli = form.get('togli_foto') === 'si'
+  let percorso = togli ? null : profilo.foto
+  let caricata: string | null = null
+  // Se la foto va tolta non si carica niente: un file orfano occuperebbe uno dei 20 posti
+  if (foto && !togli) {
+    caricata = percorso = `${id}/profilo-${Date.now()}.${estensione(foto.type)}`
     const { error } = await supabase.storage.from('foto').upload(percorso, foto, { contentType: foto.type })
     if (error) return { errore: 'Non riesco a caricare la foto. Riprova.' }
   }
-  if (form.get('togli_foto') === 'si') percorso = null
 
   const { error } = await supabase.from('profili').update({ ...letto.dati, foto: percorso }).eq('id', id)
-  if (error) return { errore: messaggioDb(error) }
+  if (error) {
+    if (caricata) await supabase.storage.from('foto').remove([caricata])
+    return { errore: messaggioDb(error) }
+  }
   if (profilo.foto && profilo.foto !== percorso) await supabase.storage.from('foto').remove([profilo.foto])
   revalidatePath('/', 'layout')
   return { ok: 'Profilo aggiornato.' }

@@ -62,6 +62,9 @@ export default async function Home() {
 }
 
 async function HomeCliente({ supabase, id, zona, oggi }: { supabase: Db; id: string; zona: string; oggi: string }) {
+  // Stesse zone della pagina Bacheca: quelle in cui lavori, se hai una scheda, altrimenti la tua
+  const { data: mieZone } = await supabase.from('professionisti').select('zone').eq('id', id).maybeSingle()
+  const zoneBacheca = mieZone?.zone ?? [zona]
   const [prossime, vicini, preferiti, bacheca, blocchi, liberi] = await Promise.all([
     supabase
       .from('prenotazioni')
@@ -74,13 +77,13 @@ async function HomeCliente({ supabase, id, zona, oggi }: { supabase: Db; id: str
       .limit(1),
     supabase.from('professionisti').select(COLONNE_PRO).eq('profili.in_pausa', false).limit(300),
     supabase.from('preferiti').select(`professionista, professionisti!preferiti_professionista_fkey(${COLONNE_PRO})`).eq('utente', id).limit(6),
-    // Stessi filtri della pagina Bacheca: la tua zona, aperte, non scadute, non tue
+    // Stessi filtri della pagina Bacheca: le stesse zone, aperte, non scadute, non tue
     supabase
       .from('bacheca')
       .select('id', { count: 'exact', head: true })
       .eq('stato', 'aperta')
       .gt('scade_il', new Date().toISOString())
-      .eq('zona', zona)
+      .in('zona', zoneBacheca)
       .neq('autore', id),
     supabase.from('blocchi').select('bloccato').eq('utente', id),
     // "Vicini a te" cerca solo tra chi è libero ora, a parte: tra i primi 300 potrebbero non esserci
@@ -215,13 +218,16 @@ async function HomeCliente({ supabase, id, zona, oggi }: { supabase: Db; id: str
 async function HomeLavoro({ supabase, id, oggi }: { supabase: Db; id: string; oggi: string }) {
   const [scheda, richieste, agenda] = await Promise.all([
     supabase.from('professionisti').select('ida, giudizi, lavori, disponibile, verificato, zone, tariffa_oraria, su_preventivo').eq('id', id).maybeSingle(),
+    // Solo quelle ancora confermabili (da oggi in poi), contate per intero
     supabase
       .from('prenotazioni')
-      .select('id, giorno, ora, ore, competenza, descrizione, zona, controproposta, profili!prenotazioni_cliente_fkey(nome)')
+      .select('id, giorno, ora, ore, competenza, descrizione, zona, controproposta, profili!prenotazioni_cliente_fkey(nome)', { count: 'exact' })
       .eq('professionista', id)
       .eq('stato', 'richiesta')
+      .gte('giorno', oggi)
       .order('giorno')
-      .limit(10),
+      .order('ora')
+      .limit(3),
     supabase
       .from('prenotazioni')
       .select('id, giorno, ora, competenza, zona, profili!prenotazioni_cliente_fkey(nome)')
@@ -258,6 +264,7 @@ async function HomeLavoro({ supabase, id, oggi }: { supabase: Db; id: string; og
     .in('zona', s.zone)
     .neq('autore', id)
   const lista = richieste.data ?? []
+  const quante = richieste.count ?? lista.length
   const [prossimo, ...dopo] = agenda.data ?? []
   const ida = idaVisibile(s.ida, s.giudizi)
 
@@ -265,7 +272,7 @@ async function HomeLavoro({ supabase, id, oggi }: { supabase: Db; id: string; og
     <>
       <Link href="/lavoro" className="home-cta">
         <Icona nome="bolt" lato={20} />
-        <span>{lista.length ? `${lista.length} ${lista.length === 1 ? 'richiesta ti aspetta' : 'richieste ti aspettano'}` : 'Il tuo profilo e l’agenda'}</span>
+        <span>{quante ? `${quante} ${quante === 1 ? 'richiesta ti aspetta' : 'richieste ti aspettano'}` : 'Il tuo profilo e l’agenda'}</span>
         <Icona nome="arrowR" lato={18} />
       </Link>
       <p className="home-stato">

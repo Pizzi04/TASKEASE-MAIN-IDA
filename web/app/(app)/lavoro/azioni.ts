@@ -65,7 +65,9 @@ export async function modificaScheda(_p: StatoAzione, form: FormData): Promise<S
 }
 
 export async function cambiaDisponibilita(form: FormData) {
-  const { supabase, id } = await richiediProfilo()
+  const { supabase, id, profilo } = await richiediProfilo()
+  // Con l'account sospeso la scheda resta ferma (il database lo impedisce comunque): niente pagina d'errore
+  if (profilo.sospeso) return
   controlla(await supabase.from('professionisti').update({ disponibile: form.get('disponibile') === 'si' }).eq('id', id), 'disponibilità')
   revalidatePath('/lavoro')
   revalidatePath('/')

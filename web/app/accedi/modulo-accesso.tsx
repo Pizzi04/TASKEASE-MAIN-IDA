@@ -23,6 +23,8 @@ export default function ModuloAccesso({ dopo = '/' }: { dopo?: string }) {
   const [codice, setCodice] = useState('')
   const [errore, setErrore] = useState('')
   const [attesa, setAttesa] = useState(false)
+  const [reinvio, setReinvio] = useState(false)
+  const [rimandato, setRimandato] = useState(false)
   const [captcha, setCaptcha] = useState('')
   const [versioneCaptcha, setVersioneCaptcha] = useState(0)
   const prendiCaptcha = useCallback((t: string) => setCaptcha(t), [])
@@ -35,13 +37,13 @@ export default function ModuloAccesso({ dopo = '/' }: { dopo?: string }) {
   }, [mancano])
 
   // Manda l'SMS; true se è partito
-  async function manda(tel: string): Promise<boolean> {
+  async function manda(tel: string, diNuovo = false): Promise<boolean> {
     if (CHIAVE_CAPTCHA && !captcha) {
       setErrore('Completa il controllo di sicurezza qui sotto.')
       return false
     }
     setErrore('')
-    setAttesa(true)
+    if (!diNuovo) setAttesa(true)
     const supabase = supabaseBrowser()
     const { error } = await supabase.auth.signInWithOtp({ phone: tel, options: CHIAVE_CAPTCHA ? { captchaToken: captcha } : undefined })
     setAttesa(false)
@@ -134,9 +136,13 @@ export default function ModuloAccesso({ dopo = '/' }: { dopo?: string }) {
       <button className="bottone" type="submit" disabled={attesa}>
         {attesa ? 'Controllo…' : 'Entra'}
       </button>
+      <p className="nascosto" role="status">
+        {rimandato && mancano > 0 ? 'Nuovo codice inviato.' : ''}
+      </p>
       {mancano > 0 ? (
-        <p className="nota" aria-live="polite">
-          Non arriva? Puoi chiederne un altro tra {mancano} s.
+        <p className="nota">
+          Non arriva? Puoi chiederne un altro tra <span aria-hidden="true">{mancano} s</span>
+          <span className="nascosto">un minuto</span>.
         </p>
       ) : (
         <>
@@ -144,12 +150,17 @@ export default function ModuloAccesso({ dopo = '/' }: { dopo?: string }) {
           <button
             className="secondario"
             type="button"
-            disabled={attesa}
+            disabled={attesa || reinvio}
             onClick={async () => {
-              if (await manda(telefono)) setCodice('')
+              setReinvio(true)
+              if (await manda(telefono, true)) {
+                setCodice('')
+                setRimandato(true)
+              }
+              setReinvio(false)
             }}
           >
-            Rimanda il codice
+            {reinvio ? 'Invio…' : 'Rimanda il codice'}
           </button>
         </>
       )}

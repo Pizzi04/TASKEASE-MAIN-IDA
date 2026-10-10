@@ -93,9 +93,16 @@ export function MappaGrande({ persone, mia, categorie }: { persone: PersonaMappa
   }
   const w = sel ? persone.find((p) => p.id === sel) : null
   const scheda = useRef<HTMLDivElement>(null)
-  // Aprendo una scheda il fuoco ci entra, così chi usa tastiera o lettore di schermo la trova subito
+  const daDove = useRef<string | null>(null)
+  // Aprendo una scheda il fuoco ci entra; chiudendola torna sul puntino da cui si era partiti
   useEffect(() => {
-    if (sel) scheda.current?.focus()
+    if (sel) {
+      daDove.current = sel
+      scheda.current?.focus()
+    } else if (daDove.current) {
+      svg.current?.querySelector<SVGGElement>(`g.pin[data-id="${daDove.current}"]`)?.focus()
+      daDove.current = null
+    }
   }, [sel])
   const qMia = QUARTIERI[mia] ? pos(mia) : null
 
@@ -236,15 +243,30 @@ export function MappaGrande({ persone, mia, categorie }: { persone: PersonaMappa
         )}
         {visibili.length === 0 && (
           <div className="mappa-vuota">
-            Nessuno {filtro === 'liberi' ? 'libero adesso' : `per ${filtro}`} sulla mappa.{' '}
-            <button type="button" className="pulsante-testo collegamento" onClick={() => setFiltro('tutti')}>
-              Mostra tutti
-            </button>
+            {filtro === 'tutti' ? (
+              'Ancora nessuno sulla mappa: chi lavora in zona comparirà qui.'
+            ) : (
+              <>
+                Nessuno {filtro === 'liberi' ? 'libero adesso' : `per ${filtro}`} sulla mappa.{' '}
+                <button type="button" className="pulsante-testo collegamento" onClick={() => setFiltro('tutti')}>
+                  Mostra tutti
+                </button>
+              </>
+            )}
           </div>
         )}
       </div>
       {w ? (
-        <div className="mappa-scheda" role="dialog" aria-label={`Scheda di ${w.nome}`} ref={scheda} tabIndex={-1}>
+        <div
+          className="mappa-scheda"
+          role="dialog"
+          aria-label={`Scheda di ${w.nome}`}
+          ref={scheda}
+          tabIndex={-1}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') setSel(null)
+          }}
+        >
           <div className="mappa-scheda-testa">
             <span className="tessera-avatar" style={{ background: w.disponibile ? coloreDi(w.competenze) : '#4A615B' }} aria-hidden="true">
               {iniziali(w.nome)}

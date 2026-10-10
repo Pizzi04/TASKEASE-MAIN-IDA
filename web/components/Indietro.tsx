@@ -3,9 +3,11 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Icona } from './Icona'
+import { puoTornareIndietro } from './SegnaNavigazione'
 
 // Freccia "indietro" che torna davvero da dove si arriva (cerca, mappa, home, preferiti…).
-// Se si è entrati da un link esterno torna alla pagina di ripiego.
+// Torna indietro solo se c'è una pagina precedente dentro l'app (lo segna SegnaNavigazione),
+// altrimenti va alla pagina di ripiego: chi apre un link diretto non esce dall'app.
 export function Indietro({ ripiego }: { ripiego: string }) {
   const router = useRouter()
   return (
@@ -14,8 +16,7 @@ export function Indietro({ ripiego }: { ripiego: string }) {
       className="indietro"
       aria-label="Indietro"
       onClick={(e) => {
-        const daQui = document.referrer && new URL(document.referrer).origin === location.origin
-        if (daQui && history.length > 1) {
+        if (puoTornareIndietro()) {
           e.preventDefault()
           router.back()
         }

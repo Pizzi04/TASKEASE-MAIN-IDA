@@ -33,7 +33,7 @@ export function quandoFa(iso: string, adesso = new Date()): string {
   const g = Math.floor(s / 86400)
   if (g === 1) return 'ieri'
   if (g < 30) return `${g} giorni fa`
-  return new Date(iso).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })
+  return new Date(iso).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Europe/Rome' })
 }
 
 // La prenotazione è nel passato (ora italiana)?

@@ -51,12 +51,13 @@ export default async function Cerca({
 
   const bloccati = new Set((blocchi ?? []).map((b) => b.bloccato))
   let lista = (data ?? []).map(daRiga).filter((p) => p.id !== id && !bloccati.has(p.id))
-  if (q && !competenza) {
+  // Il testo filtra anche con un mestiere scelto, tranne quando descrive proprio quel mestiere ("tapparella" + Riparazioni)
+  if (q && !(competenza && daQ === competenza)) {
     const parola = q.toLowerCase()
     lista = lista.filter(
       (p) =>
         p.nome.toLowerCase().includes(parola) ||
-        p.competenze.some((c) => c.toLowerCase().includes(parola) || c === daQ),
+        p.competenze.some((c) => c.toLowerCase().includes(parola) || (!competenza && c === daQ)),
     )
   }
   lista = ordina(lista, profilo.zona, ordine)
@@ -87,6 +88,7 @@ export default async function Cerca({
           {competenza && <input type="hidden" name="competenza" value={competenza} />}
           {zona && <input type="hidden" name="zona" value={zona} />}
           <input type="hidden" name="ordine" value={ordine} />
+          {ancheNonDisponibili && <input type="hidden" name="tutti" value="1" />}
         </form>
       </div>
       <h1 className="nascosto">Cerca</h1>

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { adessoARoma } from '@/lib/validazione'
 import { NotifichePush } from '@/components/AppInstallabile'
 import { redirect } from 'next/navigation'
 import { EtichettaLivello, Sigillo } from '@/components/Sigillo'
@@ -15,8 +16,8 @@ export default async function Lavoro({ searchParams }: { searchParams: Promise<{
   const { data: s } = await supabase.from('professionisti').select('*').eq('id', id).maybeSingle()
   if (!s) redirect('/lavoro/diventa')
 
-  const inizioMese = new Date()
-  inizioMese.setDate(1)
+  // Primo del mese in Italia (il server è in UTC)
+  const inizioMese = adessoARoma().giorno.slice(0, 8) + '01'
   const [{ data: verifica }, { count: richieste }, { count: meseLavori }, { count: daRispondere }] = await Promise.all([
     supabase.from('verifiche').select('stato, motivazione').eq('professionista', id).order('creato_il', { ascending: false }).limit(1).maybeSingle(),
     supabase.from('prenotazioni').select('id', { count: 'exact', head: true }).eq('professionista', id).eq('stato', 'richiesta'),
@@ -25,7 +26,7 @@ export default async function Lavoro({ searchParams }: { searchParams: Promise<{
       .select('id', { count: 'exact', head: true })
       .eq('professionista', id)
       .eq('stato', 'completata')
-      .gte('giorno', inizioMese.toISOString().slice(0, 10)),
+      .gte('giorno', inizioMese),
     supabase.from('giudizi').select('prenotazione', { count: 'exact', head: true }).eq('professionista', id).is('risposta', null),
   ])
   const mancanti = Math.max(0, IDA_MIN_LAVORI - s.giudizi)

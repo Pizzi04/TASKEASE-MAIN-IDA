@@ -28,7 +28,7 @@ export default async function Prenotazione({
   const { data: b } = await supabase
     .from('prenotazioni')
     .select(
-      '*, cliente_p:profili!prenotazioni_cliente_fkey(nome), professionisti!prenotazioni_professionista_fkey(profili!professionisti_id_fkey(nome)), giudizi!giudizi_prenotazione_fkey(punteggio, puntualita, qualita, parola, pulizia, comunicazione, commento, risposta)',
+      '*, cliente_p:profili!prenotazioni_cliente_fkey(nome), professionisti!prenotazioni_professionista_fkey(su_preventivo, profili!professionisti_id_fkey(nome)), giudizi!giudizi_prenotazione_fkey(punteggio, puntualita, qualita, parola, pulizia, comunicazione, commento, risposta)',
     )
     .eq('id', pid)
     .maybeSingle()
@@ -85,7 +85,7 @@ export default async function Prenotazione({
         </div>
         <div className="riga">
           <dt>Tariffa</dt>
-          <dd>{b.tariffa_oraria} € l’ora · si paga tra voi</dd>
+          <dd>{b.professionisti?.su_preventivo ? 'Su preventivo · si paga tra voi' : `${b.tariffa_oraria} € l’ora · si paga tra voi`}</dd>
         </div>
         <div className="riga">
           <dt>Dove</dt>

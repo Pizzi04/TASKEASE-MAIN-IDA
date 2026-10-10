@@ -154,11 +154,13 @@ export function partitaIvaValida(t: string): boolean {
 export function etaDa(iso: string, oggi = new Date()): number | null {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null
   const [a, m, g] = iso.split('-').map(Number)
-  const nascita = new Date(a, m - 1, g)
-  if (nascita.getMonth() !== m - 1 || nascita > oggi) return null
-  let eta = oggi.getFullYear() - a
-  if (oggi < new Date(oggi.getFullYear(), m - 1, g)) eta--
-  return eta
+  const nascita = new Date(Date.UTC(a, m - 1, g))
+  if (nascita.getUTCMonth() !== m - 1) return null
+  // Il compleanno si conta con la data italiana, non con quella del server (UTC)
+  const qui = adessoARoma(oggi).giorno
+  if (iso > qui) return null
+  const [qa, qm, qg] = qui.split('-').map(Number)
+  return qa - a - (qm < m || (qm === m && qg < g) ? 1 : 0)
 }
 
 export type DatiProfessionista = {

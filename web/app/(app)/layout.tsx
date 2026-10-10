@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { SegnaNavigazione } from '@/components/SegnaNavigazione'
 import { Tabs } from '@/components/Tabs'
 import { richiediProfilo } from '@/lib/supabase/server'
 
@@ -20,6 +21,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
         </p>
       )}
       <div className="contenuto">{children}</div>
+      <SegnaNavigazione />
       <Tabs key={nonLette ?? 0} lavoro={profilo.ruolo === 'worker'} utente={id} nonLette={nonLette ?? 0} />
     </>
   )

@@ -45,9 +45,11 @@ export async function GET(request: NextRequest) {
     .or(`stato.eq.rimossa,scade_il.lt.${new Date().toISOString()}`)
     .limit(500)
   if (conFoto?.length) {
-    await db.storage.from('foto').remove(conFoto.map((p) => p.foto!))
-    await db.from('bacheca').update({ foto: null }).in('id', conFoto.map((p) => p.id))
-    fatto.foto_bacheca = conFoto.length
+    // Si stacca la foto solo se il file è stato davvero tolto: altrimenti si riprova la notte dopo
+    const { error: erroreFoto } = await db.storage.from('foto').remove(conFoto.map((p) => p.foto!))
+    const ids = erroreFoto ? [] : conFoto.map((p) => p.id)
+    if (ids.length) await db.from('bacheca').update({ foto: null }).in('id', ids)
+    fatto.foto_bacheca = ids.length
   }
 
   // Account inattivi: avviso a 23 mesi, cancellazione a 24
@@ -55,31 +57,40 @@ export async function GET(request: NextRequest) {
   let cancellati = 0
   const limite23 = Date.now() - 700 * 86400000
   const limite24 = Date.now() - 730 * 86400000
-  for (let pagina = 1; pagina <= 50; pagina++) {
+  // Prima si raccolgono tutti gli utenti, poi si agisce: cancellare mentre si sfoglia salterebbe qualcuno
+  const utenti: { id: string; last_sign_in_at?: string | null; created_at: string }[] = []
+  for (let pagina = 1; pagina <= 500; pagina++) {
     const { data, error } = await db.auth.admin.listUsers({ page: pagina, perPage: 200 })
-    if (error || !data.users.length) break
-    // La sessione si rinnova da sola: l'ultimo accesso vero lo segna l'app in profili.ultimo_accesso
-    const { data: accessi } = await db
+    if (error) return NextResponse.json({ ok: false, fatto, errore: 'elenco utenti non leggibile' }, { status: 500 })
+    utenti.push(...data.users)
+    if (data.users.length < 200) break
+  }
+  for (let i = 0; i < utenti.length; i += 50) {
+    const gruppo = utenti.slice(i, i + 50)
+    // La sessione si rinnova da sola: l'ultimo accesso vero lo segna l'app in profili.ultimo_accesso.
+    // Se questa lettura fallisce non si cancella nessuno del gruppo: meglio aspettare una notte.
+    const { data: accessi, error: erroreAccessi } = await db
       .from('profili')
       .select('id, ultimo_accesso')
-      .in('id', data.users.map((u) => u.id))
+      .in('id', gruppo.map((u) => u.id))
+    if (erroreAccessi) continue
     const usato = new Map((accessi ?? []).map((p) => [p.id, p.ultimo_accesso]))
-    for (const u of data.users) {
+    for (const u of gruppo) {
       const ultimo = Math.max(
         ...[u.last_sign_in_at, u.created_at, usato.get(u.id)].filter((d): d is string => !!d).map((d) => new Date(d).getTime()),
       )
       if (ultimo < limite24) {
-        await db.rpc('prepara_eliminazione_di', { p_utente: u.id })
+        if ((await db.rpc('prepara_eliminazione_di', { p_utente: u.id })).error) continue
         const { data: file } = await db.storage.from('foto').list(u.id, { limit: 1000 })
         if (file?.length) await db.storage.from('foto').remove(file.map((f) => `${u.id}/${f.name}`))
         if (!(await db.auth.admin.deleteUser(u.id)).error) cancellati++
       } else if (ultimo < limite23) {
-        const { count } = await db
+        const { count, error: erroreConto } = await db
           .from('notifiche')
           .select('id', { count: 'exact', head: true })
           .eq('utente', u.id)
           .eq('tipo', 'inattivo')
-        if (!count) {
+        if (!erroreConto && !count) {
           await db.from('notifiche').insert({
             utente: u.id,
             tipo: 'inattivo',
@@ -90,7 +101,6 @@ export async function GET(request: NextRequest) {
         }
       }
     }
-    if (data.users.length < 200) break
   }
   fatto.account_avvisati = avvisati
   fatto.account_cancellati = cancellati

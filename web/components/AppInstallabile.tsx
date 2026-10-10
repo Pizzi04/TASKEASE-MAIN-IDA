@@ -62,6 +62,14 @@ function base64InUint8(b64: string) {
   return Uint8Array.from(raw, (c) => c.charCodeAt(0))
 }
 
+// serviceWorker.ready non finisce mai se il service worker non si registra (sviluppo, alcune finestre private)
+function swPronto(): Promise<ServiceWorkerRegistration> {
+  return Promise.race([
+    navigator.serviceWorker.ready,
+    new Promise<never>((_, no) => setTimeout(() => no(new Error('service worker assente')), 6000)),
+  ])
+}
+
 // Attiva o spegne le notifiche push su questo dispositivo
 export function NotifichePush() {
   const chiave = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
@@ -76,7 +84,7 @@ export function NotifichePush() {
   // Iscrizione già presente su questo dispositivo? (lo stato si aggiorna nella callback, non nell'effetto)
   useEffect(() => {
     if (!supportato || negato) return
-    navigator.serviceWorker.ready
+    swPronto()
       .then((r) => r.pushManager.getSubscription())
       .then((s) => setStato(s ? 'attive' : 'spente'))
       .catch(() => setStato('non-supportato'))
@@ -90,7 +98,7 @@ export function NotifichePush() {
     setErrore('')
     setStato('attesa')
     try {
-      const reg = await navigator.serviceWorker.ready
+      const reg = await swPronto()
       const iscrizione = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: base64InUint8(chiave!) })
       const j = iscrizione.toJSON()
       // Se questo telefono era iscritto con un altro account, l'iscrizione passa a chi è collegato ora
@@ -99,7 +107,15 @@ export function NotifichePush() {
         p_p256dh: j.keys!.p256dh,
         p_auth: j.keys!.auth,
       })
-      if (error) throw error
+      if (error) {
+        if (error.code === 'P0003') {
+          await iscrizione.unsubscribe()
+          setErrore('Le notifiche sono già attive su 5 dispositivi: spegnile su uno che non usi più.')
+          setStato('spente')
+          return
+        }
+        throw error
+      }
       setStato('attive')
     } catch {
       setErrore('Non sono riuscito ad attivarle. Hai dato il permesso?')
@@ -107,14 +123,20 @@ export function NotifichePush() {
     }
   }
   const spegni = async () => {
+    setErrore('')
     setStato('attesa')
-    const reg = await navigator.serviceWorker.ready
-    const s = await reg.pushManager.getSubscription()
-    if (s) {
-      await supabaseBrowser().from('push_iscrizioni').delete().eq('endpoint', s.endpoint)
-      await s.unsubscribe()
+    try {
+      const reg = await swPronto()
+      const s = await reg.pushManager.getSubscription()
+      if (s) {
+        await supabaseBrowser().from('push_iscrizioni').delete().eq('endpoint', s.endpoint)
+        await s.unsubscribe()
+      }
+      setStato('spente')
+    } catch {
+      setErrore('Non sono riuscito a spegnerle. Riprova.')
+      setStato('attive')
     }
-    setStato('spente')
   }
 
   return (
