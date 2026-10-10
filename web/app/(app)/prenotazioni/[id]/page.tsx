@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { NotifichePush } from '@/components/AppInstallabile'
 import { notFound } from 'next/navigation'
 import { Modulo } from '@/components/Modulo'
 import { Testata } from '@/components/Testata'
@@ -56,7 +57,15 @@ export default async function Prenotazione({
   return (
     <>
       <Testata titolo={b.competenza} indietro="/prenotazioni" sotto={sonoPro ? `Cliente: ${altro}` : `Con ${altro}`} />
-      {sp.inviata && <p className="conferma">Richiesta inviata. {primo} la conferma o propone un altro orario: ti avvisiamo qui.</p>}
+      {sp.inviata && (
+        <>
+          <p className="conferma">Richiesta inviata. {primo} la conferma o propone un altro orario: ti avvisiamo qui.</p>
+          <div className="scheda">
+            <p className="nota">Vuoi saperlo subito anche ad app chiusa?</p>
+            <NotifichePush />
+          </div>
+        </>
+      )}
       {sp.giudicata && <p className="conferma">Grazie: il tuo giudizio è nell’IDA di {primo}.</p>}
 
       <dl className="scheda dati">
@@ -183,6 +192,20 @@ export default async function Prenotazione({
               Rispondi al giudizio
             </Link>
           )}
+        </section>
+      )}
+
+      {!sonoPro && (b.stato === 'rifiutata' || b.stato === 'annullata') && (
+        <section className="azioni" aria-label="E adesso">
+          <p className="nota">Ti serve ancora? Trova un’altra persona o lascia che rispondano loro.</p>
+          <div className="azioni-due">
+            <Link href={`/cerca?competenza=${encodeURIComponent(b.competenza)}`} className="bottone">
+              Cerca un altro
+            </Link>
+            <Link href={`/bacheca/nuova?titolo=${encodeURIComponent(b.descrizione.slice(0, 100))}&competenza=${encodeURIComponent(b.competenza)}`} className="bottone fantasma">
+              Pubblica in bacheca
+            </Link>
+          </div>
         </section>
       )}
 

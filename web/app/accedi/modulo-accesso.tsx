@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { CHIAVE_CAPTCHA, Captcha } from '@/components/Captcha'
 import { supabaseBrowser } from '@/lib/supabase/browser'
 import { codiceOtpValido, mostraTelefono, normalizzaTelefono } from '@/lib/validazione'
@@ -26,17 +26,19 @@ export default function ModuloAccesso({ dopo = '/' }: { dopo?: string }) {
   const [captcha, setCaptcha] = useState('')
   const [versioneCaptcha, setVersioneCaptcha] = useState(0)
   const prendiCaptcha = useCallback((t: string) => setCaptcha(t), [])
+  // Secondi prima di poter chiedere un altro codice
+  const [mancano, setMancano] = useState(0)
+  useEffect(() => {
+    if (mancano <= 0) return
+    const t = setTimeout(() => setMancano((m) => m - 1), 1000)
+    return () => clearTimeout(t)
+  }, [mancano])
 
-  async function inviaCodice(e: React.FormEvent) {
-    e.preventDefault()
-    const tel = normalizzaTelefono(numero)
-    if (!tel) {
-      setErrore('Scrivi un cellulare italiano, per esempio 333 123 4567.')
-      return
-    }
+  // Manda l'SMS; true se è partito
+  async function manda(tel: string): Promise<boolean> {
     if (CHIAVE_CAPTCHA && !captcha) {
       setErrore('Completa il controllo di sicurezza qui sotto.')
-      return
+      return false
     }
     setErrore('')
     setAttesa(true)
@@ -47,7 +49,22 @@ export default function ModuloAccesso({ dopo = '/' }: { dopo?: string }) {
     setCaptcha('')
     setVersioneCaptcha((v) => v + 1)
     supabase.rpc('registra_evento', { p_nome: 'accesso_avviato' }).then(() => {}, () => {})
-    if (error) return setErrore(messaggioErrore(error))
+    if (error) {
+      setErrore(messaggioErrore(error))
+      return false
+    }
+    setMancano(60)
+    return true
+  }
+
+  async function inviaCodice(e: React.FormEvent) {
+    e.preventDefault()
+    const tel = normalizzaTelefono(numero)
+    if (!tel) {
+      setErrore('Scrivi un cellulare italiano, per esempio 333 123 4567.')
+      return
+    }
+    if (!(await manda(tel))) return
     setTelefono(tel)
     setCodice('')
     setPasso('codice')
@@ -117,6 +134,25 @@ export default function ModuloAccesso({ dopo = '/' }: { dopo?: string }) {
       <button className="bottone" type="submit" disabled={attesa}>
         {attesa ? 'Controllo…' : 'Entra'}
       </button>
+      {mancano > 0 ? (
+        <p className="nota" aria-live="polite">
+          Non arriva? Puoi chiederne un altro tra {mancano} s.
+        </p>
+      ) : (
+        <>
+          <Captcha onToken={prendiCaptcha} versione={versioneCaptcha} />
+          <button
+            className="secondario"
+            type="button"
+            disabled={attesa}
+            onClick={async () => {
+              if (await manda(telefono)) setCodice('')
+            }}
+          >
+            Rimanda il codice
+          </button>
+        </>
+      )}
       <button
         className="secondario"
         type="button"

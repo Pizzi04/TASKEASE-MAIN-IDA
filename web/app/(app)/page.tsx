@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { NotifichePush } from '@/components/AppInstallabile'
 import { Campanella } from '@/components/Campanella'
 import { Conta } from '@/components/Conta'
 import { Icona } from '@/components/Icona'
@@ -141,9 +142,9 @@ async function HomeCliente({ supabase, id, zona, oggi }: { supabase: Db; id: str
         <Link href="/legale/giudizi" className="tl ida">
           <small>Cos’è l’IDA</small>
           <span className="big">
-            <Conta a={5} ms={500} />
+            0–<Conta a={100} ms={800} />
           </span>
-          <span className="sub">domande dopo ogni lavoro: un voto su 100 che non si compra</span>
+          <span className="sub">il voto di chi lavora: 5 domande ai clienti dopo ogni lavoro vero. Non si compra</span>
         </Link>
         <Link href="/bacheca" className="tl">
           <small>Bacheca</small>
@@ -364,6 +365,11 @@ async function HomeLavoro({ supabase, id, oggi }: { supabase: Db; id: string; og
           </div>
         </>
       )}
+
+      <section className="scheda" aria-label="Avvisi sul telefono">
+        <p className="nota">Avvisi sul telefono per ogni nuova richiesta:</p>
+        <NotifichePush />
+      </section>
 
       {!s.verificato && (
         <Link href="/lavoro/verifica" className="ida-card">

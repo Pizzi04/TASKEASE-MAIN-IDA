@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { NotifichePush } from '@/components/AppInstallabile'
 import { redirect } from 'next/navigation'
 import { EtichettaLivello, Sigillo } from '@/components/Sigillo'
 import { Testata } from '@/components/Testata'
@@ -37,6 +38,12 @@ export default async function Lavoro({ searchParams }: { searchParams: Promise<{
           Ci siamo. Parti da “Profilo nuovo”: l’IDA compare dopo {IDA_MIN_LAVORI} lavori giudicati. Il prossimo passo è la verifica
           dell’identità.
         </p>
+      )}
+      {nuova && (
+        <div className="scheda">
+          <p className="nota">Attiva gli avvisi sul telefono: le richieste vanno confermate in fretta.</p>
+          <NotifichePush />
+        </div>
       )}
 
       <section className="scheda riga-ida">
