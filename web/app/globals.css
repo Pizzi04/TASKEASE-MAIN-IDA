@@ -266,6 +266,7 @@ img {
 .riga dt,
 .riga span:first-child {
   color: var(--stone);
+  flex: none;
 }
 .riga dd {
   margin: 0;
