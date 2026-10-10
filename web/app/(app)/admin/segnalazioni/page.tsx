@@ -37,6 +37,9 @@ export default async function SegnalazioniAdmin() {
     supabase.from('segnalazioni').select('*').neq('stato', 'aperta').order('deciso_il', { ascending: false }).limit(20),
   ])
   const conContenuto = await Promise.all((aperte ?? []).map(async (s) => ({ s, c: await contenuto(supabase, s.oggetto_tipo, s.oggetto_id) })))
+  const ids = [...new Set((aperte ?? []).map((s) => s.segnalato).filter((x): x is string => !!x))]
+  const { data: persone } = ids.length ? await supabase.from('profili').select('id, nome').in('id', ids) : { data: [] }
+  const nomeDi = new Map((persone ?? []).map((p) => [p.id, p.nome]))
 
   return (
     <>
@@ -47,6 +50,10 @@ export default async function SegnalazioniAdmin() {
           <header>
             <b>{s.motivo}</b> · {s.tipo === 'problema_lavoro' ? 'problema con un lavoro' : s.oggetto_tipo} · {quandoFa(s.creato_il)}
           </header>
+          <p className="nota">
+            Segnalato:{' '}
+            {s.segnalato ? <Link href={`/professionisti/${s.segnalato}`}>{nomeDi.get(s.segnalato) ?? 'account non più visibile'}</Link> : 'nessuno (account cancellato)'}
+          </p>
           <p className="citazione">{c.testo}</p>
           {c.link && (
             <Link href={c.link} className="piccolo-link">

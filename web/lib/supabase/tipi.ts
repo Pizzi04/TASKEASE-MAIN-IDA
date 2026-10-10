@@ -600,6 +600,7 @@ export type Database = {
           nome: string
           ruolo: string
           sospeso: boolean
+          ultimo_accesso: string | null
           zona: string
         }
         Insert: {
@@ -611,6 +612,7 @@ export type Database = {
           nome: string
           ruolo?: string
           sospeso?: boolean
+          ultimo_accesso?: string | null
           zona: string
         }
         Update: {
@@ -622,6 +624,7 @@ export type Database = {
           nome?: string
           ruolo?: string
           sospeso?: boolean
+          ultimo_accesso?: string | null
           zona?: string
         }
         Relationships: []
@@ -923,6 +926,7 @@ export type Database = {
         Args: { p_giorno: string; p_id: number; p_ora: string }
         Returns: undefined
       }
+      pulisci_messaggi_vecchi: { Args: never; Returns: number }
       registra_evento: { Args: { p_nome: string }; Returns: undefined }
       riattiva_account: {
         Args: { p_motivazione: string; p_utente: string }
@@ -933,6 +937,7 @@ export type Database = {
         Args: { p_prenotazione: number; p_testo: string }
         Returns: undefined
       }
+      segna_accesso: { Args: never; Returns: undefined }
       segna_letti: { Args: { p_prenotazione: number }; Returns: undefined }
       zone_valide: { Args: never; Returns: string[] }
     }

@@ -57,7 +57,12 @@ export async function proxy(request: NextRequest) {
     },
   })
 
-  await supabase.auth.getClaims()
+  const { data } = await supabase.auth.getClaims()
+  // Ultimo accesso vero (al massimo una volta al giorno): serve a non cancellare per inattività chi usa l'app
+  if (data?.claims && !request.cookies.get('ta_visto')) {
+    await supabase.rpc('segna_accesso')
+    risposta.cookies.set('ta_visto', '1', { maxAge: 20 * 3600, httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', path: '/' })
+  }
   return risposta
 }
 

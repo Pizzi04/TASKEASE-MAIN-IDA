@@ -18,8 +18,17 @@ export async function cambiaStato(_p: StatoAzione, form: FormData): Promise<Stat
   const motivo = pulisci(form.get('motivo')).slice(0, 300) || undefined
   const { error } = await supabase.rpc('cambia_stato_prenotazione', { p_id: id, p_azione: azione, p_motivo: motivo })
   if (error) {
-    if (azione === 'completa' && error.code === 'P0001') return { errore: 'Puoi segnare il lavoro come fatto solo dopo l’orario previsto.' }
-    if (azione === 'annulla' && error.code === 'P0001') return { errore: 'Dopo l’orario non si può più annullare: segna com’è andata.' }
+    if (error.code === 'P0001') {
+      // La prenotazione può essere cambiata nel frattempo dall'altra persona: diciamo cosa è successo davvero
+      const { data: ora } = await supabase.from('prenotazioni').select('stato').eq('id', id).maybeSingle()
+      revalidatePath(`/prenotazioni/${id}`)
+      if (ora && ora.stato !== 'richiesta' && ora.stato !== 'confermata') {
+        const stati: Record<string, string> = { annullata: 'è già stata annullata', rifiutata: 'è stata rifiutata', completata: 'è già segnata come fatta' }
+        return { errore: `Nel frattempo la prenotazione ${stati[ora.stato] ?? 'è cambiata'}: ricarica la pagina.` }
+      }
+      if (azione === 'completa') return { errore: 'Puoi segnare il lavoro come fatto solo quando è finito (orario più le ore previste).' }
+      if (azione === 'annulla') return { errore: 'Dopo l’orario non si può più annullare: segna com’è andata.' }
+    }
     return { errore: messaggioDb(error) }
   }
   revalidatePath(`/prenotazioni/${id}`)

@@ -27,17 +27,9 @@ export async function GET(request: NextRequest) {
   if (!db) return NextResponse.json({ errore: 'manca SUPABASE_SECRET_KEY' }, { status: 503 })
   const fatto: Record<string, number | string> = {}
 
-  // Messaggi di prenotazioni chiuse da più di 12 mesi
-  const { data: chiuse } = await db
-    .from('prenotazioni')
-    .select('id')
-    .in('stato', ['completata', 'annullata', 'rifiutata'])
-    .lt('aggiornato_il', fa(365))
-    .limit(1000)
-  if (chiuse?.length) {
-    const { count } = await db.from('messaggi').delete({ count: 'exact' }).in('prenotazione', chiuse.map((p) => p.id))
-    fatto.messaggi = count ?? 0
-  }
+  // Messaggi di prenotazioni chiuse da più di 12 mesi (tutti, in un colpo solo nel database)
+  const { data: messaggi } = await db.rpc('pulisci_messaggi_vecchi')
+  fatto.messaggi = messaggi ?? 0
 
   fatto.segnalazioni = (await db.from('segnalazioni').delete({ count: 'exact' }).neq('stato', 'aperta').lt('deciso_il', fa(365))).count ?? 0
   fatto.notifiche_lette = (await db.from('notifiche').delete({ count: 'exact' }).eq('letta', true).lt('creato_il', fa(90))).count ?? 0
@@ -66,8 +58,16 @@ export async function GET(request: NextRequest) {
   for (let pagina = 1; pagina <= 50; pagina++) {
     const { data, error } = await db.auth.admin.listUsers({ page: pagina, perPage: 200 })
     if (error || !data.users.length) break
+    // La sessione si rinnova da sola: l'ultimo accesso vero lo segna l'app in profili.ultimo_accesso
+    const { data: accessi } = await db
+      .from('profili')
+      .select('id, ultimo_accesso')
+      .in('id', data.users.map((u) => u.id))
+    const usato = new Map((accessi ?? []).map((p) => [p.id, p.ultimo_accesso]))
     for (const u of data.users) {
-      const ultimo = new Date(u.last_sign_in_at ?? u.created_at).getTime()
+      const ultimo = Math.max(
+        ...[u.last_sign_in_at, u.created_at, usato.get(u.id)].filter((d): d is string => !!d).map((d) => new Date(d).getTime()),
+      )
       if (ultimo < limite24) {
         await db.rpc('prepara_eliminazione_di', { p_utente: u.id })
         const { data: file } = await db.storage.from('foto').list(u.id, { limit: 1000 })

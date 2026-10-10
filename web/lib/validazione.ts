@@ -223,6 +223,7 @@ export function leggiDatiFiscali(form: FormData, oggi = new Date()): Esito<DatiF
   if (eta == null) return { ok: false, errore: 'Manca la data di nascita.' }
   if (eta < 18) return { ok: false, errore: 'Per lavorare su TaskEase servono 18 anni.' }
   if (residenza.length < 6) return { ok: false, errore: 'Manca l’indirizzo di residenza.' }
+  if (residenza.length > 200) return { ok: false, errore: 'L’indirizzo di residenza è troppo lungo (massimo 200 caratteri).' }
   if (!codiceFiscaleValido(codiceFiscale)) {
     return {
       ok: false,

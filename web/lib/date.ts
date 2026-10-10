@@ -44,6 +44,18 @@ export function passata(giorno: string, ora: string, adesso = new Date()): boole
   return h * 60 + m <= minuti
 }
 
+// Il lavoro è finito: passate anche le ore previste (serve per "Lavoro fatto")
+export function finita(giorno: string, ora: string, ore: number | null, adesso = new Date()): boolean {
+  const { giorno: oggi, minuti } = adessoARoma(adesso)
+  const [h, m] = ora.split(':').map(Number)
+  const fine = h * 60 + m + (ore ?? 1) * 60
+  if (giorno === oggi) return fine <= minuti
+  if (giorno > oggi) return false
+  if (fine <= 1440) return true
+  const ieri = new Date(Date.parse(oggi + 'T12:00:00Z') - 86400000).toISOString().slice(0, 10)
+  return giorno < ieri || fine - 1440 <= minuti
+}
+
 // Ora (e giorno, se non è oggi) di un istante, sempre all'ora italiana: uguale su server e browser
 const FMT_ORA = new Intl.DateTimeFormat('it-IT', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Rome' })
 const FMT_GIORNO_ROMA = new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Europe/Rome' })

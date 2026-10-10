@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Modulo } from '@/components/Modulo'
 import { Testata } from '@/components/Testata'
-import { etichettaGiorno, oraBreve, passata, prossimiGiorni } from '@/lib/date'
+import { etichettaGiorno, finita, oraBreve, passata, prossimiGiorni } from '@/lib/date'
 import { VOCI } from '@/lib/ida'
 import { STATI } from '@/lib/stati'
 import { richiediProfilo } from '@/lib/supabase/server'
@@ -128,7 +128,11 @@ export default async function Prenotazione({
       )}
       {b.stato === 'confermata' && fatta && (
         <section className="azioni" aria-label="Com’è andata">
-          {azione('completa', 'Lavoro fatto')}
+          {finita(b.giorno, b.ora, b.ore) ? (
+            azione('completa', 'Lavoro fatto')
+          ) : (
+            <p className="nota">Quando il lavoro è finito potrai segnarlo come fatto.</p>
+          )}
           {!sonoPro && (
             <details>
               <summary>Non si è presentato nessuno</summary>

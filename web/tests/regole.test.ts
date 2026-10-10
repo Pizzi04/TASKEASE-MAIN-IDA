@@ -218,6 +218,9 @@ describe('foto e collegamenti', () => {
     expect(linkInterno('/\\evil.example')).toBe('/')
     expect(linkInterno('https://evil.example')).toBe('/')
     expect(linkInterno(null, '/notifiche')).toBe('/notifiche')
+    expect(linkInterno('/\t/evil.example')).toBe('/')
+    expect(linkInterno('/\n/evil.example')).toBe('/')
+    expect(linkInterno('/cerca?competenza=Pulizie#su')).toBe('/cerca?competenza=Pulizie#su')
   })
 })
 
